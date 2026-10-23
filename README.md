@@ -22,7 +22,7 @@ Actions → **Daily lesson draft → Run workflow** から手動実行できま�
 
 ## 品質チェックとカリキュラム
 
-- Day 1の完成レッスン: `lesson.html?day=1`
+- Day 1の完成レッスン: `lesson.html?day=1&v=2`
 - 70日分の学習計画と公開状態: `curriculum.json`
 - 日次生成・検証処理: `scripts/generate_daily_lesson.py`
 - 日次処理のログ: GitHub Actions の workflow run
