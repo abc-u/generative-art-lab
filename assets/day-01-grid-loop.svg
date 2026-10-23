@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" role="img" aria-labelledby="title desc">
+  <title id="title">格子を左から右、上から下へ順に描く</title>
+  <desc id="desc">列を順に進み、行の端で下へ移動し、すべてのマスに同じ四角を描く流れ。</desc>
+  <rect width="960" height="340" rx="8" fill="#f4f6f2"/>
+  <g font-family="sans-serif" fill="#354039">
+    <text x="34" y="48" font-size="15" font-weight="700" letter-spacing="2" fill="#5d9067">くり返し描画の流れ</text>
+    <g font-size="20" font-weight="700">
+      <circle cx="50" cy="105" r="17" fill="#5d9067"/><text x="44" y="112" fill="#fff">1</text>
+      <text x="82" y="112">列を左から順に見る</text>
+      <circle cx="50" cy="169" r="17" fill="#5d9067"/><text x="44" y="176" fill="#fff">2</text>
+      <text x="82" y="176">端まで来たら一段下へ</text>
+      <circle cx="50" cy="233" r="17" fill="#5d9067"/><text x="44" y="240" fill="#fff">3</text>
+      <text x="82" y="240">どのマスにも同じ四角</text>
+    </g>
+    <text x="34" y="302" font-size="15" fill="#69746c">この順序を、すべての行でくり返します。</text>
+  </g>
+  <g transform="translate(548 67)">
+    <rect width="350" height="224" fill="#e8e1cf" stroke="#d5cfbf" stroke-width="2"/>
+    <path d="M70 0v224M140 0v224M210 0v224M280 0v224M0 56h350M0 112h350M0 168h350" stroke="#c8c3b6" stroke-width="1.5"/>
+    <g fill="#30332d">
+      <rect x="23" y="17" width="24" height="24"/><rect x="93" y="17" width="24" height="24"/><rect x="163" y="17" width="24" height="24"/><rect x="233" y="17" width="24" height="24"/><rect x="303" y="17" width="24" height="24"/>
+      <rect x="23" y="73" width="24" height="24"/><rect x="93" y="73" width="24" height="24"/><rect x="163" y="73" width="24" height="24"/><rect x="233" y="73" width="24" height="24"/><rect x="303" y="73" width="24" height="24"/>
+      <rect x="23" y="129" width="24" height="24"/><rect x="93" y="129" width="24" height="24"/><rect x="163" y="129" width="24" height="24"/><rect x="233" y="129" width="24" height="24"/><rect x="303" y="129" width="24" height="24"/>
+      <rect x="23" y="185" width="24" height="24"/><rect x="93" y="185" width="24" height="24"/><rect x="163" y="185" width="24" height="24"/><rect x="233" y="185" width="24" height="24"/><rect x="303" y="185" width="24" height="24"/>
+    </g>
+    <path d="M35 29H314V85H35V141H314V197H35" fill="none" stroke="#d66f50" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 7"/>
+    <path d="m35 197 10-7v14z" fill="#d66f50"/>
+  </g>
+</svg>
