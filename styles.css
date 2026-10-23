@@ -130,3 +130,6 @@ a.next-lesson-card:hover{border-color:#77a17e;background:#eff6ef}
   .experiment-preview{position:relative;top:auto;width:100%;aspect-ratio:2.1}
   .experiment-list{width:100%}
 }
+
+
+@media(min-width:681px){.experiment-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px}}
