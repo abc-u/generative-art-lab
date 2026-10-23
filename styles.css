@@ -109,3 +109,6 @@ a.next-lesson-card:hover{border-color:#77a17e;background:#eff6ef}
 
 /* Align the lesson title panel with the flow and playground cards. */
 @media(min-width:901px){.lesson-heading{width:min(840px,100%);margin-inline:auto}}
+
+/* Give the lesson title a little more breathing room. */
+.lesson-heading h1{letter-spacing:-.01em}
