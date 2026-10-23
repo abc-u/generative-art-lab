@@ -12,24 +12,21 @@
 
 ## 日次レッスンの運用
 
-毎朝 08:57 JST に Claude の定期タスクが起動し、`curriculum.json` の次の未公開 Day を1つ教材にします。流れは次のとおりです。
+`.github/workflows/daily-lesson.yml` は毎日 09:00 JST に実行されます。GitHub Actions の **Repository Settings → Secrets and variables → Actions → New repository secret** で `OPENAI_API_KEY` を登録してください。ChatGPTの契約とOpenAI APIの認証・料金は別です。APIキーはGitHub Secretにのみ保存し、コードやサイトへ書かないでください。
 
-1. 次の `planned` の Day を選ぶ。残りがなければ、学びのつながりに沿って計画を書き足す（固定の日数や上限は設けない）。
-2. 作家・作品の参照先と、作品画像のライセンス（Wikimedia Commons）を実際に確認する。
-3. `lessons/day-NN.json` を書き、`curriculum.json` の該当 Day を `published` にする。
-4. 次の2つのチェックを両方通す。
-   - `python3 scripts/validate_lesson.py lessons/day-NN.json` — 項目の過不足、Day 順と重複、コードとデモの構文、外部通信の禁止、参照 URL と画像ライセンスの確認
-   - `node scripts/check_lesson_render.mjs NN` — PC 幅とスマホ幅で開き、スクリプトエラー、横スクロール、デモの描画を確認
-5. 通過したら `main` に直接コミットして公開する。通過しなかった場合は公開せず、`automation/day-NN` ブランチの Pull Request にして理由を書く。
+ワークフローは公開済みのDay数から次のDay番号を決め、公開済みレッスンとのつながりをもとに新しいテーマを選び、`gpt-4.1-mini` と Responses API のJSON Schema出力で教材・自己完結型デモを作ります。必須セクション、Day順序と重複、URL形式、コードとデモJavaScriptの構文、Canvasと操作UI、実験ステップからデモを変更する設定、外部通信・外部アセットの禁止を検査します。検査を通らない内容はPull Requestになりません。すでに未レビューの自動生成Pull Requestがある間は、次のスケジュール実行をスキップします。
 
-同じ日に2つ公開しないよう、その日の公開コミットがすでにあれば何もしません。`main` への push ごとに GitHub Actions の **Lesson checks** が全レッスンを再検証します。
+生成教材は `automation/daily-lesson` ブランチのPull Requestとして提出されます。これは公開前に日本語の説明、数値計算、作品の参照元、デモ操作を人が確認するためです。レビュー後に `main` へマージするとPagesが公開します。マージせずにPRを保留しても、現在の公開サイトは変わりません。生成エラーや参照の不確かさがあれば、Actions → Daily lesson draft の実行ログを確認し、修正後に手動で再実行できます。
 
-制作ルール（教材の基準、作品画像の扱い、デザイン方針）はリポジトリの外で管理し、定期タスクの指示に含めています。ルールを変えたときは定期タスクの指示も更新してください。
+Actions → **Daily lesson draft → Run workflow** から手動実行できます。GitHub Actions の自動起動を有効にしておく必要があります。APIキーがまだ設定されていない間、日次ワークフローは生成段階で失敗し、公開中のサイトやカリキュラムは変更されません。
 
 ## 品質チェックとカリキュラム
 
-- Day 1の完成レッスン: `lesson.html?day=1&v=2`
-- 学習計画と公開状態: `curriculum.json`（レッスン数は固定しない）
-- 教材データの検証: `scripts/validate_lesson.py`（`--all` で公開済み全件）
-- 表示確認: `scripts/check_lesson_render.mjs`（Playwright と Chromium が必要）
-- 進捗記録: このブラウザ内に保存（他の端末とは同期しません）
+- Day 1の完成レッスン: `lesson.html?day=1&v=4`
+- 公開済みレッスンのみの一覧: `curriculum.json`
+- 新しいDayは公開のたびに一覧へ追加。終了日や総日数は固定しません。
+- 日次生成・検証処理: `scripts/generate_daily_lesson.py`
+- 日次処理のログ: GitHub Actions の workflow run
+- Day 1の進捗記録: このブラウザ内に保存（他の端末とは同期しません）
+
+まだ公開されていないDayはトップページに表示しません。自動生成Pull Requestの内容を確認して `main` へマージすると、そのDayが `curriculum.json` に加わり、トップページにも表示されます。
