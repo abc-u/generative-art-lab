@@ -211,3 +211,65 @@ body{font-size:16px;line-height:1.9}
 
 .algorithm-visual{margin:22px 0 26px;padding:10px;background:#f5f7f4;border:1px solid #e1e7e1}.algorithm-visual img{display:block;width:100%;height:auto}.algorithm-visual figcaption{padding:10px 12px 2px;color:#66736a;font-size:14px;line-height:1.8}
 @media(max-width:680px){.algorithm-visual{margin:16px 0 21px;padding:6px}.algorithm-visual figcaption{font-size:13px;padding:8px 8px 1px}}
+
+/* Lesson layout: one heading card with the lesson flow, then the text beside a pinned playground.
+   Experiments drive that playground, so there is no second preview. */
+body.lesson-page .lesson-main{max-width:1180px;margin:0 auto;padding:0 24px}
+body.lesson-page .lesson-heading{width:100%;max-width:none;margin:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:20px 40px;padding:32px 36px 18px;background:#fff;border:1px solid #e3e8e4}
+body.lesson-page .lesson-heading h1{font:700 clamp(44px,5.6vw,72px)/1.15 'Shippori Mincho B1',serif;letter-spacing:0}
+body.lesson-page .lesson-subtitle{font-size:17px}
+body.lesson-page .lesson-meta-card>span{font:12px var(--body);letter-spacing:0;color:#6b746e}
+body.lesson-page .lesson-meta-card>b{font-size:15px}
+body.lesson-page .lesson-heading .lesson-flow{grid-column:1/-1;max-width:none;margin:6px 0 0;padding:14px 0 0;background:none;border:0;border-top:1px solid #e3e8e4}
+body.lesson-page .lesson-heading .lesson-flow>.eyebrow{display:none}
+body.lesson-page .lesson-flow-links{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+body.lesson-page .lesson-flow-links a{min-height:44px;padding:4px 6px;border:0;background:none;font-size:14px;font-weight:500;color:#30343a;gap:10px}
+body.lesson-page .lesson-flow-links a span{flex:none;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:#eef4ef;color:#2f5f3f;font:500 11px var(--mono)}
+body.lesson-page .lesson-flow-links a:hover span{background:#5a906b;color:#fff}
+
+body.lesson-page .lesson-content{max-width:none;margin:0;padding:24px 0 0;display:grid;grid-template-columns:minmax(0,1fr) 460px;gap:24px;align-items:start}
+body.lesson-page .lesson-content>.lesson-demo{grid-column:2;grid-row:1/span 2;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;width:auto;max-width:none;margin:0;padding:18px}
+body.lesson-page .lesson-content>.lesson-article{grid-column:1;grid-row:1;width:auto;padding:44px 48px 52px}
+body.lesson-page .lesson-content>.lesson-finish{grid-column:1;grid-row:2;max-width:none;margin:0 0 56px}
+body.lesson-page .lesson-demo .demo-layout{grid-template-columns:minmax(0,1fr);gap:12px}
+body.lesson-page .lesson-demo .demo-canvas-wrap{min-height:0;aspect-ratio:4/3}
+body.lesson-page .lesson-demo .choice-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+body.lesson-page .lesson-demo .choice-buttons button{min-height:40px;white-space:nowrap}
+body.lesson-page .lesson-demo .controls{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.lesson-page .lesson-demo .generated-demo-frame{height:520px;transition:height .2s}
+body.lesson-page .lesson-demo .generated-demo-frame iframe{height:100%}
+
+body.lesson-page .experiment-list{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+body.lesson-page .experiment-list li{display:flex;align-items:flex-start;gap:14px;padding:18px;border:1px solid #e3e8e4;background:#fff}
+body.lesson-page .experiment-list li::before{content:none}
+body.lesson-page .experiment-list li.is-tried{border-color:#5a906b;background:#fbfdfb}
+body.lesson-page .step-badge{flex:none;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#eef4ef;color:#2f5f3f;font:500 12px var(--mono)}
+body.lesson-page .experiment-list li.is-tried .step-badge{background:#5a906b;color:#fff}
+body.lesson-page .experiment-list li>div{flex:1;min-width:0}
+body.lesson-page .experiment-trigger{margin-top:12px;min-height:44px;padding:0 16px;background:#5a906b;border-color:#5a906b;color:#fff;font-size:14px;font-weight:700}
+body.lesson-page .experiment-trigger:hover{background:#477c56}
+body.lesson-page .experiment-list li.is-tried .experiment-trigger{background:#fff;color:#2f5f3f}
+body.lesson-page .experiment-status{display:inline-block;margin-left:12px;font-size:12px}
+
+body.lesson-page .artist-note{margin:14px 0;padding:10px 14px;background:#fbf6e9;border:1px solid #eadfbf;color:#5c4d22;font-size:14px;line-height:1.8}
+
+@media(max-width:960px){
+  body.lesson-page .lesson-content{grid-template-columns:minmax(0,1fr)}
+  body.lesson-page .lesson-content>.lesson-demo{grid-column:1;grid-row:auto;position:static;max-height:none;overflow:visible}
+  body.lesson-page .lesson-content>.lesson-article,body.lesson-page .lesson-content>.lesson-finish{grid-column:1;grid-row:auto}
+  body.lesson-page .lesson-content>*{order:0}
+  body.lesson-page .lesson-demo .demo-canvas-wrap{max-width:560px;width:100%;margin:0 auto}
+  body.lesson-page .lesson-heading{grid-template-columns:minmax(0,1fr)}
+  body.lesson-page .lesson-flow-links{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:680px){
+  body.lesson-page .lesson-main{padding:0 12px}
+  body.lesson-page .lesson-heading{padding:22px 18px 14px}
+  body.lesson-page .lesson-heading h1{font-size:clamp(36px,11vw,48px)}
+  body.lesson-page .lesson-flow-links{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.lesson-page .lesson-flow-links a{font-size:13px}
+  body.lesson-page .lesson-demo .controls{grid-template-columns:minmax(0,1fr)}
+  body.lesson-page .lesson-content>.lesson-article{padding:30px 20px 38px}
+  body.lesson-page .experiment-list li{gap:10px;padding:14px}
+  body.lesson-page .lesson-meta-card>b{font-size:13px;white-space:nowrap}
+}
