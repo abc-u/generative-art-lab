@@ -1,0 +1,188 @@
+{
+  "day": 5,
+  "status": "published",
+  "title": "Modulo Colors",
+  "subtitle": "3で割った余りから、色を選ぶ。",
+  "topic": "3色の周期",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "行番号と列番号を足し、その合計を 3 で割った余りを、三色パレットの番号として使います。余り 0 は赤、1 は黄、2 は青です。Day 4 では同じ余りから形を選びました。今回は形を色に置き換えます。色の順番をくり返すタイル模様や画面の配色を作るときに使えます。",
+  "applications": "三色のタイル模様、周期的な配色、位置に応じた色分け。",
+  "prerequisites": "Day 1 の格子とくり返し、Day 3 の行と列の合計、Day 4 の3で割った余り。",
+  "connection": "Day 4 は (row + col) % 3 の結果で円・三角・四角を選びました。今回は計算式をそのまま使い、選ぶものを三色の配列に変えます。",
+  "intuition": {
+    "title": "三色の絵の具を順番に使う",
+    "story": "赤・黄・青の絵の具を左から順に使い、青の次はまた赤へ戻ります。格子の右か下へ一マス進むと番号が一つ進みます。行番号と列番号を足せば、そのマスで何番の色を使うかが分かります。",
+    "visual": "赤→黄→青の順で色が巡る格子を見ます。",
+    "diagram": "余り 0 → 赤 ｜ 余り 1 → 黄 ｜ 余り 2 → 青"
+  },
+  "numbers": {
+    "title": "3行目・4列目は何色？",
+    "setup": "左上を row 0、col 0 として数えます。3行目・4列目の色を求めます。",
+    "steps": [
+      {
+        "label": "行番号を決める",
+        "calculation": "3行目 → row = 2"
+      },
+      {
+        "label": "列番号を決める",
+        "calculation": "4列目 → col = 3"
+      },
+      {
+        "label": "番号を足す",
+        "calculation": "row + col = 2 + 3 = 5"
+      },
+      {
+        "label": "3で割った余りを出す",
+        "calculation": "5 ÷ 3 = 1 あまり 2"
+      },
+      {
+        "label": "色を選ぶ",
+        "calculation": "余り 2 → パレット番号 2 → 青"
+      }
+    ],
+    "note": "% は割り算の余りです。配列の番号は 0 から数えるので、色は [0: 赤, 1: 黄, 2: 青] の順です."
+  },
+  "code": "const colors = [\"#cf684b\", \"#e0ac4e\", \"#347a91\"];\nconst index = (row + col) % 3;\ndrawTile(row, col, colors[index]);",
+  "demo": {
+    "title": "余りから色を選ぶ",
+    "caption": "行数・列数を変え、同じ三色の並びがどこで繰り返すかを観察します。色番号は余り 0＝赤、1＝黄、2＝青です。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.7 system-ui,sans-serif}.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-bottom:10px}label,button{font:inherit}select,button{padding:7px 9px;border:1px solid #cdd8ce;background:#fff;border-radius:4px;color:#405246}#stage{height:340px;background:#eee5d3;border:1px solid #d8d2c3}canvas{display:block;width:100%;height:100%}.hint{margin:7px 0;color:#536354;font-size:13px}.key{display:flex;gap:12px;flex-wrap:wrap;font-size:13px}.swatch{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:4px}@media(max-width:480px){body{padding:8px;font-size:13px}#stage{height:250px}}</style></head><body><div class=\"bar\"><label>行数 <select id=\"rows\"><option>4</option><option selected>7</option><option>10</option><option>12</option></select></label><label>列数 <select id=\"cols\"><option>4</option><option selected>9</option><option>10</option><option>12</option></select></label><button id=\"reset\" type=\"button\">初期値に戻す ↺</button></div><div class=\"key\"><span><i class=\"swatch\" style=\"background:#cf684b\"></i>余り0・赤</span><span><i class=\"swatch\" style=\"background:#e0ac4e\"></i>余り1・黄</span><span><i class=\"swatch\" style=\"background:#347a91\"></i>余り2・青</span></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"行と列の番号の合計を3で割った余りに応じて、赤・黄・青で塗る格子\"></canvas></div><p class=\"hint\" id=\"hint\" aria-live=\"polite\"></p><script>const canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),rows=document.querySelector(\"#rows\"),cols=document.querySelector(\"#cols\"),colors=[\"#cf684b\",\"#e0ac4e\",\"#347a91\"],names=[\"赤\",\"黄\",\"青\"];function draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height,r=+rows.value,c=+cols.value,cw=w/c,ch=h/r;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);for(let row=0;row<r;row++)for(let col=0;col<c;col++){const index=(row+col)%3;ctx.fillStyle=colors[index];ctx.fillRect(col*cw+1,row*ch+1,cw-2,ch-2)}document.querySelector(\"#hint\").textContent=r+\"行×\"+c+\"列。色番号は (row + col) % 3。余り 0 は赤、1 は黄、2 は青です。\"}[rows,cols].forEach(x=>x.addEventListener(\"change\",draw));window.addEventListener(\"resize\",draw);document.querySelector(\"#reset\").addEventListener(\"click\",()=>{rows.value=\"7\";cols.value=\"9\";draw()});window.addEventListener(\"message\",event=>{if(event.data?.type!==\"gal-experiment\")return;for(const c of event.data.controls||[]){const x=document.querySelector(c.selector);if(x){x.value=c.value;x.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "三色の周期を見つける",
+      "action": "初期設定の 7×9 格子を見ます。",
+      "observe": "右へ一マス進むたびに色はどう変わり、何マス目で赤に戻りますか？",
+      "demoState": [
+        {
+          "selector": "#rows",
+          "value": "7"
+        },
+        {
+          "selector": "#cols",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "title": "行だけ減らす",
+      "action": "行数だけ 7 から 4 にします。",
+      "observe": "縦の端まで、赤・黄・青の順は保たれていますか？",
+      "demoState": [
+        {
+          "selector": "#rows",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "title": "列を10にする",
+      "action": "列数を 9 から 10 に増やします。",
+      "observe": "一つだけ増えた列の色の並びは、左端と同じですか？",
+      "demoState": [
+        {
+          "selector": "#cols",
+          "value": "10"
+        }
+      ]
+    },
+    {
+      "title": "3の倍数と比べる",
+      "action": "行数・列数をどちらも 10 にします。",
+      "observe": "10 は 3 で割り切れません。端の列は左端と同じ色から始まりますか？",
+      "demoState": [
+        {
+          "selector": "#rows",
+          "value": "10"
+        },
+        {
+          "selector": "#cols",
+          "value": "10"
+        }
+      ]
+    },
+    {
+      "title": "一マスを計算する",
+      "action": "7×9 に戻し、3行目・4列目（row 2、col 3）を探します。",
+      "observe": "2 + 3 = 5、5 % 3 = 2 です。パレット番号 2 の青になっていますか？",
+      "demoState": [
+        {
+          "selector": "#rows",
+          "value": "7"
+        },
+        {
+          "selector": "#cols",
+          "value": "9"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Piet Mondrian",
+    "work": "Composition II in Red, Blue, and Yellow (1930)",
+    "context": "ピート・モンドリアンが1930年に制作した、赤・青・黄と黒い線を用いた作品です。Wikimedia Commonsの作品情報では、作品と所蔵先（Kunsthaus Zürich）が記録されています。",
+    "relation": "この作品を今回の余りの規則で作ったわけではありません。限られた色を画面の中で組み合わせると、色面の位置関係からリズムが生まれる例として見ます。",
+    "highlight": "赤・黄・青の色面を探し、どこに置くかで画面の印象がどう変わるか見てみましょう。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・作者・公開条件",
+        "url": "https://commons.wikimedia.org/wiki/File:Piet_Mondriaan,_1930_-_Mondrian_Composition_II_in_Red,_Blue,_and_Yellow.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Piet_Mondriaan%2C_1930_-_Mondrian_Composition_II_in_Red,_Blue,_and_Yellow.jpg",
+      "alt": "モンドリアン《赤、青、黄のコンポジション II》の赤・青・黄の色面と黒い直線",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Piet_Mondriaan,_1930_-_Mondrian_Composition_II_in_Red,_Blue,_and_Yellow.jpg",
+      "license": "Public Domain",
+      "credit": "Piet Mondrian, Composition II in Red, Blue, and Yellow (1930) · Wikimedia Commons"
+    },
+    "realWorldExample": {
+      "title": "身近な例：三色タイルのモザイク",
+      "description": "壁や床のタイルは、色の順番や置き方を決めて並べると、繰り返し模様になります。",
+      "relation": "赤・黄・青のタイルを順に置くと、今回の「番号を計算して色を選ぶ」仕組みを目で追えます。これは特定の建物を写した写真ではなく、三色の配置ルールを示す学習用イラストです。",
+      "visual": {
+        "src": "./assets/day-05-mosaic.svg",
+        "alt": "赤・黄・青の小さなタイルを斜め方向に繰り返し並べたモザイクの学習用イラスト。",
+        "caption": "身近な例 · 三色タイルの並び方を示した学習用イラスト。"
+      }
+    }
+  },
+  "extension": {
+    "title": "色の規則を形にも重ねる",
+    "keywords": [
+      "剰余演算子 %",
+      "配列の番号",
+      "周期模様",
+      "カラーパレット",
+      "modulo colors"
+    ],
+    "next": "Day 4 では余りから形を選び、今日は同じ余りから色を選びました。次は格子の位置を数値に置き換え、位置に応じて図形の大きさを変えるルールへ進みます。"
+  },
+  "ruleSummary": "(row + col) を 3 で割った余りで、赤・黄・青を選ぶ。",
+  "codeNote": "row が 2、col が 3 のとき合計は 5。5 % 3 は 2 なので、colors[2] の青を選びます。",
+  "algorithmVisual": {
+    "src": "./assets/day-05-mod3-colors.svg",
+    "alt": "3×3の格子で各マスの行と列の合計を3で割った余り0・1・2を赤・黄・青に対応させた図。",
+    "caption": "図1 · 行と列の合計の余りを、三色のパレット番号にします。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-05-color-cycle.svg",
+    "alt": "赤、黄、青、赤の順に循環する三色パレットの図。",
+    "caption": "図2 · 青の次は赤へ戻る三色の周期です。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3
+  ],
+  "goalTitle": "余りを配列の番号にして、色を選ぶ。",
+  "ruleCode": "(row + col) % 3 → 0: 赤 / 1: 黄 / 2: 青",
+  "extensionVisual": {
+    "src": "./assets/day-05-next.svg",
+    "alt": "赤・黄・青のタイルそれぞれに小・中・大のサイズ差をつけた図。",
+    "caption": "図3 · 次は位置からサイズを決め、色の規則と重ねます。"
+  }
+}
