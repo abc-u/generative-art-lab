@@ -53,6 +53,14 @@
       "description": "行と列の合計を3で割った余りから、三つの形を選ぶ。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 5,
+      "title": "Modulo Colors",
+      "topic": "3色の周期",
+      "description": "3で割った余りをパレット番号にして、行と列から色を選ぶ。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
