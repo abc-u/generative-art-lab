@@ -8,7 +8,7 @@
 - URL: https://abc-u.github.io/generative-art-lab/
 - Settings → Pages → Build and deployment → Deploy from a branch → `main` / `/(root)`
 
-`index.html`、`lesson.html`、`styles.css`、`app.js` がサイト共通部分です。Dayごとの教材データは `lessons/day-NN.json`、カリキュラム一覧は `curriculum.json` に置きます。Day 1の詳細ページとデモは `lesson.html` / `lesson.js` に含まれます。各Dayは共通テンプレートから表示され、完了状況はブラウザの localStorage に保存されます。
+`index.html`、`lesson.html`、`styles.css`、`app.js` がサイト共通部分です。トップページにはシードを変えて見比べるスタディギャラリーがあります。Dayごとの教材データは `lessons/day-NN.json`、カリキュラム一覧は `curriculum.json` に置きます。Day 1の詳細ページとデモは `lesson.html` / `lesson.js` に含まれます。各Dayは共通テンプレートから表示され、完了状況はブラウザの localStorage に保存されます。
 
 ## 日次レッスンの運用
 

@@ -15,7 +15,7 @@
 <body>
   <header class="topbar">
     <a class="brand" href="./" aria-label="Generative Art Lab ホーム"><span class="brand-mark">g<span>·</span></span><span>GENERATIVE<br>ART LAB</span></a>
-    <nav class="main-nav" aria-label="メインナビゲーション"><a href="#learn">学びの入口</a><a href="#curriculum">カリキュラム</a><a href="#about">このラボについて</a></nav>
+    <nav class="main-nav" aria-label="メインナビゲーション"><a href="#learn">学びの入口</a><a href="#curriculum">カリキュラム</a><a href="#gallery">ギャラリー</a></nav>
     <a class="nav-cta" href="./lesson.html?day=1">Day 1 をはじめる <span>↗</span></a>
   </header>
 
@@ -54,6 +54,16 @@
       <div class="archive-tools"><div><span class="archive-count" id="archive-count">70</span><span> LESSONS · CURRICULUM MAP</span></div><label class="search-box"><span aria-hidden="true">⌕</span><input id="lesson-search" type="search" placeholder="キーワードで探す" aria-label="レッスンを検索"><kbd>/</kbd></label></div>
       <div class="lesson-list" id="lesson-list"></div>
       <p class="curriculum-footnote">Day 1 が完成済み。以降の項目は学習計画として掲載しています。新しいレッスンは検証を通過したものから追加されます。</p>
+    </section>
+
+    <section class="gallery section-shell" id="gallery">
+      <div class="section-label"><span>04</span><span>THE GALLERY</span></div>
+      <div class="curriculum-heading"><div><p class="eyebrow">SMALL STUDIES FROM SIMPLE RULES</p><h2>同じ格子から、<br><em>違う眺めへ。</em></h2></div><p>3つの小さなスタディを並べました。<br>ボタンでシードを変えて、変化を観察できます。</p></div>
+      <div class="gallery-grid">
+        <article class="gallery-card"><canvas class="gallery-art" data-kind="order" aria-label="整列したグリッドのスタディ"></canvas><div><span>STUDY 001 · REPETITION</span><h3>整列のリズム</h3><p>同じ形、同じ間隔。まずは規則だけで並べる。</p><button class="gallery-refresh" type="button">別の配置 ↻</button></div></article>
+        <article class="gallery-card"><canvas class="gallery-art" data-kind="drift" aria-label="ランダムな揺らぎを加えたグリッドのスタディ"></canvas><div><span>STUDY 002 · CHANCE</span><h3>少しのゆらぎ</h3><p>規則を残したまま、位置と角度を変えてみる。</p><button class="gallery-refresh" type="button">別の配置 ↻</button></div></article>
+        <article class="gallery-card"><canvas class="gallery-art" data-kind="orbit" aria-label="円形の反復を重ねたグリッドのスタディ"></canvas><div><span>STUDY 003 · SHAPE</span><h3>円でつくる間隔</h3><p>形を入れ替えると、同じ格子の印象が変わる。</p><a class="gallery-refresh gallery-link" href="./lesson.html?day=1">デモで試す ↗</a></div></article>
+      </div>
     </section>
 
     <section class="quote section-shell" id="about"><span class="quote-mark">“</span><blockquote>決まりをつくる。<br>そして、決まりが連れていく場所を見にいく。</blockquote><p>GENERATIVE ART LAB · LEARN BY MAKING</p><a href="./lesson.html?day=1" class="circle-link" aria-label="Day 1から学ぶ">↗</a></section>

@@ -79,6 +79,12 @@ def validate(lesson, planned, existing_titles):
     if lesson["title"].strip().casefold() in existing_titles: fail("duplicate lesson title")
     for url in [x["url"] for x in lesson["artist"]["references"]]:
         if not url.startswith("https://") or any(c in url for c in "<>\"'"): fail("invalid reference URL")
+        request=urllib.request.Request(url,headers={"User-Agent":"GenerativeArtLab-content-check/1.0"})
+        try:
+            with urllib.request.urlopen(request,timeout=20) as response:
+                if response.status >= 400: fail(f"reference returned HTTP {response.status}: {url}")
+        except (urllib.error.URLError,TimeoutError) as error:
+            fail(f"reference could not be verified: {url} ({error})")
     code=lesson["code"]
     if re.search(r"<\s*script|javascript:",code,re.I): fail("unsafe code sample")
     check=subprocess.run(["node","--check"],input=("function lesson(){\n"+code+"\n}\n").encode(),capture_output=True)
