@@ -133,3 +133,78 @@ a.next-lesson-card:hover{border-color:#77a17e;background:#eff6ef}
 
 
 @media(min-width:681px){.experiment-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px}}
+
+
+/* Readable type scale and more room for lesson copy. */
+body{font-size:16px;line-height:1.9}
+.hero-description,.intro-content>div{font-size:16px;line-height:2}
+.daily-body{font-size:14px;line-height:2}
+.phase-card h3,.lesson-row h3{font-size:14px}
+.phase-card p,.lesson-row p,.gallery-card p{font-size:12px;line-height:1.8}
+.gallery-card h3{font-size:15px}
+.lesson-heading{width:100%}
+.lesson-flow,.lesson-demo,.lesson-content,.lesson-finish{max-width:1000px}
+.lesson-article{padding:48px 64px 58px}
+.lesson-flow-links a{font-size:12px;min-height:54px;padding:9px 10px}
+.article-section>.eyebrow{font-size:11px;margin-bottom:16px}
+.article-section h2{font-size:clamp(23px,2.2vw,28px);line-height:1.5;margin-bottom:20px}
+.article-section p{font-size:16px;line-height:2;margin-bottom:22px}
+.fact-grid span,.next-links span{font-size:11px}
+.fact-grid p,.next-links p{font-size:13px;line-height:1.9}
+.rule-card{padding:25px 28px}
+.rule-card p{font-size:19px;line-height:1.8}
+.math-steps span{font-size:12px}
+.math-steps code,.code-card pre{font-size:13px}
+.code-head{font-size:10px}
+.code-note{padding:12px 16px;margin:0;border-top:1px solid #e1e5e2;font-size:13px;line-height:1.8;color:#59665d}
+.math-note,.diagram figcaption{font-size:12px;line-height:1.9}
+.lesson-toc>a{font-size:12px}
+.experiment-rule{position:sticky;top:10px;z-index:3;margin:18px 0 22px;padding:15px 18px;background:#f1f7f1;border:1px solid #dbe8dc;border-left:4px solid #63966e;box-shadow:0 4px 14px #25332612}
+.experiment-rule span,.lesson-rule-summary span{font-size:12px;font-weight:700;color:#4f7e57}
+.experiment-rule p,.lesson-rule-summary p{margin:4px 0 0;font-size:16px;line-height:1.8;color:#35483a}
+.lesson-rule-summary{margin:14px 0 20px;padding:15px 18px;background:#f1f7f1;border:1px solid #dbe8dc;border-left:4px solid #63966e}
+.experiment-list li{padding:18px 0;gap:9px}
+.experiment-list li b{font-size:16px;line-height:1.6}
+.experiment-list li p{font-size:14px;line-height:1.9;margin-top:7px}
+.experiment-list .experiment-question{margin-top:10px;padding:9px 11px;background:#f6f8f6;border-left:3px solid #9bb99f;color:#4c5b50}
+.experiment-list .experiment-question strong{display:block;margin-bottom:2px;color:#4b7853;font-size:11px}
+.experiment-trigger{font-size:12px;padding:9px 13px}
+.experiment-status{font-size:10px}
+.control-heading{font-size:13px}
+.control-group legend{font-size:12px}
+.control-label{font-size:12px}
+.control-group small{font-size:10px;line-height:1.7}
+.choice-buttons button{font-size:11px;min-height:36px}
+.live-rule{padding:13px 15px}
+.live-rule>span{font-size:11px}
+.live-rule p{font-size:14px;line-height:1.8}
+.live-rule small{font-size:11px}
+.demo-topline h2{font-size:20px}
+.demo-caption{font-size:12px;line-height:1.8}
+.artist-links span{font-size:10px}
+.artist-links b{font-size:12px}
+.finish-progress h2{font-size:19px}
+.finish-progress-row,.mark-complete{font-size:12px}
+@media(max-width:900px){.lesson-flow,.lesson-demo,.lesson-content,.lesson-finish{max-width:100%}.lesson-article{padding:38px 42px 46px}}
+@media(max-width:680px){
+  body{font-size:15px}
+  .hero-description,.intro-content>div{font-size:15px}
+  .lesson-article{padding:30px 22px 38px}
+  .lesson-flow-links a{font-size:10px;min-height:48px;padding:7px 6px}
+  .lesson-flow-links a span{font-size:10px}
+  .article-section h2{font-size:22px}
+  .article-section p{font-size:15px;line-height:1.95}
+  .fact-grid p,.next-links p{font-size:13px}
+  .experiment-rule{top:6px;padding:12px 13px}
+  .lesson-rule-summary{padding:12px 13px}
+  .experiment-rule p,.lesson-rule-summary p{font-size:15px}
+  .experiment-list li b{font-size:15px}
+  .experiment-list li p{font-size:14px}
+  .experiment-trigger{font-size:12px;padding:9px 12px}
+  .experiment-list .experiment-question strong{font-size:11px}
+  .control-label{font-size:11px}
+  .control-group small{font-size:9px}
+  .choice-buttons button{font-size:10px}
+  .live-rule p{font-size:13px}
+  .math-steps code,.code-card pre{font-size:12px}
+}
