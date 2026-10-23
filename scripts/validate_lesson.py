@@ -57,7 +57,7 @@ SCHEMA = obj(
             "note": text(40)}),
         "code": text(40),
         "demo": obj(["title", "caption", "html"], {"title": text(3), "caption": text(20), "html": text(500)}),
-        "experiments": {"type": "array", "minItems": 4, "maxItems": 6, "items": obj(["title", "action", "observe"], {"title": text(), "action": text(30), "observe": text(30)})},
+        "experiments": {"type": "array", "minItems": 4, "maxItems": 6, "items": obj(["title", "action", "observe"], {"title": text(), "action": text(30), "observe": text(30), "demoState": {"type": "array", "maxItems": 10, "items": obj(["selector", "value"], {"selector": text(2), "value": text()})}})},
         "artist": obj(["name", "work", "context", "relation", "references", "image"], {
             "name": text(), "work": text(), "context": text(80), "relation": text(60),
             "references": {"type": "array", "minItems": 1, "maxItems": 3, "items": obj(["source", "label", "url"], {"source": text(), "label": text(), "url": {"type": "string", "pattern": "^https://"}})},
