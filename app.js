@@ -1,20 +1,25 @@
 let curriculum=[];
 let phases=[];
+let activePhase=1;
 const phaseGrid=document.querySelector("#phase-grid");
 const lessonList=document.querySelector("#lesson-list");
 function renderCurriculum(query=""){
   if(!phaseGrid||!lessonList)return;
-  phaseGrid.innerHTML=phases.map(p=>`<article class="phase-card ${p.id===1?"active":""}"><span class="phase-number">PHASE 0${p.id}</span><span class="phase-range">${p.range}</span><h3>${p.name}</h3><p>${p.desc}</p></article>`).join("");
-  const filtered=curriculum.filter(d=>`${d.day} ${d.title} ${d.topic} ${d.description}`.toLowerCase().includes(query.toLowerCase()));
-  lessonList.innerHTML=filtered.map(({day,title,topic,description,phase,status})=>`<a class="lesson-row ${status==="published"?"is-available":""}" href="./lesson.html?day=${day}&v=2" ${status!=="published"?'aria-label="学習計画：Day '+day+' '+title+'"':''}><span class="day-number">DAY ${String(day).padStart(2,"0")}</span><div><h3>${title}</h3><p>${description}</p></div><span class="phase-tag">PHASE 0${phase} · ${topic}</span><span class="row-action">${status==="published"?"OPEN ↗":"PLANNED ···"}</span></a>`).join("")||'<p class="curriculum-footnote">該当するレッスンはありません。</p>';
+  // Searching looks across every phase; otherwise the list shows the selected phase only.
+  const searching=query.trim()!=="";
+  phaseGrid.innerHTML=phases.map(p=>`<button type="button" class="phase-card ${!searching&&p.id===activePhase?"active":""}" data-phase="${p.id}" aria-pressed="${!searching&&p.id===activePhase}"><span class="phase-number">PHASE 0${p.id}</span><span class="phase-range">${p.range}</span><h3>${p.name}</h3><p>${p.desc}</p></button>`).join("");
+  const filtered=curriculum.filter(d=>searching?`${d.day} ${d.title} ${d.topic} ${d.description}`.toLowerCase().includes(query.trim().toLowerCase()):d.phase===activePhase);
+  lessonList.innerHTML=filtered.map(({day,title,topic,description,phase,status})=>`<a class="lesson-row ${status==="published"?"is-available":""}" href="./lesson.html?day=${day}&v=2" ${status!=="published"?'aria-label="学習計画：Day '+day+' '+title+'"':''}><span class="day-number">DAY ${String(day).padStart(2,"0")}</span><div><h3>${title}</h3><p>${description}</p></div><span class="phase-tag">PHASE 0${phase} · ${topic}</span><span class="row-action">${status==="published"?"OPEN ↗":"PLANNED"}</span></a>`).join("")||'<p class="curriculum-footnote">該当するレッスンはありません。</p>';
   document.querySelector("#archive-count").textContent=String(filtered.length).padStart(2,"0");
+  document.querySelector("#archive-label").textContent=searching?"LESSONS · SEARCH RESULTS":`LESSONS · PHASE 0${activePhase}`;
 }
+phaseGrid?.addEventListener("click",event=>{const card=event.target.closest(".phase-card");if(!card)return;activePhase=Number(card.dataset.phase);if(search)search.value="";renderCurriculum()});
 fetch("./curriculum.json").then(response=>response.json()).then(data=>{curriculum=data.lessons;phases=data.phases;renderCurriculum(search?.value||"")}).catch(()=>{});
 const search=document.querySelector("#lesson-search");
 if(search)search.addEventListener("input",()=>renderCurriculum(search.value));
 document.addEventListener("keydown",event=>{if(event.key==="/"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){event.preventDefault();search?.focus();}});
 function mulberry32(a){return()=>{let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
-function drawPreview(canvas,seed=42,large=false){if(!canvas)return;const ctx=canvas.getContext("2d");const rect=canvas.getBoundingClientRect();const dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.max(1,rect.width*dpr);canvas.height=Math.max(1,rect.height*dpr);ctx.scale(dpr,dpr);const w=rect.width,h=rect.height;ctx.fillStyle=large?"#cfc5af":"#e9e1d1";ctx.fillRect(0,0,w,h);const rnd=mulberry32(seed);const cols=large?12:18,rows=large?12:15,cw=w/cols,ch=h/rows;for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){const cx=x*cw+cw/2,cy=y*ch+ch/2;const dx=(rnd()-.5)*Math.min(cw,ch)*.48,dy=(rnd()-.5)*Math.min(cw,ch)*.48;const s=Math.min(cw,ch)*(.35+rnd()*.31);ctx.save();ctx.translate(cx+dx,cy+dy);ctx.rotate((rnd()-.5)*.6);ctx.fillStyle=(x+y)%5===0?"#c95d42":(x+y)%3===0?"#4f6252":"#34352e";ctx.fillRect(-s/2,-s/2,s,s);ctx.restore()}}
+function drawPreview(canvas,seed=42,large=false){if(!canvas)return;const ctx=canvas.getContext("2d");const rect=canvas.getBoundingClientRect();const dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.max(1,rect.width*dpr);canvas.height=Math.max(1,rect.height*dpr);ctx.scale(dpr,dpr);const w=rect.width,h=rect.height;ctx.fillStyle="#e8dfcc";ctx.fillRect(0,0,w,h);const rnd=mulberry32(seed);const cols=large?12:18,rows=large?12:15,cw=w/cols,ch=h/rows;for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){const cx=x*cw+cw/2,cy=y*ch+ch/2;const dx=(rnd()-.5)*Math.min(cw,ch)*.48,dy=(rnd()-.5)*Math.min(cw,ch)*.48;const s=Math.min(cw,ch)*(.35+rnd()*.31);ctx.save();ctx.translate(cx+dx,cy+dy);ctx.rotate((rnd()-.5)*.6);ctx.fillStyle=(x+y)%5===0?"#c95d42":(x+y)%3===0?"#4f6252":"#34352e";ctx.fillRect(-s/2,-s/2,s,s);ctx.restore()}}
 let previewSeed=72;const heroArt=document.querySelector("#hero-art");const lessonArt=document.querySelector("#lesson-art");
 function drawPreviews(){drawPreview(heroArt,previewSeed,false);drawPreview(lessonArt,12,true)}
 document.querySelector("#hero-regenerate")?.addEventListener("click",()=>{previewSeed++;drawPreviews()});
