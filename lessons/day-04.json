@@ -1,0 +1,197 @@
+{
+  "day": 4,
+  "status": "published",
+  "title": "Modulo 3",
+  "subtitle": "3で割った余りで、3種類の形をくり返す。",
+  "topic": "3種類のくり返し",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "行番号と列番号を足し、その合計を 3 で割った余りから形を選びます。余り 0 は円、1 は三角、2 は四角です。Day 3 では 2 種類を交互にしました。今回は余りを 3 種類に増やし、三つの形が巡る模様を作ります。",
+  "applications": "三種類の図形・色のくり返し、周期模様、格子上の分類。",
+  "prerequisites": "Day 1 の格子とくり返し、Day 2 の条件分岐、Day 3 の行と列の合計。",
+  "connection": "Day 3 は合計を 2 で割った余りで円と四角を選びました。今回は 3 で割り、三種類へ広げます。",
+  "intuition": {
+    "title": "三つのスタンプを順番に押す",
+    "story": "円・三角・四角のスタンプを順に並べます。右へ一マス進むたびに次のスタンプへ進み、四角の次は円に戻ります。下へ進むときも同じです。行と列の番号を足すと、左上から何段階進んだかが分かります。",
+    "visual": "3種類を円→三角→四角→円の順に巡る格子を見ます。",
+    "diagram": "余り 0 → 円 ｜ 余り 1 → 三角 ｜ 余り 2 → 四角"
+  },
+  "numbers": {
+    "title": "3行目・4列目は何の形？",
+    "setup": "番号は左上を row 0、col 0 として数えます。3行目・4列目のマスを求めます。",
+    "steps": [
+      {
+        "label": "行番号を決める",
+        "calculation": "3行目 → row = 2"
+      },
+      {
+        "label": "列番号を決める",
+        "calculation": "4列目 → col = 3"
+      },
+      {
+        "label": "番号を足す",
+        "calculation": "row + col = 2 + 3 = 5"
+      },
+      {
+        "label": "3で割った余りを出す",
+        "calculation": "5 ÷ 3 = 1 あまり 2"
+      },
+      {
+        "label": "形を選ぶ",
+        "calculation": "余り 2 → 四角"
+      }
+    ],
+    "note": "% は割り算の余りです。たとえば 5 % 3 は、5 を 3 で割った余りの 2 です。"
+  },
+  "code": "const shapes = [\"circle\", \"triangle\", \"square\"];\nconst index = (row + col + startIndex) % 3;\ndrawShape(row, col, shapes[index]);",
+  "demo": {
+    "title": "余りから形を選ぶ",
+    "caption": "行数・列数・左上の形を変え、余り 0・1・2 がどの場所に現れるか観察します。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.7 system-ui,sans-serif}.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-bottom:10px}label,button{font:inherit}select,button{padding:7px 9px;border:1px solid #cdd8ce;background:#fff;border-radius:4px;color:#405246}#stage{height:340px;background:#eee5d3;border:1px solid #d8d2c3}canvas{display:block;width:100%;height:100%}.hint{margin:7px 0;color:#536354;font-size:13px}@media(max-width:480px){body{padding:8px;font-size:13px}#stage{height:250px}}</style></head><body><div class=\"bar\"><label>行数 <select id=\"rows\"><option>4</option><option selected>7</option><option>9</option><option>12</option></select></label><label>列数 <select id=\"cols\"><option>4</option><option selected>7</option><option>9</option><option>12</option></select></label><label>左上の形 <select id=\"start\"><option value=\"0\" selected>円</option><option value=\"1\">三角</option><option value=\"2\">四角</option></select></label><button id=\"reset\" type=\"button\">初期値に戻す ↺</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"行と列の合計を3で割った余りに応じて円、三角、四角が並ぶ模様\"></canvas></div><p class=\"hint\" id=\"hint\" aria-live=\"polite\"></p><script>const canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),rows=document.querySelector(\"#rows\"),cols=document.querySelector(\"#cols\"),start=document.querySelector(\"#start\"),names=[\"円\",\"三角\",\"四角\"],colors=[\"#cf684b\",\"#e0ac4e\",\"#64836b\"];function draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height,r=+rows.value,c=+cols.value,cw=w/c,ch=h/r,size=Math.min(cw,ch)*.55,offset=+start.value;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);for(let row=0;row<r;row++)for(let col=0;col<c;col++){const n=(row+col+offset)%3,x=col*cw+cw/2,y=row*ch+ch/2;ctx.fillStyle=colors[n];if(n===0){ctx.beginPath();ctx.arc(x,y,size/2,0,Math.PI*2);ctx.fill()}else if(n===1){ctx.beginPath();ctx.moveTo(x,y-size/2);ctx.lineTo(x+size/2,y+size/2);ctx.lineTo(x-size/2,y+size/2);ctx.closePath();ctx.fill()}else{ctx.fillRect(x-size/2,y-size/2,size,size)}}document.querySelector(\"#hint\").textContent=r+\"行×\"+c+\"列。左上から円・三角・四角の順で巡ります。余りは (row + col + \"+offset+\") % 3。\"}[rows,cols,start].forEach(x=>x.addEventListener(\"change\",draw));window.addEventListener(\"resize\",draw);document.querySelector(\"#reset\").addEventListener(\"click\",()=>{rows.value=\"7\";cols.value=\"7\";start.value=\"0\";draw()});window.addEventListener(\"message\",event=>{if(event.data?.type!==\"gal-experiment\")return;for(const c of event.data.controls||[]){const x=document.querySelector(c.selector);if(x){x.value=c.value;x.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "3つの形を追う",
+      "action": "初期設定の 7×7 の格子を見ます。",
+      "observe": "右または下へ一マス進むと、形はどう変わりますか？四角の次は何ですか？",
+      "demoState": [
+        {
+          "selector": "#rows",
+          "value": "7"
+        },
+        {
+          "selector": "#cols",
+          "value": "7"
+        },
+        {
+          "selector": "#start",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "title": "行数だけを変える",
+      "action": "行数を 4 にします。列数は 7 のままです。",
+      "observe": "縦方向の端に注目します。三つの形が何回ずつ現れていますか？",
+      "demoState": [
+        {
+          "selector": "#rows",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "title": "列数を増やす",
+      "action": "列数を 12 にします。",
+      "observe": "横に長くすると、同じ並びは何マスごとに戻りますか？",
+      "demoState": [
+        {
+          "selector": "#cols",
+          "value": "12"
+        }
+      ]
+    },
+    {
+      "title": "左上の形をずらす",
+      "action": "左上の形を円から三角に変えます。",
+      "observe": "並び方そのものは変わりますか？余りと形の対応はどう動きますか？",
+      "demoState": [
+        {
+          "selector": "#start",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "title": "余りを手で予想する",
+      "action": "3行目・4列目を考え、デモの行数と列数を 7 のままにします。",
+      "observe": "row 2 と col 3 の合計は 5。5 % 3 の余りから、どの形になるか予想して確認します。",
+      "demoState": [
+        {
+          "selector": "#rows",
+          "value": "7"
+        },
+        {
+          "selector": "#cols",
+          "value": "7"
+        },
+        {
+          "selector": "#start",
+          "value": "0"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Wassily Kandinsky",
+    "work": "Drei Elemente (Three Elements), 1925",
+    "context": "カンディンスキーが1925年に描いた幾何学的な作品です。三角形・円・直線などの形が、色とともに画面の中で関係を作っています。",
+    "relation": "この作品を今回の余りの規則で作ったわけではありません。形の種類を決め、組み合わせると画面にリズムが生まれる例として見ます。",
+    "highlight": "まず形の違いを見つけ、次に配置や色の関係を眺めてみましょう。",
+    "references": [
+      {
+        "source": "Musées Grand Est",
+        "label": "Trois éléments · 作品情報",
+        "url": "https://www.museesgrandest.org/les-collections/trois-elements/"
+      },
+      {
+        "source": "Wikimedia Commons",
+        "label": "Drei Elemente · 画像とライセンス",
+        "url": "https://commons.wikimedia.org/wiki/File:Kandinsky_-_Drei_Elemente_(1925).jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Kandinsky_-_Drei_Elemente_%281925%29.jpg",
+      "alt": "カンディンスキー《Drei Elemente》の幾何学的な形と色の構成",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kandinsky_-_Drei_Elemente_(1925).jpg",
+      "license": "Public Domain",
+      "credit": "Wassily Kandinsky, Drei Elemente (1925) · Wikimedia Commons"
+    },
+    "realWorldExample": {
+      "title": "身近な例：信号の3色",
+      "description": "信号は青・黄・赤の三つの色を、決まった順番で切り替えて知らせます。",
+      "relation": "色を 0・1・2 の番号に対応させれば、次の色を決める仕組みは三つの状態を巡る今回のルールに似ています。実際の信号は安全のための時間やセンサーも関係するので、図は順番だけを示した学習用イラストです。",
+      "visual": {
+        "src": "./assets/day-04-traffic-cycle.svg",
+        "alt": "信号機の青・黄・赤の三色を並べ、三つの状態を巡る例として示した図。",
+        "caption": "身近な例 · 信号の3色を簡略化した学習用イラスト。"
+      }
+    }
+  },
+  "extension": {
+    "title": "三つより多い形を巡らせる",
+    "keywords": [
+      "剰余演算子 %",
+      "周期パターン",
+      "三状態",
+      "格子と座標",
+      "modulo"
+    ],
+    "next": "今回は三つの形を余り 0・1・2 に対応させました。次は形の位置や大きさにも別のルールを加え、模様に変化をつけます。"
+  },
+  "ruleSummary": "row と col の合計を 3 で割った余りで、円・三角・四角を選ぶ。",
+  "codeNote": "row が 2、col が 3 のとき合計は 5。5 % 3 は 2 なので、配列の 2 番目の番号にある四角を選びます。",
+  "algorithmVisual": {
+    "src": "./assets/day-04-mod3.svg",
+    "alt": "行と列の合計を3で割った余り0・1・2に対応して円・三角・四角が斜めに巡る3×3格子。",
+    "caption": "図1 · 余り 0・1・2 を、それぞれ円・三角・四角へ対応させます。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-04-cycle.svg",
+    "alt": "円から三角、三角から四角、四角から円へ戻る三つの形の循環。",
+    "caption": "図2 · 右か下へ一歩進むと、次の形に進みます。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3
+  ],
+  "goalTitle": "行と列を足し、三つの形を選ぶ。",
+  "ruleCode": "(row + col + startIndex) % 3 → 0: 円 / 1: 三角 / 2: 四角",
+  "extensionVisual": {
+    "src": "./assets/day-04-next.svg",
+    "alt": "三色の丸が連続して配置され、模様に色の規則を加える次の学習内容を示す図。",
+    "caption": "図3 · 次は形に加えて、色の規則も組み合わせます。"
+  }
+}
