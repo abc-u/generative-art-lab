@@ -162,8 +162,10 @@ def validate_lesson(path, curriculum, offline):
     for key in ("algorithmVisual", "intuitionVisual", "extensionVisual"):
         visual = lesson.get(key)
         if visual and not (ROOT / visual["src"]).is_file(): problems.append(f"{key}.src points to a missing file: {visual['src']}")
-    everyday_visual = lesson["artist"]["realWorldExample"]["visual"]
-    if not (ROOT / everyday_visual["src"]).is_file(): problems.append(f"artist.realWorldExample.visual.src points to a missing file: {everyday_visual['src']}")
+    real_world_example = lesson["artist"].get("realWorldExample")
+    if real_world_example:
+        everyday_visual = real_world_example["visual"]
+        if not (ROOT / everyday_visual["src"]).is_file(): problems.append(f"artist.realWorldExample.visual.src points to a missing file: {everyday_visual['src']}")
     lines = code.count("\n") + 1
     for number in lesson.get("codeHighlight", []):
         if number > lines: problems.append(f"codeHighlight line {number} is past the end of the code ({lines} lines)")
