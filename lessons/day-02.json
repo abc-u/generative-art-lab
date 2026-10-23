@@ -1,0 +1,142 @@
+{
+  "day": 2,
+  "status": "published",
+  "title": "If & Else",
+  "subtitle": "偶数列と奇数列で、図形を切り替える。",
+  "topic": "条件分岐",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "条件分岐は、今の状態を調べて、実行する処理を選ぶ方法です。今回は列番号が偶数か奇数かを調べ、偶数列には円、奇数列には四角を描きます。Day 1で学んだ「すべてのマスに同じルールを繰り返す」仕組みに、「もし〜なら、そうでなければ」という分かれ道を一つ加えます。同じ格子でも、位置によって処理を変えると、縞模様や市松模様のような構造を作れます。",
+  "applications": "市松模様、縞模様、位置によって形や色が変わるタイル、文字や画像の一部だけを強調する表現に使えます。条件を複数組み合わせると、規則のバリエーションを増やせます。",
+  "prerequisites": "Day 1の格子とくり返しを知っていれば大丈夫です。列番号は左から0、1、2…と数えます。偶数・奇数は小学校の割り算で余りを考えるだけです。",
+  "connection": "Day 1では、すべてのマスに同じ四角を置きました。今回は格子とくり返しをそのまま使い、列番号に応じて円と四角を選びます。次は列の番号だけでなく、行番号や位置の組み合わせも使って模様を作ります。",
+  "intuition": {
+    "title": "分かれ道のあるスタンプ台",
+    "story": "机の上に、左から番号をつけたスタンプ台が並んでいると想像してください。番号は0から始まります。係の人は台を一つずつ見て、偶数番なら円のスタンプ、奇数番なら四角のスタンプを押します。どの台にも必ず一つだけ押すので、作業は同じ順序で進みますが、番号を見たところで使うスタンプが分かれます。プログラムの if は「もし偶数なら」、else は「そうでなければ」を表します。格子の横一列でこの判断をくり返すため、円と四角が交互に並びます。",
+    "visual": "列番号を見てから図形を選びます。すべてのマスを回る手順は同じで、図形だけが条件によって変わります。",
+    "diagram": "列番号 0 → 偶数 → 円　｜　1 → 奇数 → 四角　｜　2 → 偶数 → 円　｜　3 → 奇数 → 四角"
+  },
+  "numbers": {
+    "setup": "横幅360ピクセルのキャンバスに12列を置きます。列番号は左端を0にして数えます。円を偶数列、四角を奇数列に置くと、1マスの幅は360を12で割った大きさです。",
+    "steps": [
+      {
+        "label": "1マスの幅",
+        "calculation": "360 ÷ 12 = 30 ピクセル"
+      },
+      {
+        "label": "左から3番目の列番号",
+        "calculation": "左端を0に数えるので、番号は 2"
+      },
+      {
+        "label": "条件を確かめる",
+        "calculation": "2 ÷ 2 の余りは 0 → 偶数"
+      },
+      {
+        "label": "選ばれる図形",
+        "calculation": "偶数なら円 → 左から3番目に円を描く"
+      }
+    ],
+    "note": "% は割り算の余りを求める記号です。col % 2 は列番号を2で割った余りで、偶数なら0、奇数なら1になります。col は列番号、2は偶数と奇数を分ける数です。番号が0から始まることを忘れなければ、同じ条件が全ての行で使えます。"
+  },
+  "code": "for (let row = 0; row < rows; row++) {\n  for (let col = 0; col < cols; col++) {\n    let shape;\n    if (col % 2 === 0) {\n      shape = \"circle\"; // 偶数列\n    } else {\n      shape = \"square\"; // 奇数列\n    }\n    drawShape(col, row, shape);\n  }\n}",
+  "demo": {
+    "title": "列番号で図形を切り替える",
+    "caption": "列番号が偶数なら円、奇数なら四角。条件を変えずに列数と最初の図形を選んで、並びの変化を観察します。",
+    "html": "<!doctype html>\n<html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<style>\n*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f5f1;color:#303832;font:14px/1.6 system-ui,-apple-system,\"Noto Sans JP\",sans-serif}\n.toolbar{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:end;padding:0 0 10px}\nlabel{display:grid;gap:3px;font-size:11px;color:#536257}label b{font-size:12px;color:#374139}\ninput,select,button{font:inherit}input[type=range]{width:160px;accent-color:#5e9368}select,button{padding:7px 9px;border:1px solid #cdd8ce;background:#fff;color:#405246;border-radius:3px}\nbutton{cursor:pointer}button:hover{border-color:#63966e}#stage{height:300px;min-height:210px;background:#e8e1cf;border:1px solid #d8d2c3}canvas{display:block;width:100%;height:100%}.actions{display:flex;gap:8px;padding-top:9px}.hint{margin:5px 0 0;color:#758078;font-size:10px}\n@media(max-width:480px){body{padding:9px}.toolbar{gap:8px 12px}input[type=range]{width:130px}#stage{height:190px;min-height:160px}}\n</style></head><body>\n<div class=\"toolbar\"><label for=\"columns\">列数 <b id=\"columns-out\">12列</b><input id=\"columns\" type=\"range\" min=\"4\" max=\"20\" value=\"12\"></label>\n<label for=\"first-shape\">偶数列に置く形<select id=\"first-shape\"><option value=\"circle\">円</option><option value=\"square\">四角</option></select></label></div>\n<div id=\"stage\"><canvas id=\"art\" aria-label=\"偶数列と奇数列で円と四角が交互に並ぶ格子\"></canvas></div>\n<div class=\"actions\"><button id=\"reset\" type=\"button\">初期値に戻す ↺</button><button id=\"save\" type=\"button\">PNGを保存 ↓</button></div>\n<p class=\"hint\" id=\"description\">偶数列は円、奇数列は四角です。列番号は左端を0として数えています。</p>\n<script>\nconst canvas=document.getElementById(\"art\"),ctx=canvas.getContext(\"2d\"),columns=document.getElementById(\"columns\"),firstShape=document.getElementById(\"first-shape\");\nfunction draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height,cols=Number(columns.value),rows=10,cw=w/cols,ch=h/rows,size=Math.min(cw,ch)*.54;ctx.fillStyle=\"#e8e1cf\";ctx.fillRect(0,0,w,h);for(let row=0;row<rows;row++){for(let col=0;col<cols;col++){const even=col%2===0,shape=even?firstShape.value:(firstShape.value===\"circle\"?\"square\":\"circle\"),x=col*cw+cw/2,y=row*ch+ch/2;ctx.fillStyle=shape===\"circle\"?\"#cf684b\":\"#4c6854\";if(shape===\"circle\"){ctx.beginPath();ctx.arc(x,y,size/2,0,Math.PI*2);ctx.fill()}else{ctx.fillRect(x-size/2,y-size/2,size,size)}}}document.getElementById(\"columns-out\").textContent=cols+\"列\";document.getElementById(\"description\").textContent=firstShape.value===\"circle\"?\"偶数列は円、奇数列は四角です。列番号は左端を0として数えています。\":\"偶数列は四角、奇数列は円です。条件を反転して見比べています。\"}\ncolumns.addEventListener(\"input\",draw);firstShape.addEventListener(\"change\",draw);window.addEventListener(\"resize\",draw);\ndocument.getElementById(\"reset\").addEventListener(\"click\",function(){columns.value=\"12\";firstShape.value=\"circle\";draw()});\ndocument.getElementById(\"save\").addEventListener(\"click\",function(){const link=document.createElement(\"a\");link.download=\"generative-art-day02-conditions.png\";link.href=canvas.toDataURL(\"image/png\");link.click()});\nwindow.addEventListener(\"message\",function(event){if(!event.data||event.data.type!==\"gal-experiment\")return;for(const control of event.data.controls||[]){const input=document.querySelector(control.selector);if(!input)continue;input.value=control.value;input.dispatchEvent(new Event(\"input\",{bubbles:true}));input.dispatchEvent(new Event(\"change\",{bubbles:true}))}});\nrequestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "まず並びを見る",
+      "action": "初期設定の12列をそのまま表示します。列番号0から順に、円と四角がどう並ぶか確かめてください。",
+      "observe": "同じ並びが各行でくり返されます。ランダムな変化ではなく、列番号の条件だけで模様が決まることに注目します。",
+      "demoState": [
+        {
+          "selector": "#columns",
+          "value": "12"
+        },
+        {
+          "selector": "#first-shape",
+          "value": "circle"
+        }
+      ]
+    },
+    {
+      "title": "列数を半分にする",
+      "action": "列数を6にして、マスの幅と模様の見え方を比べます。円と四角の順番は変えず、列数だけを変えてください。",
+      "observe": "横幅は同じなので1マスは広くなり、図形も大きく見えます。交互の順番は列数を変えても保たれます。",
+      "demoState": [
+        {
+          "selector": "#columns",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "title": "細かな反復にする",
+      "action": "列数を20に増やし、1マスを小さくします。キャンバス全体を眺め、縦の帯が何本見えるか数えてみましょう。",
+      "observe": "列が増えるほど一つ一つの形は小さくなりますが、偶数・奇数を分ける条件は同じです。",
+      "demoState": [
+        {
+          "selector": "#columns",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "title": "条件の結果を反転する",
+      "action": "偶数列に置く形を四角へ切り替えます。列数は12のままにして、変えたものがどこに現れるかを観察してください。",
+      "observe": "円と四角の位置が入れ替わります。条件式そのものはそのままで、偶数側に割り当てる図形だけが変わります。",
+      "demoState": [
+        {
+          "selector": "#first-shape",
+          "value": "square"
+        }
+      ]
+    },
+    {
+      "title": "奇数列の端を観察する",
+      "action": "列数を9にし、偶数列に円を置く設定へ戻します。左端と右端の図形が同じか、違うかを比べてください。",
+      "observe": "0から始まる9列では番号8までが並ぶため、0・2・4・6・8の5列が偶数です。列数が奇数なら端の並びも条件から予測できます。",
+      "demoState": [
+        {
+          "selector": "#columns",
+          "value": "9"
+        },
+        {
+          "selector": "#first-shape",
+          "value": "circle"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Sol LeWitt",
+    "work": "Wall Drawing #831 (Geometric Forms), 1997",
+    "context": "ソル・ルウィットの《Wall Drawing #831 (Geometric Forms)》は、グッゲンハイム美術館ビルバオのために1997年に構想された壁画です。同館の解説は、彼が作品の結果を事前に定める論理的なシステムや文章の指示を用いたことを説明しています。",
+    "relation": "この作品が今回と同じ偶数・奇数の条件分岐を使ったという意味ではありません。先に決めた指示が、実行する人や場所を通じて見た目へ変わる点に注目してください。今回のデモも、位置を調べてから図形を選ぶ一つのルールを、格子の全体へくり返しています。",
+    "references": [
+      {
+        "source": "GUGGENHEIM MUSEUM BILBAO",
+        "label": "作品情報と制作の考え方",
+        "url": "https://www.guggenheim-bilbao.eus/en/the-collection/works/wall-drawing-831-geometric-forms"
+      },
+      {
+        "source": "MoMA",
+        "label": "指示から作品をつくる方法",
+        "url": "https://www.moma.org/momaorg/shared/flattened_pages/moma_learning/sol-lewitt-untitled-from-squares-with-a-different-line-direction-in-each-half-square-1971/"
+      }
+    ],
+    "image": null
+  },
+  "extension": {
+    "keywords": [
+      "条件分岐 if else",
+      "剰余演算子 %",
+      "偶数・奇数パターン",
+      "ルールベースアート"
+    ],
+    "next": "次は列番号だけでなく、行番号や位置の組み合わせでも条件を調べます。例えば行と列の番号の合計が偶数なら円、奇数なら四角にすると、市松模様へ発展できます。"
+  }
+}
+

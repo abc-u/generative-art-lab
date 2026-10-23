@@ -29,6 +29,15 @@
       "description": "画面をマス目に分け、ひとつの描画ルールを繰り返す。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 2,
+      "title": "If & Else",
+      "topic": "条件分岐",
+      "description": "偶数列と奇数列で、図形を切り替える。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
+
