@@ -9,7 +9,7 @@ function renderCurriculum(query=""){
  const count=document.querySelector("#archive-count");if(count)count.textContent=String(filtered.length).padStart(2,"0");
  const footnote=document.querySelector("#curriculum-footnote");if(footnote)footnote.textContent=query?`${filtered.length}件の公開済みレッスンが見つかりました。`:`公開中の${published.length}レッスンを掲載しています。次のDayは公開後にここへ追加されます。`;
 }
-fetch("./curriculum.json").then(response=>response.json()).then(data=>{curriculum=data.lessons||[];renderCurriculum(search?.value||"")}).catch(()=>{if(lessonList)lessonList.innerHTML='<p class="curriculum-footnote">レッスン一覧を読み込めませんでした。</p>'});
+fetch("./curriculum.json",{cache:"no-store"}).then(response=>response.json()).then(data=>{curriculum=data.lessons||[];renderCurriculum(search?.value||"")}).catch(()=>{if(lessonList)lessonList.innerHTML='<p class="curriculum-footnote">レッスン一覧を読み込めませんでした。</p>'});
 if(search)search.addEventListener("input",()=>renderCurriculum(search.value));
 document.addEventListener("keydown",event=>{if(event.key==="/"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){event.preventDefault();search?.focus()}});
 function mulberry32(a){return()=>{let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
