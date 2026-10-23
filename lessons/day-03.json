@@ -1,0 +1,175 @@
+{
+  "day": 3,
+  "status": "published",
+  "title": "Row + Column",
+  "subtitle": "行と列を組み合わせて、市松模様をつくる。",
+  "topic": "二つの条件を組み合わせる",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "行番号と列番号を足し、その合計を 2 で割った余りで図形を選ぶ方法です。合計が偶数のマスには円、奇数のマスには四角を描きます。列だけを調べた Day 2 の縞模様に行の情報を加えると、市松模様になります。 この考え方は、タイル模様や位置で見た目が変わるパターンを作るときに使えます。",
+  "applications": "市松模様、タイルの反復、位置に応じて形や色が変わるパターン。",
+  "prerequisites": "Day 1 の格子とくり返し、Day 2 の if・else と偶数・奇数。",
+  "connection": "Day 2 は列番号だけで形を選びました。今回は行番号も足して、二方向の位置を使います。",
+  "intuition": {
+    "title": "右か下へ一歩進むと、形が変わる床",
+    "story": "市松模様の床を左上から歩くところを想像してください。右へ一マス進むと形が変わります。下へ一マス進んでも形が変わります。右と下へ一歩ずつ進むと、変化が二回なので元の形に戻ります。行番号と列番号の合計は、この「何回切り替わったか」を表します。",
+    "visual": "左上から右・下へ進むたびに形が交互になる格子を考えます。",
+    "diagram": "row 0 + col 0 = 0 → 偶数 → 円 ｜ row 0 + col 1 = 1 → 奇数 → 四角 ｜ row 1 + col 1 = 2 → 偶数 → 円"
+  },
+  "numbers": {
+    "title": "3行目・4列目は、円？四角？",
+    "setup": "横幅 360 px の正方形キャンバスを 8 行×8 列に分けます。番号は左上を 0 として数えます。",
+    "steps": [
+      {
+        "label": "1マスの幅",
+        "calculation": "360 ÷ 8 = 45 px"
+      },
+      {
+        "label": "マスの番号",
+        "calculation": "3行目 → row 2、4列目 → col 3"
+      },
+      {
+        "label": "行と列を足す",
+        "calculation": "row + col = 2 + 3 = 5"
+      },
+      {
+        "label": "偶数か奇数か調べる",
+        "calculation": "5 % 2 = 1 → 奇数"
+      },
+      {
+        "label": "描く形を選ぶ",
+        "calculation": "奇数なので → 四角"
+      }
+    ],
+    "note": "% は割り算の余りです。合計を 2 で割った余りが 0 なら偶数、1 なら奇数です。"
+  },
+  "code": "for (let row = 0; row < rows; row++) {\n  for (let col = 0; col < cols; col++) {\n    const even = (row + col) % 2 === 0;\n    const shape = even ? \"circle\" : \"square\";\n    drawShape(row, col, shape);\n  }\n}",
+  "demo": {
+    "title": "行と列で形を交互にする",
+    "caption": "行番号と列番号の合計が偶数なら円、奇数なら四角。行数・列数・左上の形を変えて、並び方を観察します。",
+    "html": "<!doctype html>\n<html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<style>\n*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f6f2;color:#303832;font:15px/1.7 system-ui,-apple-system,\"Noto Sans JP\",sans-serif}\n.toolbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:0 0 10px}\nlabel{display:flex;align-items:center;gap:8px;font-size:14px;color:#536257}select,button{font:inherit;padding:7px 9px;border:1px solid #cdd8ce;background:#fff;color:#405246;border-radius:3px}\n#stage{height:340px;min-height:220px;background:#e8e1cf;border:1px solid #d8d2c3}canvas{display:block;width:100%;height:100%}\n.hint{margin:7px 0 0;color:#4f5a53;font-size:13px}\n@media(max-width:480px){body{padding:9px;font-size:14px}label{font-size:12px}#stage{height:240px;min-height:200px}.hint{font-size:12px}}\n</style></head><body>\n<div class=\"toolbar\">\n<label for=\"rows\">行数 <select id=\"rows\"><option>4</option><option>5</option><option>6</option><option selected>8</option><option>9</option><option>12</option><option>16</option></select></label>\n<label for=\"cols\">列数 <select id=\"cols\"><option>4</option><option>5</option><option>6</option><option selected>8</option><option>9</option><option>12</option><option>16</option></select></label>\n<label for=\"first-shape\">左上の形 <select id=\"first-shape\"><option value=\"circle\" selected>円</option><option value=\"square\">四角</option></select></label>\n<button id=\"reset\" type=\"button\">初期値に戻す ↺</button>\n</div>\n<div id=\"stage\"><canvas id=\"art\" aria-label=\"行番号と列番号の合計が偶数なら円、奇数なら四角を描く市松模様\"></canvas></div>\n<p class=\"hint\" id=\"description\" aria-live=\"polite\"></p>\n<script>\nconst canvas=document.getElementById(\"art\"),ctx=canvas.getContext(\"2d\"),rows=document.getElementById(\"rows\"),cols=document.getElementById(\"cols\"),first=document.getElementById(\"first-shape\");\nfunction draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height,r=Number(rows.value),c=Number(cols.value),cw=w/c,ch=h/r,size=Math.min(cw,ch)*.56,base=first.value;ctx.fillStyle=\"#e8e1cf\";ctx.fillRect(0,0,w,h);\nfor(let row=0;row<r;row++){for(let col=0;col<c;col++){const even=(row+col)%2===0,shape=even?base:(base===\"circle\"?\"square\":\"circle\"),x=col*cw+cw/2,y=row*ch+ch/2;ctx.fillStyle=shape===\"circle\"?\"#cf684b\":\"#4c6854\";if(shape===\"circle\"){ctx.beginPath();ctx.arc(x,y,size/2,0,Math.PI*2);ctx.fill()}else{ctx.fillRect(x-size/2,y-size/2,size,size)}}}\ndocument.getElementById(\"description\").textContent=r+\"行×\"+c+\"列。左上（row 0、col 0）は\"+(base===\"circle\"?\"円\":\"四角\")+\"。右か下へ1マス進むたび、形が交互に変わります。\"}\n[rows,cols,first].forEach(control=>control.addEventListener(\"change\",draw));window.addEventListener(\"resize\",draw);\ndocument.getElementById(\"reset\").addEventListener(\"click\",()=>{rows.value=\"8\";cols.value=\"8\";first.value=\"circle\";draw()});\nwindow.addEventListener(\"message\",event=>{if(!event.data||event.data.type!==\"gal-experiment\")return;for(const control of event.data.controls||[]){const input=document.querySelector(control.selector);if(input){input.value=control.value;input.dispatchEvent(new Event(\"change\",{bubbles:true}))}}});\nrequestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "まず並びを見る",
+      "action": "8行×8列の初期設定で、左上から順番に形を目で追います。",
+      "observe": "右へ一マス進むと形はどう変わりますか？下へ進んだときも同じですか？",
+      "demoState": [
+        {
+          "selector": "#rows",
+          "value": "8"
+        },
+        {
+          "selector": "#cols",
+          "value": "8"
+        },
+        {
+          "selector": "#first-shape",
+          "value": "circle"
+        }
+      ]
+    },
+    {
+      "title": "行数を半分にする",
+      "action": "行数だけを 8 行から 4 行へ変えます。",
+      "observe": "縦方向のマスの大きさと、横方向の交互の並びはどう見えますか？",
+      "demoState": [
+        {
+          "selector": "#rows",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "title": "列を細かくする",
+      "action": "列数を 16 に増やします。行数は 8 のままです。",
+      "observe": "横方向のマスの幅はどう変わりましたか？形の切り替わり方は同じですか？",
+      "demoState": [
+        {
+          "selector": "#cols",
+          "value": "16"
+        }
+      ]
+    },
+    {
+      "title": "左上の形を入れ替える",
+      "action": "左上の形を円から四角へ切り替えます。",
+      "observe": "交互の順序は保たれていますか？どのマスの形が入れ替わりましたか？",
+      "demoState": [
+        {
+          "selector": "#first-shape",
+          "value": "square"
+        }
+      ]
+    },
+    {
+      "title": "奇数の行と列を試す",
+      "action": "行数と列数をそれぞれ 9 にします。左上は円に戻します。",
+      "observe": "右端・下端の形は左上と同じですか？番号の合計から理由を説明できますか？",
+      "demoState": [
+        {
+          "selector": "#rows",
+          "value": "9"
+        },
+        {
+          "selector": "#cols",
+          "value": "9"
+        },
+        {
+          "selector": "#first-shape",
+          "value": "circle"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Bridget Riley",
+    "work": "Movement in Squares, 1961",
+    "context": "Arts Council Collection所蔵の1961年の作品です。Google Arts & Cultureの作品解説によると、白黒の正方形が12行に交互に並び、高さを保ったまま幅が少しずつ狭くなることで、動きの錯視が生まれます。",
+    "relation": "今回のデモは作品を再現したものではなく、規則的な交互配置が視覚のリズムを生む例として紹介します。",
+    "references": [
+      {
+        "source": "ARTS COUNCIL COLLECTION · GOOGLE ARTS & CULTURE",
+        "label": "Movement in Squares — 作品情報と解説",
+        "url": "https://artsandculture.google.com/asset/movement-in-squares-bridget-riley/dwGpQ5o3Dc4FrQ?hl=en-gb"
+      }
+    ],
+    "image": null,
+    "highlight": "同じ四角の反復でも、間隔や幅が変わると目には動きや奥行きが感じられます。今回のデモでは、行と列の条件を組み合わせて交互のリズムをつくります。"
+  },
+  "extension": {
+    "title": "3つの段階をくり返したら？",
+    "keywords": [
+      "二次元の格子",
+      "座標と条件分岐",
+      "剰余演算子 %",
+      "checkerboard pattern",
+      "周期パターン"
+    ],
+    "next": "今日は合計を 2 で割った余りで、二つの形を交互にしました。次は 3 で割った余りを使い、三つの形や色が順番にくり返す模様へ進みます。"
+  },
+  "ruleSummary": "行番号と列番号の合計が偶数なら円、奇数なら四角を描く。",
+  "codeNote": "3行目・4列目では row が 2、col が 3 です。2 + 3 は 5 で奇数なので、四角が選ばれます。",
+  "algorithmVisual": {
+    "src": "./assets/day-03-parity.svg",
+    "alt": "2行2列の格子で各マスの行番号と列番号の合計を示し、偶数は円、奇数は四角に対応させた図。",
+    "caption": "図1 · 行と列の番号を足し、余りで形を決めます。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-03-walk.svg",
+    "alt": "市松模様の格子上で右または下へ一マス進むと形が切り替わり、二回進むと元の形に戻る図。",
+    "caption": "図2 · 右か下へ一歩進むと切り替わる。二歩進めば元の形です。"
+  },
+  "codeHighlight": [
+    3,
+    4
+  ],
+  "goalTitle": "行と列を足して、描く形を選ぶ。",
+  "ruleCode": "if ((row + col) % 2 === 0) { 円 } else { 四角 }",
+  "extensionVisual": {
+    "src": "./assets/day-03-mod3.svg",
+    "alt": "0、1、2の三つの番号が格子状に斜めにくり返す周期パターンの図。",
+    "caption": "図3 · 次は余りを 0・1・2 の三種類にして、三つの形や色を巡らせます。"
+  }
+}
