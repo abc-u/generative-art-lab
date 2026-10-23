@@ -273,3 +273,36 @@ body.lesson-page .artist-note{margin:14px 0;padding:10px 14px;background:#fbf6e9
   body.lesson-page .experiment-list li{gap:10px;padding:14px}
   body.lesson-page .lesson-meta-card>b{font-size:13px;white-space:nowrap}
 }
+
+/* Day 1 playground settings as tabs: one group visible at a time keeps the pinned panel within one screen. */
+.visually-hidden{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+body.lesson-page .lesson-demo .controls{display:block;padding:12px}
+body.lesson-page .control-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:10px 0 12px;padding:3px;background:#eef1ee}
+body.lesson-page .control-tabs [role="tab"]{min-height:40px;border:0;background:transparent;color:#4b5650;font-size:14px;font-weight:700;cursor:pointer}
+body.lesson-page .control-tabs [role="tab"][aria-selected="true"]{background:#fff;color:#2f5f3f;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+body.lesson-page .control-tabs [role="tab"]:focus-visible{outline:2px solid #5a906b;outline-offset:1px}
+body.lesson-page .lesson-demo .controls fieldset[role="tabpanel"]{margin:0;padding:4px 2px 2px;border:0;min-height:150px}
+body.lesson-page .lesson-demo .controls fieldset[role="tabpanel"][hidden]{display:none}
+body.lesson-page .lesson-demo .controls .demo-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}
+body.lesson-page .lesson-demo .choice-buttons{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(min-width:961px){body.lesson-page .lesson-demo .demo-canvas-wrap{aspect-ratio:3/2}}
+/* On PC the pinned panel never exceeds the screen: the canvas gives up height first. */
+@media(min-width:961px){
+  body.lesson-page .lesson-content>.lesson-demo{display:flex;flex-direction:column;padding:14px 16px}
+  body.lesson-page .lesson-demo .demo-topline{flex:none;margin-bottom:8px}
+  body.lesson-page .lesson-demo .demo-topline h2{font-size:18px}
+  body.lesson-page .lesson-demo .demo-layout{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;gap:10px}
+  body.lesson-page .lesson-demo .demo-canvas-wrap{flex:1 1 300px;aspect-ratio:auto;min-height:180px;max-height:320px}
+  body.lesson-page .lesson-demo .controls{flex:none}
+  body.lesson-page .lesson-demo .control-tabs{margin-top:0}
+  body.lesson-page .lesson-demo .live-rule{flex:none;margin-top:10px;padding:9px 12px}
+  body.lesson-page .lesson-demo .live-rule p{font-size:13px;line-height:1.7}
+  body.lesson-page .lesson-demo .live-rule small{font-size:11px}
+}
+body.lesson-page .lesson-demo .controls .demo-actions{grid-template-columns:1.3fr 1fr 1fr}
+body.lesson-page .lesson-demo .controls .demo-actions .button{min-height:42px;padding:0 8px;font-size:13px;white-space:nowrap}
+@media(max-width:680px){
+  body.lesson-page .lesson-demo .controls .demo-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.lesson-page .lesson-demo .controls .demo-actions .button-primary{grid-column:1/-1}
+  body.lesson-page .lesson-demo .choice-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
