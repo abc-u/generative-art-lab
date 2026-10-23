@@ -103,3 +103,6 @@ a.next-lesson-card:hover{border-color:#77a17e;background:#eff6ef}
 /* Keep the canvas inside its grid column on desktop. */
 .demo-layout > .demo-canvas-wrap{width:100%;min-width:0}
 .demo-layout > .controls{min-width:0}
+
+/* Keep long lesson titles within the copy column on desktop. */
+@media(min-width:681px){.lesson-heading-copy{min-width:0}.lesson-heading h1{font-size:clamp(36px,4.1vw,52px);max-width:100%;overflow-wrap:anywhere;word-break:normal}}
