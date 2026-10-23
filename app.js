@@ -3,11 +3,15 @@ let phases=[];
 let activePhase=1;
 const phaseGrid=document.querySelector("#phase-grid");
 const lessonList=document.querySelector("#lesson-list");
+const phaseTicks=document.querySelector("#phase-ticks");
+const phaseColors={1:"#3f6b4c",2:"#6d7f4c",3:"#a8763c",4:"#c4583c"};
 function renderCurriculum(query=""){
   if(!phaseGrid||!lessonList)return;
   // Searching looks across every phase; otherwise the list shows the selected phase only.
   const searching=query.trim()!=="";
-  phaseGrid.innerHTML=phases.map(p=>`<button type="button" class="phase-card ${!searching&&p.id===activePhase?"active":""}" data-phase="${p.id}" aria-pressed="${!searching&&p.id===activePhase}"><span class="phase-number">PHASE 0${p.id}</span><span class="phase-range">${p.range}</span><h3>${p.name}</h3><p>${p.desc}</p></button>`).join("");
+  phaseGrid.innerHTML=phases.map(p=>`<button type="button" class="phase-card ${!searching&&p.id===activePhase?"active":""}" style="--phase-color:${phaseColors[p.id]}" data-phase="${p.id}" aria-pressed="${!searching&&p.id===activePhase}"><span class="phase-number">PHASE 0${p.id}</span><span class="phase-range">${p.range}</span><h3>${p.name}</h3><p>${p.desc}</p></button>`).join("");
+  // One tick per day: published days stand tallest, the selected phase is tinted.
+  if(phaseTicks)phaseTicks.innerHTML=curriculum.map(d=>{const on=!searching&&d.phase===activePhase;return `<span class="${d.status==="published"?"published":on?"on":""}" style="${on&&d.status!=="published"?`background:${phaseColors[d.phase]}`:""}"></span>`}).join("");
   const filtered=curriculum.filter(d=>searching?`${d.day} ${d.title} ${d.topic} ${d.description}`.toLowerCase().includes(query.trim().toLowerCase()):d.phase===activePhase);
   lessonList.innerHTML=filtered.map(({day,title,topic,description,phase,status})=>`<a class="lesson-row ${status==="published"?"is-available":""}" href="./lesson.html?day=${day}&v=2" ${status!=="published"?'aria-label="学習計画：Day '+day+' '+title+'"':''}><span class="day-number">DAY ${String(day).padStart(2,"0")}</span><div><h3>${title}</h3><p>${description}</p></div><span class="phase-tag">PHASE 0${phase} · ${topic}</span><span class="row-action">${status==="published"?"OPEN ↗":"PLANNED"}</span></a>`).join("")||'<p class="curriculum-footnote">該当するレッスンはありません。</p>';
   document.querySelector("#archive-count").textContent=String(filtered.length).padStart(2,"0");

@@ -8,9 +8,9 @@
   <title>Generative Art Lab — ルールから、絵が生まれる。</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=4">
-  <script src="./app.js?v=4" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho+B1:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css?v=5">
+  <script src="./app.js?v=5" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -19,9 +19,7 @@
     <a class="nav-cta" href="./lesson.html?day=1&v=2">Day 1 をはじめる <span>↗</span></a>
   </header>
 
-  <main>
-    <div class="editorial-layout">
-    <div class="editorial-main">
+  <main class="home-main">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
         <p class="eyebrow"><span class="eyebrow-dot"></span> DAILY PRACTICE FOR CREATIVE CODING</p>
@@ -50,6 +48,7 @@
     <section class="curriculum section-shell" id="curriculum">
       <div class="section-label"><span>03</span><span>THE CURRICULUM</span></div>
       <div class="curriculum-heading"><div><p class="eyebrow">A PATH FROM SIMPLE RULES TO LIVING SYSTEMS</p><h2>70日で、表現の<br><em>引き出しを増やす。</em></h2></div><p>ひとつ前の発見を次のレッスンへ。<br>4つの章を通して、基礎から自分の作品づくりへ進みます。</p></div>
+      <div class="phase-ticks" id="phase-ticks" aria-hidden="true"></div>
       <div class="phase-grid" id="phase-grid" aria-live="polite"></div>
       <div class="archive-tools"><div><span class="archive-count" id="archive-count">70</span><span id="archive-label">LESSONS · CURRICULUM MAP</span></div><label class="search-box"><span aria-hidden="true">⌕</span><input id="lesson-search" type="search" placeholder="キーワードで探す" aria-label="レッスンを検索"><kbd>/</kbd></label></div>
       <div class="lesson-list" id="lesson-list"></div>
@@ -67,14 +66,6 @@
     </section>
 
     <section class="quote section-shell" id="about"><span class="quote-mark">“</span><blockquote>決まりをつくる。<br>そして、決まりが連れていく場所を見にいく。</blockquote><p>GENERATIVE ART LAB · LEARN BY MAKING</p><a href="./lesson.html?day=1&v=2" class="circle-link" aria-label="Day 1から学ぶ">↗</a></section>
-    </div>
-    <aside class="site-sidebar" aria-label="サイト案内">
-      <section class="sidebar-profile"><p class="sidebar-title">このラボについて</p><div class="profile-mark">g<span>·</span></div><p class="profile-name">GENERATIVE ART LAB</p><p>コードを筆にして、ルールから絵をつくる。毎日の小さな実験を通して、ジェネラティブアートを日本語で学ぶ場所です。</p><a href="#learn">ラボについて ↗</a></section>
-      <nav class="sidebar-nav" aria-label="ページ内目次"><p class="sidebar-title">目次</p><a href="#learn">学ぶことと、つくること</a><a href="#daily">今日のレッスン · Day 1</a><a href="#curriculum">70日カリキュラム</a><a href="#gallery">作品ギャラリー</a><a href="#about">このラボの考え方</a></nav>
-      <section class="sidebar-latest"><p class="sidebar-title">学習をはじめる</p><a href="./lesson.html?day=1&v=2"><span>DAY 01 · はじめて</span><b>Grid &amp; Rules</b><i>レッスンを読む ↗</i></a></section>
-      <p class="sidebar-note">ルールを見つける。<br>少し変える。<br>その違いを観察する。</p>
-    </aside>
-    </div>
   </main>
   <footer class="footer"><a class="brand" href="./"><span class="brand-mark">g<span>·</span></span><span>GENERATIVE<br>ART LAB</span></a><span>AN OPEN LEARNING LAB FOR CREATIVE CODING</span><a href="https://github.com/abc-u/generative-art-lab" rel="noreferrer">SOURCE ON GITHUB ↗</a></footer>
 </body>
