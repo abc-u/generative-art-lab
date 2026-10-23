@@ -124,23 +124,34 @@
     }
   ],
   "artist": {
-    "name": "Bridget Riley",
-    "work": "Movement in Squares, 1961",
-    "context": "Arts Council Collection所蔵の1961年の作品です。Google Arts & Cultureの作品解説によると、白黒の正方形が12行に交互に並び、高さを保ったまま幅が少しずつ狭くなることで、動きの錯視が生まれます。",
+    "name": "Juan Gris",
+    "work": "The Checkerboard, 1915",
+    "context": "ファン・グリスが1915年に描いた作品です。静物の中にチェス盤や幾何学的な面が組み合わされています。盤面の反復にも注目できます。",
     "relation": "今回のデモは作品を再現したものではなく、規則的な交互配置が視覚のリズムを生む例として紹介します。",
     "references": [
       {
-        "source": "ARTS COUNCIL COLLECTION · GOOGLE ARTS & CULTURE",
-        "label": "Movement in Squares — 作品情報と解説",
-        "url": "https://artsandculture.google.com/asset/movement-in-squares-bridget-riley/dwGpQ5o3Dc4FrQ?hl=en-gb"
+        "source": "Wikimedia Commons",
+        "label": "The Checkerboard · 画像とライセンス",
+        "url": "https://commons.wikimedia.org/wiki/File:Juan_Gris,_September_1915,_Jeu_d%27%C3%A9checs_(The_Checkerboard),_oil_on_canvas,_92.1_x_73_cm,_Art_Institute_of_Chicago.jpg"
       }
     ],
-    "image": null,
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/be/Juan_Gris%2C_September_1915%2C_Jeu_d%27%C3%A9checs_%28The_Checkerboard%29%2C_oil_on_canvas%2C_92.1_x_73_cm%2C_Art_Institute_of_Chicago.jpg",
+      "alt": "ファン・グリス《The Checkerboard》に描かれた静物とチェス盤",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Juan_Gris,_September_1915,_Jeu_d%27%C3%A9checs_(The_Checkerboard),_oil_on_canvas,_92.1_x_73_cm,_Art_Institute_of_Chicago.jpg",
+      "license": "Public Domain",
+      "credit": "Juan Gris, The Checkerboard (1915) · Wikimedia Commons"
+    },
     "highlight": "同じ四角の反復でも、間隔や幅が変わると目には動きや奥行きが感じられます。今回のデモでは、行と列の条件を組み合わせて交互のリズムをつくります。",
     "realWorldExample": {
       "title": "身近な例：市松模様の床",
       "description": "チェス盤や和室の畳の縁取り、タイルの床などで見られる市松模様は、隣り合うマスの色を交互に並べた模様です。",
-      "relation": "今回のルールでは、行番号と列番号の合計を 2 で割った余りで形を選ぶため、右か下へ一マス進むたびに円と四角が入れ替わります。床の色の代わりに図形を置くと、同じ交互配置の仕組みを観察できます。"
+      "relation": "今回のルールでは、行番号と列番号の合計を 2 で割った余りで形を選ぶため、右か下へ一マス進むたびに円と四角が入れ替わります。床の色の代わりに図形を置くと、同じ交互配置の仕組みを観察できます。",
+      "visual": {
+        "src": "./assets/day-03-checkerboard.svg",
+        "alt": "赤茶と淡色のマスが交互に並ぶ市松模様の床の図。",
+        "caption": "身近な例 · 市松模様の床を表した学習用イラスト。"
+      }
     }
   },
   "extension": {

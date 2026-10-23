@@ -45,6 +45,14 @@
       "description": "行と列の番号を組み合わせ、市松模様をつくる。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 4,
+      "title": "Modulo 3",
+      "topic": "3種類のくり返し",
+      "description": "行と列の合計を3で割った余りから、三つの形を選ぶ。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
