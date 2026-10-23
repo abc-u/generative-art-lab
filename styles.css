@@ -306,3 +306,53 @@ body.lesson-page .lesson-demo .controls .demo-actions .button{min-height:42px;pa
   body.lesson-page .lesson-demo .controls .demo-actions .button-primary{grid-column:1/-1}
   body.lesson-page .lesson-demo .choice-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Lesson article in the design-proposal style: question headings, one prominent rule,
+   vertical lists instead of side-by-side cards, figures wherever they help. */
+body.lesson-page .article-section .section-kicker{margin-bottom:6px;font:500 12px var(--mono);letter-spacing:.08em;color:#3f7a52}
+body.lesson-page .article-section h2{font-size:clamp(24px,2.6vw,28px);line-height:1.5;margin-bottom:16px}
+body.lesson-page .article-section p{font-size:16px;line-height:1.95;color:#4a5450}
+body.lesson-page .today-rule{margin:4px 0 20px;padding:18px 20px;border:2px solid #5a906b;background:#fff}
+body.lesson-page .today-rule>span{display:block;font-size:13px;font-weight:700;color:#3f7a52}
+body.lesson-page .today-rule p{margin:4px 0 0;font-size:19px;font-weight:700;line-height:1.7;color:#30343a}
+body.lesson-page .today-rule code{display:block;margin-top:8px;font:500 14px var(--mono);color:#4a5450;background:none;padding:0}
+body.lesson-page .fact-list{margin:24px 0 0;border-top:1px solid #e3e8e4}
+body.lesson-page .fact-list>div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 20px;padding:14px 0;border-bottom:1px solid #e3e8e4}
+body.lesson-page .fact-list dt{font-size:14px;font-weight:700;color:#3f7a52}
+body.lesson-page .fact-list dd{margin:0;font-size:15px;line-height:1.85;color:#4a5450}
+body.lesson-page .lesson-figure{margin:22px 0 0;padding:14px;background:#f4f6f2;border:1px solid #e3e8e4}
+body.lesson-page .lesson-figure img{display:block;width:100%;height:auto}
+body.lesson-page .lesson-figure figcaption{margin-top:10px;font-size:13px;line-height:1.7;color:#5f6863}
+body.lesson-page .number-steps{margin:20px 0 0;padding:0;list-style:none;border-left:2px solid #d6e3d8}
+body.lesson-page .number-steps li{position:relative;padding:0 0 18px 26px}
+body.lesson-page .number-step-no{position:absolute;left:-12px;top:3px;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:#5a906b;color:#fff;font:500 12px var(--mono)}
+body.lesson-page .article-section .number-step-label{margin:0;font-size:14px;line-height:1.6;color:#69746c}
+body.lesson-page .article-section .number-step-calc{margin:2px 0 0;font:500 17px/1.6 var(--mono);color:#30343a}
+body.lesson-page .number-note{margin:6px 0 0;padding:16px 18px;background:#f7f8fa;border:1px solid #e3e8e4}
+body.lesson-page .article-section .number-note-title{margin:0 0 4px;font-size:15px;font-weight:700;color:#30343a}
+body.lesson-page .number-note p{font-size:15px;line-height:1.85}
+body.lesson-page .code-card pre code{display:block}
+body.lesson-page .code-line{display:block;padding:0 4px;margin:0 -4px}
+body.lesson-page .code-line.is-highlight{background:#e5efe6;color:#2f5f3f;font-weight:500}
+body.lesson-page .code-card .code-note{font-size:14px}
+body.lesson-page .keyword-chips{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 0;padding:0;list-style:none}
+body.lesson-page .keyword-chips li{padding:3px 12px;border:1px solid #d6e3d8;background:#eef4ef;font-size:14px;color:#2f5f3f}
+body.lesson-page .artist-links{display:flex;flex-direction:column;gap:8px;grid-template-columns:none}
+body.lesson-page .artist-highlight-label{color:#30343a}
+body.lesson-page .artist-work figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px}
+body.lesson-page .lesson-content>.lesson-finish{display:flex;flex-direction:column;gap:12px}
+@media(max-width:680px){
+  body.lesson-page .fact-list>div{grid-template-columns:minmax(0,1fr)}
+  body.lesson-page .lesson-figure{padding:8px;margin-left:-8px;margin-right:-8px}
+  body.lesson-page .today-rule p{font-size:17px}
+}
+body.lesson-page .lesson-pager{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+body.lesson-page .pager-link{display:flex;flex-direction:column;gap:2px;min-height:64px;padding:12px 16px;background:#fff;border:1px solid #e3e8e4;color:#30343a;text-decoration:none;transition:border-color .15s}
+body.lesson-page .pager-link:hover{border-color:#5a906b}
+body.lesson-page .pager-link span{font:500 11px var(--mono);letter-spacing:.06em;color:#69746c}
+body.lesson-page .pager-link b{font-size:15px;font-weight:700;color:#2f5f3f}
+body.lesson-page .pager-prev{grid-column:1/-1}
+body.lesson-page .code-card pre{padding:16px 18px;font:400 14px/1.9 var(--mono);color:#30343a}
+body.lesson-page .code-card pre code{font:inherit}
+@media(max-width:680px){body.lesson-page .code-card pre{font-size:12.5px;padding:14px}}
+body.lesson-page .code-card pre code{display:inline-block;min-width:100%}

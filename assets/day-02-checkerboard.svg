@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" role="img" aria-labelledby="title desc">
+  <title id="title">列だけの条件と、行と列の合計を使う条件の比較</title>
+  <desc id="desc">左は列番号が偶数なら円で縦の縞になる。右は行番号と列番号の合計が偶数なら円で市松模様になる。</desc>
+  <rect width="960" height="400" rx="8" fill="#f4f6f2"/>
+  <g font-family="sans-serif" fill="#354039">
+    <text x="32" y="44" font-size="15" font-weight="700" letter-spacing="2" fill="#4f8a5c">条件を変えると、模様が変わる</text>
+
+    <!-- left: column only -->
+    <text x="60" y="84" font-size="17" font-weight="700">今日：col % 2 === 0</text>
+    <text x="60" y="108" font-size="15" fill="#69746c">列だけを見る → 縦の縞</text>
+    <g transform="translate(60 128)">
+      <rect width="232" height="232" fill="#e8e1cf"/>
+      <g fill="#cf684b"><circle cx="29" cy="29" r="16"/><circle cx="145" cy="29" r="16"/><circle cx="29" cy="87" r="16"/><circle cx="145" cy="87" r="16"/><circle cx="29" cy="145" r="16"/><circle cx="145" cy="145" r="16"/><circle cx="29" cy="203" r="16"/><circle cx="145" cy="203" r="16"/></g>
+      <g fill="#4c6854"><rect x="71" y="13" width="32" height="32"/><rect x="187" y="13" width="32" height="32"/><rect x="71" y="71" width="32" height="32"/><rect x="187" y="71" width="32" height="32"/><rect x="71" y="129" width="32" height="32"/><rect x="187" y="129" width="32" height="32"/><rect x="71" y="187" width="32" height="32"/><rect x="187" y="187" width="32" height="32"/></g>
+    </g>
+
+    <path d="M350 244h96" stroke="#9aa99d" stroke-width="2"/><path d="M436 236l12 8-12 8" fill="none" stroke="#9aa99d" stroke-width="2"/>
+
+    <!-- right: row + column -->
+    <text x="500" y="84" font-size="17" font-weight="700">次回：(row + col) % 2 === 0</text>
+    <text x="500" y="108" font-size="15" fill="#69746c">行と列の合計を見る → 市松模様</text>
+    <g transform="translate(500 128)">
+      <rect width="232" height="232" fill="#e8e1cf"/>
+      <g fill="#cf684b"><circle cx="29" cy="29" r="16"/><circle cx="145" cy="29" r="16"/><circle cx="87" cy="87" r="16"/><circle cx="203" cy="87" r="16"/><circle cx="29" cy="145" r="16"/><circle cx="145" cy="145" r="16"/><circle cx="87" cy="203" r="16"/><circle cx="203" cy="203" r="16"/></g>
+      <g fill="#4c6854"><rect x="71" y="13" width="32" height="32"/><rect x="187" y="13" width="32" height="32"/><rect x="13" y="71" width="32" height="32"/><rect x="129" y="71" width="32" height="32"/><rect x="71" y="129" width="32" height="32"/><rect x="187" y="129" width="32" height="32"/><rect x="13" y="187" width="32" height="32"/><rect x="129" y="187" width="32" height="32"/></g>
+    </g>
+    <g font-size="14" fill="#55605a">
+      <text x="760" y="160">例：row 0, col 0</text>
+      <text x="760" y="182">0 + 0 = 0 → 偶数 → 円</text>
+      <text x="760" y="226">row 0, col 1</text>
+      <text x="760" y="248">0 + 1 = 1 → 奇数 → 四角</text>
+      <text x="760" y="292">row 1, col 0</text>
+      <text x="760" y="314">1 + 0 = 1 → 奇数 → 四角</text>
+    </g>
+  </g>
+</svg>

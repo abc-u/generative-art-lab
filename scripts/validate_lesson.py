@@ -47,27 +47,36 @@ SCHEMA = obj(
         "minutes": {"type": "integer", "minimum": 15, "maximum": 20},
         "level": text(2, 20),
         "algorithm": text(120),
-        "applications": text(40),
-        "prerequisites": text(30),
-        "connection": text(40),
+        "applications": text(15),
+        "prerequisites": text(15),
+        "connection": text(15),
         "ruleSummary": text(10, 160),
         "codeNote": text(10, 180),
         "algorithmVisual": obj(["src", "alt", "caption"], {"src": {"type": "string", "pattern": r"^\./assets/[A-Za-z0-9._/-]+\.svg$"}, "alt": text(8, 180), "caption": text(10, 220)}),
-        "intuition": obj(["title", "story", "visual", "diagram"], {"title": text(3), "story": text(100), "visual": text(20), "diagram": text(20)}),
+        # Optional: a picture for the everyday image, a question heading for the number walk-through,
+        # the code lines to highlight (1-based) and a question heading for the closing section.
+        "goalTitle": text(4, 60),
+        "ruleCode": text(6, 120),
+        "extensionVisual": obj(["src", "alt", "caption"], {"src": {"type": "string", "pattern": r"^\./assets/[A-Za-z0-9._/-]+\.svg$"}, "alt": text(8, 180), "caption": text(10, 220)}),
+        "intuitionVisual": obj(["src", "alt", "caption"], {"src": {"type": "string", "pattern": r"^\./assets/[A-Za-z0-9._/-]+\.svg$"}, "alt": text(8, 180), "caption": text(10, 220)}),
+        "codeHighlight": {"type": "array", "maxItems": 12, "items": {"type": "integer", "minimum": 1}},
+        "intuition": obj(["title", "story", "visual", "diagram"], {"title": text(3), "story": text(60), "visual": text(20), "diagram": text(20)}),
         "numbers": obj(["setup", "steps", "note"], {
-            "setup": text(50),
+            "title": text(4, 60),
+            "noteTitle": text(4, 60),
+            "setup": text(30),
             "steps": {"type": "array", "minItems": 3, "maxItems": 6, "items": obj(["label", "calculation"], {"label": text(), "calculation": text()})},
-            "note": text(40)}),
+            "note": text(30)}),
         "code": text(40),
         "demo": obj(["title", "caption", "html"], {"title": text(3), "caption": text(20), "html": text(500)}),
-        "experiments": {"type": "array", "minItems": 4, "maxItems": 6, "items": obj(["title", "action", "observe"], {"title": text(), "action": text(30), "observe": text(30), "demoState": {"type": "array", "maxItems": 10, "items": obj(["selector", "value"], {"selector": text(2), "value": text()})}})},
+        "experiments": {"type": "array", "minItems": 4, "maxItems": 6, "items": obj(["title", "action", "observe"], {"title": text(), "action": text(15), "observe": text(15), "demoState": {"type": "array", "maxItems": 10, "items": obj(["selector", "value"], {"selector": text(2), "value": text()})}})},
         "artist": obj(["name", "work", "context", "relation", "references", "image"], {
-            "name": text(), "work": text(), "context": text(80), "relation": text(60),
+            "name": text(), "work": text(), "context": text(60), "relation": text(30), "highlight": text(20, 220),
             "references": {"type": "array", "minItems": 1, "maxItems": 3, "items": obj(["source", "label", "url"], {"source": text(), "label": text(), "url": {"type": "string", "pattern": "^https://"}})},
             "image": {"anyOf": [{"type": "null"}, obj(["url", "alt", "sourceUrl", "license", "credit"], {
                 "url": {"type": "string", "pattern": "^https://"}, "alt": text(20), "sourceUrl": {"type": "string", "pattern": "^https://"},
                 "license": {"type": "string", "enum": ALLOWED_LICENSES}, "credit": text(3)})]}}),
-        "extension": obj(["keywords", "next"], {"keywords": {"type": "array", "minItems": 3, "maxItems": 6, "items": text()}, "next": text(40)}),
+        "extension": obj(["keywords", "next"], {"title": text(4, 60), "keywords": {"type": "array", "minItems": 3, "maxItems": 6, "items": text()}, "next": text(40)}),
     },
 )
 
@@ -149,6 +158,12 @@ def validate_lesson(path, curriculum, offline):
     if lesson["title"].strip().casefold() in others: problems.append("another published lesson already uses this title")
 
     code = lesson["code"]
+    for key in ("algorithmVisual", "intuitionVisual", "extensionVisual"):
+        visual = lesson.get(key)
+        if visual and not (ROOT / visual["src"]).is_file(): problems.append(f"{key}.src points to a missing file: {visual['src']}")
+    lines = code.count("\n") + 1
+    for number in lesson.get("codeHighlight", []):
+        if number > lines: problems.append(f"codeHighlight line {number} is past the end of the code ({lines} lines)")
     if re.search(r"<\s*script|javascript:", code, re.I): problems.append("code sample contains unsafe markup")
     error = node_check("function lesson(){\n" + code + "\n}\n")
     if error: problems.append("code sample has a syntax error: " + error)

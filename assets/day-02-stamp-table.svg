@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" role="img" aria-labelledby="title desc">
+  <title id="title">分かれ道のあるスタンプ台</title>
+  <desc id="desc">番号0から3のスタンプ台。偶数番の0と2には円、奇数番の1と3には四角のスタンプを押す。</desc>
+  <rect width="960" height="400" rx="8" fill="#f4f6f2"/>
+  <g font-family="sans-serif" fill="#354039">
+    <text x="32" y="44" font-size="15" font-weight="700" letter-spacing="2" fill="#4f8a5c">番号を見て、スタンプを選ぶ</text>
+    <text x="32" y="78" font-size="19" font-weight="700">偶数番なら円、そうでなければ四角</text>
+
+    <g font-size="16" text-anchor="middle">
+      <!-- pad 0 -->
+      <rect x="40" y="108" width="196" height="256" rx="6" fill="#fff" stroke="#d8e0d8"/>
+      <text x="138" y="140" fill="#69746c">スタンプ台</text>
+      <text x="138" y="182" font-size="34" font-weight="700">0</text>
+      <rect x="98" y="200" width="80" height="30" rx="15" fill="#e5eee5"/>
+      <text x="138" y="221" font-weight="700" fill="#2f5f3f">偶数</text>
+      <path d="M138 240v24" stroke="#9aa99d" stroke-width="2"/><path d="M132 258l6 8 6-8" fill="none" stroke="#9aa99d" stroke-width="2"/>
+      <circle cx="138" cy="300" r="22" fill="#cf684b"/>
+      <text x="138" y="350" font-weight="700">円</text>
+
+      <!-- pad 1 -->
+      <rect x="260" y="108" width="196" height="256" rx="6" fill="#fff" stroke="#d8e0d8"/>
+      <text x="358" y="140" fill="#69746c">スタンプ台</text>
+      <text x="358" y="182" font-size="34" font-weight="700">1</text>
+      <rect x="318" y="200" width="80" height="30" rx="15" fill="#eceeec"/>
+      <text x="358" y="221" font-weight="700" fill="#55605a">奇数</text>
+      <path d="M358 240v24" stroke="#9aa99d" stroke-width="2"/><path d="M352 258l6 8 6-8" fill="none" stroke="#9aa99d" stroke-width="2"/>
+      <rect x="336" y="278" width="44" height="44" fill="#4c6854"/>
+      <text x="358" y="350" font-weight="700">四角</text>
+
+      <!-- pad 2 -->
+      <rect x="480" y="108" width="196" height="256" rx="6" fill="#fff" stroke="#d8e0d8"/>
+      <text x="578" y="140" fill="#69746c">スタンプ台</text>
+      <text x="578" y="182" font-size="34" font-weight="700">2</text>
+      <rect x="538" y="200" width="80" height="30" rx="15" fill="#e5eee5"/>
+      <text x="578" y="221" font-weight="700" fill="#2f5f3f">偶数</text>
+      <path d="M578 240v24" stroke="#9aa99d" stroke-width="2"/><path d="M572 258l6 8 6-8" fill="none" stroke="#9aa99d" stroke-width="2"/>
+      <circle cx="578" cy="300" r="22" fill="#cf684b"/>
+      <text x="578" y="350" font-weight="700">円</text>
+
+      <!-- pad 3 -->
+      <rect x="700" y="108" width="196" height="256" rx="6" fill="#fff" stroke="#d8e0d8"/>
+      <text x="798" y="140" fill="#69746c">スタンプ台</text>
+      <text x="798" y="182" font-size="34" font-weight="700">3</text>
+      <rect x="758" y="200" width="80" height="30" rx="15" fill="#eceeec"/>
+      <text x="798" y="221" font-weight="700" fill="#55605a">奇数</text>
+      <path d="M798 240v24" stroke="#9aa99d" stroke-width="2"/><path d="M792 258l6 8 6-8" fill="none" stroke="#9aa99d" stroke-width="2"/>
+      <rect x="776" y="278" width="44" height="44" fill="#4c6854"/>
+      <text x="798" y="350" font-weight="700">四角</text>
+    </g>
+    <path d="M236 236h24M456 236h24M676 236h24" stroke="#c9d3ca" stroke-width="2" stroke-dasharray="4 4"/>
+  </g>
+</svg>
