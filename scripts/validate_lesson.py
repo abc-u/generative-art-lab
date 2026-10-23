@@ -50,6 +50,8 @@ SCHEMA = obj(
         "applications": text(40),
         "prerequisites": text(30),
         "connection": text(40),
+        "ruleSummary": text(10, 160),
+        "codeNote": text(10, 180),
         "intuition": obj(["title", "story", "visual", "diagram"], {"title": text(3), "story": text(100), "visual": text(20), "diagram": text(20)}),
         "numbers": obj(["setup", "steps", "note"], {
             "setup": text(50),
