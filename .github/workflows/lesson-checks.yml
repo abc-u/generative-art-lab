@@ -1,0 +1,26 @@
+name: Lesson checks
+
+on:
+  push:
+    branches: [main]
+    paths: ['lessons/**', 'curriculum.json', 'scripts/validate_lesson.py']
+  pull_request:
+    paths: ['lessons/**', 'curriculum.json', 'scripts/validate_lesson.py']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate every published lesson
+        run: python3 scripts/validate_lesson.py --all
