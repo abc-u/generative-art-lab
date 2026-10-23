@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">列番号の偶奇で円か四角を選ぶ条件分岐</title>
+  <desc id="desc">列番号を2で割った余りを調べ、0なら円、1なら四角を描き、次の列へ進む。</desc>
+  <rect width="960" height="420" rx="8" fill="#f4f6f2"/>
+  <g font-family="sans-serif" fill="#354039">
+    <text x="32" y="42" font-size="15" font-weight="700" letter-spacing="2" fill="#5d9067">条件で図形を選ぶ</text>
+    <text x="32" y="78" font-size="18" font-weight="700">列番号を見て、描く形を決めます</text>
+    <text x="32" y="127" font-size="16" fill="#69746c">列番号</text>
+    <g font-size="19" font-weight="700" text-anchor="middle">
+      <rect x="32" y="144" width="58" height="48" rx="4" fill="#fff" stroke="#d8e0d8"/><text x="61" y="175">0</text>
+      <rect x="104" y="144" width="58" height="48" rx="4" fill="#fff" stroke="#d8e0d8"/><text x="133" y="175">1</text>
+      <rect x="176" y="144" width="58" height="48" rx="4" fill="#fff" stroke="#d8e0d8"/><text x="205" y="175">2</text>
+      <rect x="248" y="144" width="58" height="48" rx="4" fill="#fff" stroke="#d8e0d8"/><text x="277" y="175">3</text>
+    </g>
+    <path d="M61 200v26h216v-26M133 200v26M205 200v-26M277 200v26" fill="none" stroke="#9aa99d" stroke-width="2"/>
+    <rect x="230" y="224" width="94" height="40" rx="20" fill="#e5eee5" stroke="#a9c2ac"/>
+    <text x="277" y="250" text-anchor="middle" font-size="15" font-weight="700">col % 2</text>
+    <path d="M324 244h72" stroke="#839587" stroke-width="2"/><path d="m396 244-9-6v12z" fill="#839587"/>
+    <path d="M468 196 540 244 468 292 396 244Z" fill="#fff" stroke="#8aac8e" stroke-width="2"/>
+    <text x="468" y="239" text-anchor="middle" font-size="15" font-weight="700">余りは</text><text x="468" y="260" text-anchor="middle" font-size="15" font-weight="700">0？</text>
+    <path d="M540 244h63v-91h44M603 244v91h44" fill="none" stroke="#839587" stroke-width="2"/>
+    <path d="m647 153-9-6v12zM647 335l-9-6v12z" fill="#839587"/>
+    <text x="562" y="137" font-size="14" font-weight="700" fill="#5d9067">はい</text><text x="562" y="323" font-size="14" font-weight="700" fill="#c56b50">いいえ</text>
+    <rect x="660" y="119" width="244" height="68" rx="5" fill="#e7f0e7" stroke="#b8ceb9"/>
+    <circle cx="693" cy="153" r="13" fill="#cf684b"/><text x="722" y="160" font-size="19" font-weight="700">円を描く（偶数列）</text>
+    <rect x="660" y="301" width="244" height="68" rx="5" fill="#fff0e9" stroke="#e3b7a6"/>
+    <rect x="681" y="323" width="25" height="25" fill="#4c6854"/><text x="722" y="343" font-size="19" font-weight="700">四角を描く（奇数列）</text>
+    <path d="M782 188v28h-85M782 370v18H175V197" fill="none" stroke="#b8c1b8" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <text x="32" y="390" font-size="16" fill="#69746c">描いたら次の列へ。0 → 円、1 → 四角を、行ごとにくり返します。</text>
+  </g>
+</svg>
