@@ -1,0 +1,19 @@
+{
+  "day": 1,
+  "title": "Grid & Rules",
+  "subtitle": "たった1つのルールから絵を生み出す。",
+  "topic": "生成の基本",
+  "phase": 1,
+  "minutes": 18,
+  "status": "published",
+  "artist": {
+    "name": "Vera Molnár",
+    "work": "Interruptions",
+    "year": "1968",
+    "verifiedReferences": [
+      "https://www.themorgan.org/drawings/item/405692",
+      "https://www.vam.ac.uk/articles/digital-art"
+    ],
+    "note": "このデモは作品の再現ではなく、規則と揺らぎの考え方を学ぶ例。"
+  }
+}

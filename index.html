@@ -1,1 +1,63 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="ジェネラティブアートのアルゴリズムを日本語で学ぶ。直感・数値例・コード・実験。"><title>Generative Art Lab</title><style>:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0d1116;color:#e7e9ed;font:16px/1.8 system-ui,-apple-system,'Noto Sans JP',sans-serif}header,main,footer{max-width:1080px;margin:auto;padding:24px}nav{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #343b43}a{color:#a9d8ff}h1{font-size:clamp(38px,7vw,78px);line-height:1.15;letter-spacing:-.05em;margin:32px 0 18px}h2{font-size:27px}.muted{color:#a9b4c0}.tag{font-size:12px;letter-spacing:.15em;color:#9ee4ce;text-transform:uppercase}.hero{padding:40px 0 20px;display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}.hero p{max-width:540px}.visual{width:100%;border:1px solid #424c55;border-radius:16px;background:#111}.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}button,select{background:#202b34;border:1px solid #566572;border-radius:8px;color:white;padding:9px 12px;cursor:pointer}button:hover{background:#344653}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}.card{border:1px solid #38434c;background:#161e26;border-radius:14px;padding:22px}.card h3{margin:6px 0}.card p{color:#acbac7;font-size:14px}.card a{display:inline-block;margin-top:10px}.notice{border-left:3px solid #9ee4ce;padding:12px 18px;background:#172321}footer{border-top:1px solid #38434c;color:#9daab4;font-size:13px}@media(max-width:720px){.hero{grid-template-columns:1fr}}</style></head><body><header><nav><strong>◌ GENERATIVE ART LAB</strong><a href="#archive">レッスン一覧 ↗</a></nav></header><main><section class="hero"><div><div class="tag">LEARN · CODE · EXPERIMENT</div><h1>数式より先に、<br>絵を動かそう。</h1><p>ジェネラティブアートのアルゴリズムを、毎日15〜20分。日常のたとえ、具体的な数字、操作できる実験で少しずつ学ぶ日本語の学習アーカイブ。</p><a href="#archive">レッスンを探す ↓</a></div><div><canvas id="art" class="visual" width="480" height="360" aria-label="白黒のディザリング模様"></canvas><div class="toolbar"><button id="again">模様を再生成</button><label>点の大きさ <input id="pixel" type="range" min="3" max="12" value="5"></label></div><p class="muted" style="font-size:12px">Day 56: Bayerディザリングを使ったミニ実験。マスを大きくすると点の構造が見やすくなります。</p></div></section><section id="archive"><div class="tag">ARCHIVE</div><h2>学習アーカイブ</h2><p class="muted">確認済みの教材を順次追加します。Day 1〜49は移行準備中です。欠落しているDay 40・48は未確認のまま扱います。</p><div class="grid" id="cards"></div></section><section style="margin:48px 0"><h2>学び方</h2><div class="grid"><div class="card"><h3>01 · 直感</h3><p>日常のたとえと図で仕組みをつかむ。</p></div><div class="card"><h3>02 · 数字</h3><p>実際に数字を代入し、一段ずつ計算する。</p></div><div class="card"><h3>03 · 実験</h3><p>パラメータを変え、画面の変化を観察する。</p></div></div></section><div class="notice">このサイトは初期公開版です。本文と各日の独立デモは移行作業中で、まだすべては公開されていません。毎日の自動追加も設定完了前です。</div></main><footer>Generative Art Lab · Japanese algorithm learning archive</footer><script>const days=[[56,"Dithering","白黒の点だけで階調を描く"],[55,"Gamut Mapping","画面で表示できない色を扱う"],[54,"OKLCH","知覚的な明るさを揃える"],[53,"RGBとHSL","色相環でグラデーションを設計する"],[52,"Color Mapping","数字を色に変える"],[51,"Turbulence Noise","ノイズから激しい模様を作る"],[50,"Ridged Noise","尾根のような模様を作る"]];document.getElementById('cards').innerHTML=days.map(([d,t,s])=>'<article class="card"><div class="tag">DAY '+d+'</div><h3>'+t+'</h3><p>'+s+'</p><span class="muted">教材移行中</span></article>').join('');let seed=3;const c=document.getElementById('art'),ctx=c.getContext('2d'),size=document.getElementById('pixel');const b=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];function draw(){let p=+size.value,w=c.width,h=c.height;ctx.fillStyle='#0d1116';ctx.fillRect(0,0,w,h);for(let y=0;y<h;y+=p)for(let x=0;x<w;x+=p){let xx=x/w,yy=y/h;let wave=(Math.sin(xx*13+seed)+Math.sin(yy*11-seed*.6)+Math.sin((xx+yy)*18))/6+.5;let gradient=Math.max(0,Math.min(1,wave*.75+xx*.25));let threshold=(b[((Math.floor(y/p)%4)*4+Math.floor(x/p)%4)]+.5)/16;if(gradient>threshold){ctx.fillStyle='#e9f3ed';ctx.fillRect(x,y,p,p)}}}document.getElementById('again').onclick=()=>{seed+=1.37;draw()};size.oninput=draw;draw();</script></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11110f">
+  <meta name="description" content="ジェネラティブアートを、見て、動かして、つくりながら学ぶ日本語の実験室。">
+  <title>Generative Art Lab — ルールから、絵が生まれる。</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Generative Art Lab ホーム"><span class="brand-mark">g<span>·</span></span><span>GENERATIVE<br>ART LAB</span></a>
+    <nav class="main-nav" aria-label="メインナビゲーション"><a href="#learn">学びの入口</a><a href="#curriculum">カリキュラム</a><a href="#about">このラボについて</a></nav>
+    <a class="nav-cta" href="./lesson.html?day=1">Day 1 をはじめる <span>↗</span></a>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-dot"></span> DAILY PRACTICE FOR CREATIVE CODING</p>
+        <h1 id="hero-title">ルールから、<br><em>絵が生まれる。</em></h1>
+        <p class="hero-description">コードは、絵を描くための新しい筆。<br>小さなルールをひとつずつ試しながら、ジェネラティブアートを日本語で学ぶ実験室です。</p>
+        <div class="hero-actions"><a class="button button-primary" href="./lesson.html?day=1">Day 1 から学ぶ <span>↗</span></a><a class="text-link" href="#curriculum">カリキュラムを見る <span>↓</span></a></div>
+        <div class="hero-note"><span class="note-line"></span><span>数学が苦手でも大丈夫。まず、動かしてみよう。</span></div>
+      </div>
+      <div class="hero-art-wrap">
+        <div class="art-caption"><span>RULE STUDY № 001</span><span>ORDER / CHANCE</span></div>
+        <canvas id="hero-art" class="hero-art" aria-label="規則正しい格子がゆるやかに崩れる、生成アートのプレビュー"></canvas>
+        <div class="art-footer"><span>one rule, endless variations</span><button id="hero-regenerate" class="icon-button" type="button" aria-label="作品を再生成">↻</button></div>
+        <span class="art-index">01</span>
+      </div>
+      <div class="hero-bottom"><span>01 / 70</span><span>START WITH A GRID</span><span class="scroll-cue">SCROLL TO EXPLORE ↓</span></div>
+    </section>
+
+    <section class="intro section-shell" id="learn">
+      <div class="section-label"><span>01</span><span>THE PRACTICE</span></div>
+      <div class="intro-content"><h2>学ぶことと、<br>つくることを<span>ひとつに。</span></h2><div><p>ジェネラティブアートは、コンピューターに「絵を描く手順」を伝え、そのルールから作品を生み出す表現です。</p><p>むずかしい数式を覚えるより先に、触れて、変えて、眺める。毎日の小さな実験が、いつか自分だけの作品につながります。</p></div></div>
+    </section>
+
+    <section class="daily section-shell" id="daily">
+      <div class="section-label"><span>02</span><span>START HERE</span></div>
+      <div class="daily-card"><div class="daily-copy"><p class="eyebrow">TODAY'S FIRST EXPERIMENT · DAY 01</p><h2>Grid <span>&</span> Rules</h2><p class="daily-lead">たった1つのルールから<br>絵を生み出す。</p><p class="daily-body">画面にマス目を並べ、同じ決まりをひとつずつ適用してみよう。整然とした格子に少しだけ揺らぎを加えると、ルールはそのままなのに、絵の表情が変わりはじめます。</p><a class="button button-light" href="./lesson.html?day=1">レッスンを開く <span>↗</span></a><div class="lesson-meta"><span>約 18 分</span><span>はじめて</span><span>グリッド · 反復 · 乱数</span></div></div><div class="daily-art"><canvas id="lesson-art" aria-label="行ごとに少しずつずれた、格子上の四角形"></canvas><span class="canvas-stamp">GENERATED IN YOUR BROWSER</span></div></div>
+    </section>
+
+    <section class="curriculum section-shell" id="curriculum">
+      <div class="section-label"><span>03</span><span>THE CURRICULUM</span></div>
+      <div class="curriculum-heading"><div><p class="eyebrow">A PATH FROM SIMPLE RULES TO LIVING SYSTEMS</p><h2>70日で、表現の<br><em>引き出しを増やす。</em></h2></div><p>ひとつ前の発見を次のレッスンへ。<br>4つの章を通して、基礎から自分の作品づくりへ進みます。</p></div>
+      <div class="phase-grid" id="phase-grid" aria-live="polite"></div>
+      <div class="archive-tools"><div><span class="archive-count" id="archive-count">70</span><span> LESSONS · CURRICULUM MAP</span></div><label class="search-box"><span aria-hidden="true">⌕</span><input id="lesson-search" type="search" placeholder="キーワードで探す" aria-label="レッスンを検索"><kbd>/</kbd></label></div>
+      <div class="lesson-list" id="lesson-list"></div>
+      <p class="curriculum-footnote">Day 1 が完成済み。以降の項目は学習計画として掲載しています。新しいレッスンは検証を通過したものから追加されます。</p>
+    </section>
+
+    <section class="quote section-shell" id="about"><span class="quote-mark">“</span><blockquote>決まりをつくる。<br>そして、決まりが連れていく場所を見にいく。</blockquote><p>GENERATIVE ART LAB · LEARN BY MAKING</p><a href="./lesson.html?day=1" class="circle-link" aria-label="Day 1から学ぶ">↗</a></section>
+  </main>
+  <footer class="footer"><a class="brand" href="./"><span class="brand-mark">g<span>·</span></span><span>GENERATIVE<br>ART LAB</span></a><span>AN OPEN LEARNING LAB FOR CREATIVE CODING</span><a href="https://github.com/abc-u/generative-art-lab" rel="noreferrer">SOURCE ON GITHUB ↗</a></footer>
+</body>
+</html>
