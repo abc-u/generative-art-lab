@@ -120,9 +120,20 @@
         "source": "GUGGENHEIM MUSEUM BILBAO",
         "label": "作品情報と制作の考え方",
         "url": "https://www.guggenheim-bilbao.eus/en/the-collection/works/wall-drawing-831-geometric-forms"
+      },
+      {
+        "source": "WIKIMEDIA COMMONS",
+        "label": "作品画像・CC0 1.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Bilbao_-_Museo_Guggenheim_-_Wall_Drawing_831_(Geometric_Forms),_de_Sol_LeWitt_11.JPG"
       }
     ],
-    "image": null
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Bilbao_-_Museo_Guggenheim_-_Wall_Drawing_831_%28Geometric_Forms%29%2C_de_Sol_LeWitt_11.JPG",
+      "alt": "ソル・ルウィットの幾何学的な壁画。壁面に色と形が広がっている",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bilbao_-_Museo_Guggenheim_-_Wall_Drawing_831_(Geometric_Forms),_de_Sol_LeWitt_11.JPG",
+      "license": "CC0 1.0",
+      "credit": "Photo: Zarateman / Wikimedia Commons"
+    }
   },
   "extension": {
     "keywords": [
