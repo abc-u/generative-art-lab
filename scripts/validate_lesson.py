@@ -72,7 +72,7 @@ SCHEMA = obj(
         "experiments": {"type": "array", "minItems": 4, "maxItems": 6, "items": obj(["title", "action", "observe"], {"title": text(), "action": text(15), "observe": text(15), "demoState": {"type": "array", "maxItems": 10, "items": obj(["selector", "value"], {"selector": text(2), "value": text()})}})},
         "artist": obj(["name", "work", "context", "relation", "references", "image"], {
             "name": text(), "work": text(), "context": text(60), "relation": text(30), "highlight": text(20, 220),
-            "realWorldExample": obj(["title", "description", "relation", "visual"], {"title": text(4, 80), "description": text(30, 240), "relation": text(30, 300), "visual": obj(["src", "alt", "caption"], {"src": {"type": "string", "pattern": r"^\\./assets/[A-Za-z0-9._/-]+\\.svg$"}, "alt": text(8, 180), "caption": text(10, 220)})}),
+            "realWorldExample": obj(["title", "description", "relation", "visual"], {"title": text(4, 80), "description": text(30, 240), "relation": text(30, 300), "visual": obj(["src", "alt", "caption"], {"src": {"type": "string", "pattern": r"^\./assets/[A-Za-z0-9._/-]+\.svg$"}, "alt": text(8, 180), "caption": text(10, 220)})}),
             "references": {"type": "array", "minItems": 1, "maxItems": 3, "items": obj(["source", "label", "url"], {"source": text(), "label": text(), "url": {"type": "string", "pattern": "^https://"}})},
             "image": obj(["url", "alt", "sourceUrl", "license", "credit"], {
                 "url": {"type": "string", "pattern": "^https://"}, "alt": text(20), "sourceUrl": {"type": "string", "pattern": "^https://"},
