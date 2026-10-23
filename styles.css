@@ -112,3 +112,8 @@ a.next-lesson-card:hover{border-color:#77a17e;background:#eff6ef}
 
 /* Give the lesson title a little more breathing room. */
 .lesson-heading h1{letter-spacing:-.01em}
+
+
+/* Keep the title and lesson details comfortably inset inside the title panel. */
+.lesson-heading{padding-left:32px;padding-right:32px}
+@media(max-width:680px){.lesson-heading{padding-left:16px;padding-right:16px}}
