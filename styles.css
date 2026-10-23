@@ -122,3 +122,11 @@ a.next-lesson-card:hover{border-color:#77a17e;background:#eff6ef}
 /* Give experiment descriptions the full row; place the action below the text. */
 .experiment-list li{grid-template-columns:minmax(0,1fr)}
 .experiment-trigger{grid-column:1;justify-self:start}
+
+
+/* Use the full lesson width for the experiment preview and its steps. */
+@media(min-width:681px){
+  .experiment-playground{grid-template-columns:minmax(0,1fr)}
+  .experiment-preview{position:relative;top:auto;width:100%;aspect-ratio:2.1}
+  .experiment-list{width:100%}
+}
