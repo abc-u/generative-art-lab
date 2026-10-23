@@ -7,6 +7,7 @@ import re
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -34,7 +35,7 @@ SCHEMA = {
         "code": {"type": "string", "minLength": 40},
         "demo": {"type": "object", "additionalProperties": False, "required": ["title", "caption", "html"], "properties": {"title":{"type":"string","minLength":3},"caption":{"type":"string","minLength":20},"html":{"type":"string","minLength":500}}},
         "experiments": {"type": "array", "minItems": 4, "maxItems": 6, "items": {"type":"object","additionalProperties":False,"required":["title","action","observe"],"properties":{"title":{"type":"string"},"action":{"type":"string","minLength":30},"observe":{"type":"string","minLength":30}}}},
-        "artist": {"type":"object","additionalProperties":False,"required":["name","work","context","relation","references"],"properties":{"name":{"type":"string"},"work":{"type":"string"},"context":{"type":"string","minLength":80},"relation":{"type":"string","minLength":60},"references":{"type":"array","minItems":1,"maxItems":2,"items":{"type":"object","additionalProperties":False,"required":["source","label","url"],"properties":{"source":{"type":"string"},"label":{"type":"string"},"url":{"type":"string","pattern":"^https://"}}}}}},
+        "artist": {"type":"object","additionalProperties":False,"required":["name","work","context","relation","references","image"],"properties":{"name":{"type":"string"},"work":{"type":"string"},"context":{"type":"string","minLength":80},"relation":{"type":"string","minLength":60},"references":{"type":"array","minItems":1,"maxItems":2,"items":{"type":"object","additionalProperties":False,"required":["source","label","url"],"properties":{"source":{"type":"string"},"label":{"type":"string"},"url":{"type":"string","pattern":"^https://"}}}},"image":{"anyOf":[{"type":"null"},{"type":"object","additionalProperties":False,"required":["url","alt","sourceUrl","license","credit"],"properties":{"url":{"type":"string","pattern":"^https://"},"alt":{"type":"string","minLength":20},"sourceUrl":{"type":"string","pattern":"^https://"},"license":{"type":"string","enum":["CC0 1.0","Public Domain","CC BY 4.0","CC BY-SA 4.0"]},"credit":{"type":"string","minLength":3}}}]}}},
         "extension": {"type":"object","additionalProperties":False,"required":["keywords","next"],"properties":{"keywords":{"type":"array","minItems":3,"maxItems":6,"items":{"type":"string"}},"next":{"type":"string","minLength":40}}}
     }
 }
@@ -77,14 +78,30 @@ def get_response(prompt):
 def validate(lesson, planned, existing_titles):
     if lesson["phase"] != planned["phase"]: fail("phase does not match the curriculum plan")
     if lesson["title"].strip().casefold() in existing_titles: fail("duplicate lesson title")
+    reference_pages={}
     for url in [x["url"] for x in lesson["artist"]["references"]]:
         if not url.startswith("https://") or any(c in url for c in "<>\"'"): fail("invalid reference URL")
         request=urllib.request.Request(url,headers={"User-Agent":"GenerativeArtLab-content-check/1.0"})
         try:
             with urllib.request.urlopen(request,timeout=20) as response:
                 if response.status >= 400: fail(f"reference returned HTTP {response.status}: {url}")
+                reference_pages[url]=response.read(2_000_000).decode(errors="replace")
         except (urllib.error.URLError,TimeoutError) as error:
             fail(f"reference could not be verified: {url} ({error})")
+    image=lesson["artist"]["image"]
+    if image is not None:
+        if image["sourceUrl"] not in [x["url"] for x in lesson["artist"]["references"]]: fail("image source must also appear in artist references")
+        if urllib.parse.urlparse(image["url"]).hostname != "upload.wikimedia.org": fail("artist images must be hosted on Wikimedia Commons")
+        if urllib.parse.urlparse(image["sourceUrl"]).hostname != "commons.wikimedia.org": fail("image license source must be a Wikimedia Commons file page")
+        if image["license"] not in {"CC0 1.0","Public Domain","CC BY 4.0","CC BY-SA 4.0"}: fail("artist image license is not on the allowed list")
+        source_text=reference_pages.get(image["sourceUrl"],"").lower()
+        if image["license"].lower() not in source_text: fail("image source page does not confirm the declared license")
+        request=urllib.request.Request(image["url"],method="HEAD",headers={"User-Agent":"GenerativeArtLab-content-check/1.0"})
+        try:
+            with urllib.request.urlopen(request,timeout=20) as response:
+                if not response.headers.get("Content-Type","").lower().startswith("image/"): fail("artist image URL is not served as an image")
+        except (urllib.error.URLError,TimeoutError) as error:
+            fail(f"artist image could not be verified: {image['url']} ({error})")
     code=lesson["code"]
     if re.search(r"<\s*script|javascript:",code,re.I): fail("unsafe code sample")
     check=subprocess.run(["node","--check"],input=("function lesson(){\n"+code+"\n}\n").encode(),capture_output=True)
@@ -111,6 +128,7 @@ def main():
 必須方針: 15〜20分の日本語教材。数学が苦手な人向けに、日常のたとえ→文章で説明する図解→具体的な数値を一段ずつ計算→必要最小限のコードの順にする。全変数と式の記号を説明する。実験は初期観察→一つの値→極端な値→組み合わせ→コード改造の段階を含み、観察理由も書く。
 デモは自己完結のHTML文字列。HTML内にcanvasと操作可能なinput/button/selectを含め、アルゴリズムに関係する操作と日本語のラベルを実装する。CSSとJavaScriptはインラインにし、外部ライブラリ、外部通信、画像素材、埋め込みiframe、イベント属性は禁止。スマートフォン対応、再生成、初期化、PNG保存をできる範囲で含める。デモの説明は本文の用語と数値例に対応させる。
 作家は実在の作家・確認可能な具体的作品を選ぶ。実際の手法が確認できない場合は表現上の類似と明記する。参考URLは美術館・作家・公的機関などの確認できるページのみ。未確認の作品情報やURLを作らず、不確かな場合は確実に知る作品に差し替える。参考文献リンクは必ず https URL。
+作家作品の画像は、Wikimedia Commons上でCC0 1.0、Public Domain、CC BY 4.0、CC BY-SA 4.0のいずれかと確認できる場合だけ含める。image.urlはupload.wikimedia.org上の直接画像URL、image.sourceUrlは同じ作品のcommons.wikimedia.orgのファイルページとし、sourceUrlもreferencesに含める。altは作品の内容を説明し、creditには必要な作者名などを記す。権利やライセンスを確実に確認できない場合はimageをnullにする（画像なしでも作品と公式資料へのリンクは必ず紹介する）。
 JSON以外は返さない。titleは上記の計画から逸脱させない。既存公開教材に重複するアルゴリズムは避ける。"""
     lesson=get_response(prompt); validate(lesson,planned,titles)
     lesson.update({"day":day,"status":"published"})
