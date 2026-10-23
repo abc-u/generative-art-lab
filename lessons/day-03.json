@@ -126,13 +126,13 @@
   "artist": {
     "name": "Bridget Riley",
     "work": "Movement in Squares, 1961",
-    "context": "この作品では、同じ大きさの正方形が白黒交互に並び、幅が少しずつ変化します。イェール大学のブリジット・ライリー作品カタログは、その圧縮と拡張によって、四角が動いたり奥へ引き込まれたりするように見えると解説しています。",
+    "context": "Arts Council Collection所蔵の1961年の作品です。Google Arts & Cultureの作品解説によると、白黒の正方形が12行に交互に並び、高さを保ったまま幅が少しずつ狭くなることで、動きの錯視が生まれます。",
     "relation": "今回のデモは作品を再現したものではなく、規則的な交互配置が視覚のリズムを生む例として紹介します。",
     "references": [
       {
-        "source": "YALE UNIVERSITY · BRIDGET RILEY CATALOGUE",
+        "source": "ARTS COUNCIL COLLECTION · GOOGLE ARTS & CULTURE",
         "label": "Movement in Squares — 作品情報と解説",
-        "url": "https://bridget-riley.publications.britishart.yale.edu/catalogue/1/"
+        "url": "https://artsandculture.google.com/asset/movement-in-squares-bridget-riley/dwGpQ5o3Dc4FrQ?hl=en-gb"
       }
     ],
     "image": null,
