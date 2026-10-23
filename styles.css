@@ -208,3 +208,6 @@ body{font-size:16px;line-height:1.9}
   .live-rule p{font-size:13px}
   .math-steps code,.code-card pre{font-size:12px}
 }
+
+.algorithm-visual{margin:22px 0 26px;padding:10px;background:#f5f7f4;border:1px solid #e1e7e1}.algorithm-visual img{display:block;width:100%;height:auto}.algorithm-visual figcaption{padding:10px 12px 2px;color:#66736a;font-size:14px;line-height:1.8}
+@media(max-width:680px){.algorithm-visual{margin:16px 0 21px;padding:6px}.algorithm-visual figcaption{font-size:13px;padding:8px 8px 1px}}
