@@ -117,3 +117,8 @@ a.next-lesson-card:hover{border-color:#77a17e;background:#eff6ef}
 /* Keep the title and lesson details comfortably inset inside the title panel. */
 .lesson-heading{padding-left:32px;padding-right:32px}
 @media(max-width:680px){.lesson-heading{padding-left:16px;padding-right:16px}}
+
+
+/* Give experiment descriptions the full row; place the action below the text. */
+.experiment-list li{grid-template-columns:minmax(0,1fr)}
+.experiment-trigger{grid-column:1;justify-self:start}
