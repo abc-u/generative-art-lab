@@ -72,11 +72,11 @@ SCHEMA = obj(
         "experiments": {"type": "array", "minItems": 4, "maxItems": 6, "items": obj(["title", "action", "observe"], {"title": text(), "action": text(15), "observe": text(15), "demoState": {"type": "array", "maxItems": 10, "items": obj(["selector", "value"], {"selector": text(2), "value": text()})}})},
         "artist": obj(["name", "work", "context", "relation", "references", "image"], {
             "name": text(), "work": text(), "context": text(60), "relation": text(30), "highlight": text(20, 220),
-            "realWorldExample": obj(["title", "description", "relation"], {"title": text(4, 80), "description": text(30, 240), "relation": text(30, 300)}),
+            "realWorldExample": obj(["title", "description", "relation", "visual"], {"title": text(4, 80), "description": text(30, 240), "relation": text(30, 300), "visual": obj(["src", "alt", "caption"], {"src": {"type": "string", "pattern": r"^\\./assets/[A-Za-z0-9._/-]+\\.svg$"}, "alt": text(8, 180), "caption": text(10, 220)})}),
             "references": {"type": "array", "minItems": 1, "maxItems": 3, "items": obj(["source", "label", "url"], {"source": text(), "label": text(), "url": {"type": "string", "pattern": "^https://"}})},
-            "image": {"anyOf": [{"type": "null"}, obj(["url", "alt", "sourceUrl", "license", "credit"], {
+            "image": obj(["url", "alt", "sourceUrl", "license", "credit"], {
                 "url": {"type": "string", "pattern": "^https://"}, "alt": text(20), "sourceUrl": {"type": "string", "pattern": "^https://"},
-                "license": {"type": "string", "enum": ALLOWED_LICENSES}, "credit": text(3)})]}}),
+                "license": {"type": "string", "enum": ALLOWED_LICENSES}, "credit": text(3)})}),
         "extension": obj(["keywords", "next"], {"title": text(4, 60), "keywords": {"type": "array", "minItems": 3, "maxItems": 6, "items": text()}, "next": text(40)}),
     },
 )
@@ -162,6 +162,8 @@ def validate_lesson(path, curriculum, offline):
     for key in ("algorithmVisual", "intuitionVisual", "extensionVisual"):
         visual = lesson.get(key)
         if visual and not (ROOT / visual["src"]).is_file(): problems.append(f"{key}.src points to a missing file: {visual['src']}")
+    everyday_visual = lesson["artist"]["realWorldExample"]["visual"]
+    if not (ROOT / everyday_visual["src"]).is_file(): problems.append(f"artist.realWorldExample.visual.src points to a missing file: {everyday_visual['src']}")
     lines = code.count("\n") + 1
     for number in lesson.get("codeHighlight", []):
         if number > lines: problems.append(f"codeHighlight line {number} is past the end of the code ({lines} lines)")
