@@ -37,7 +37,14 @@
       "description": "偶数列と奇数列で、図形を切り替える。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 3,
+      "title": "Row + Column",
+      "topic": "二つの条件を組み合わせる",
+      "description": "行と列の番号を組み合わせ、市松模様をつくる。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
-
