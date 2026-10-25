@@ -69,6 +69,14 @@
       "description": "列の位置を0〜1に変換し、その割合で円の直径を変える。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 7,
+      "title": "Distance to Size",
+      "topic": "距離から大きさを決める",
+      "description": "中心からの距離を0〜1に変換し、近いほど円を大きくする。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
