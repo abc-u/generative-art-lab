@@ -44,7 +44,7 @@
     ],
     "note": "√ は「二乗すると中の数になる値」です。dx は横の差、dy は縦の差。t は中心から角までを 1 とした距離の割合です。"
   },
-  "code": "const distance = Math.hypot(x - centerX, y - centerY);\\nconst t = Math.min(distance / maxDistance, 1);\\nconst diameter = maxSize - t * (maxSize - minSize);",
+  "code": "const distance = Math.hypot(x - centerX, y - centerY);\nconst t = Math.min(distance / maxDistance, 1);\nconst diameter = maxSize - t * (maxSize - minSize);",
   "demo": {
     "title": "中心からの距離で円を変える",
     "caption": "格子数を変え、中心から外側へ円の大きさがどう変わるか観察します。距離は中心から角までを最大値とし、最大直径はマス幅の76%、最小直径は18%です。",
