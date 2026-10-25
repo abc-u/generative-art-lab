@@ -1,0 +1,181 @@
+{
+  "day": 6,
+  "status": "published",
+  "title": "Position to Size",
+  "subtitle": "位置を数値にして、円の大きさを変える。",
+  "topic": "位置から大きさを決める",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "列の位置を 0〜1 の数値に置き換え、その数値を円の直径に対応させます。左端は最小、右端は最大です。Day 5 では位置から色番号を選びました。今日は位置の数値を使って、見た目の大きさを少しずつ変えます。",
+  "applications": "位置に応じた大きさの変化、図形のグラデーション、データの大小を円で表す。",
+  "prerequisites": "Day 1 の格子とくり返し、Day 3 の列番号、Day 5 の位置と色の対応。",
+  "connection": "Day 5 は row と col の位置から余りを計算し、色を選びました。今回は列番号を列数で割って 0〜1 にし、その値を円の直径に使います。",
+  "intuition": {
+    "title": "蛇口を少しずつ開ける",
+    "story": "左端を蛇口の「閉じた状態」、右端を「全開」と考えます。列が右へ進むほど開き具合が増え、その割合に合わせて円も大きくなります。最初と最後の値を決め、その間を均等につなぎます。",
+    "visual": "左端の小さな円から右端の大きな円へ、直径が段階的に変化する図を見ます。",
+    "diagram": "位置 t = col ÷ (cols − 1) ｜ 直径 d = 最小サイズ + t × (最大サイズ − 最小サイズ)"
+  },
+  "numbers": {
+    "title": "9列の真ん中の円は何px？",
+    "setup": "列番号は左端を 0 とします。9列の中央、col 4 の円を計算します。1マスの幅は例として 80 px、最小直径は 16 px、最大直径は 64 px とします。",
+    "steps": [
+      {
+        "label": "列の位置を0〜1にする",
+        "calculation": "t = col ÷ (cols − 1) = 4 ÷ (9 − 1) = 0.5"
+      },
+      {
+        "label": "サイズの差を出す",
+        "calculation": "64 − 16 = 48 px"
+      },
+      {
+        "label": "位置の割合をかける",
+        "calculation": "0.5 × 48 = 24 px"
+      },
+      {
+        "label": "最小サイズに足す",
+        "calculation": "16 + 24 = 40 px"
+      },
+      {
+        "label": "円を描く",
+        "calculation": "中央の円の直径 = 40 px"
+      }
+    ],
+    "note": "t は位置の割合です。0 は左端、1 は右端、0.5 はちょうど真ん中を表します。cols は列数、col は左から数えた列番号です。"
+  },
+  "code": "const t = col / (cols - 1);\nconst diameter = minSize + t * (maxSize - minSize);\ndrawCircle(centerX, centerY, diameter);",
+  "demo": {
+    "title": "位置を円の大きさに変える",
+    "caption": "列数を変え、左端から右端へ円がどう大きくなるかを観察します。列の位置を 0〜1 に変換し、最小直径 16 px・最大直径 64 px（基準幅80 px）をつなぎます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.7 system-ui,sans-serif}.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-bottom:10px}label,button{font:inherit}select,button{padding:7px 9px;border:1px solid #cdd8ce;background:#fff;border-radius:4px;color:#405246}#stage{height:320px;background:#eee5d3;border:1px solid #d8d2c3}canvas{display:block;width:100%;height:100%}.hint{margin:7px 0;color:#536354;font-size:13px}.legend{font-size:13px;color:#536354}@media(max-width:480px){body{padding:8px;font-size:13px}#stage{height:250px}}</style></head><body><div class=\"bar\"><label for=\"cols\">列数 <select id=\"cols\"><option>3</option><option>5</option><option>7</option><option selected>9</option><option>12</option></select></label><button id=\"reset\" type=\"button\">初期値に戻す ↺</button></div><p class=\"legend\">左端：小（直径はマス幅の20%）　→　右端：大（直径はマス幅の80%）</p><div id=\"stage\"><canvas id=\"art\" aria-label=\"左端の小さな円から右端の大きな円へ、列の位置に合わせて直径が増える図\"></canvas></div><p class=\"hint\" id=\"hint\" aria-live=\"polite\"></p><script>const canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),cols=document.querySelector(\"#cols\");function draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height,c=Number(cols.value),cellW=w/c,rows=4,cellH=h/rows;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);for(let row=0;row<rows;row++){for(let col=0;col<c;col++){const x=col*cellW,y=row*cellH,t=col/(c-1),diameter=cellW*.2+t*(cellW*.8-cellW*.2);ctx.strokeStyle=\"#d4cbbb\";ctx.strokeRect(x+.5,y+.5,cellW-1,cellH-1);ctx.fillStyle=[\"#cf684b\",\"#e0ac4e\",\"#347a91\",\"#64836b\"][row];ctx.beginPath();ctx.arc(x+cellW/2,y+cellH/2,diameter/2,0,Math.PI*2);ctx.fill()}}const middle=Math.floor((c-1)/2),t=middle/(c-1);document.querySelector(\"#hint\").textContent=c+\"列。列番号 col を cols−1 で割り、t を0〜1にします。左端 t=0、右端 t=1。\"}cols.addEventListener(\"change\",draw);window.addEventListener(\"resize\",draw);document.querySelector(\"#reset\").addEventListener(\"click\",()=>{cols.value=\"9\";draw()});window.addEventListener(\"message\",event=>{if(event.data?.type!==\"gal-experiment\")return;for(const c of event.data.controls||[]){const x=document.querySelector(c.selector);if(x){x.value=c.value;x.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "左から右へ目で追う",
+      "action": "初期設定の 9 列を見ます。",
+      "observe": "円はどの順番で大きくなりますか？隣同士のサイズ差は一定に見えますか？",
+      "demoState": [
+        {
+          "selector": "#cols",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "title": "列数を5に減らす",
+      "action": "列数だけ 9 から 5 にします。",
+      "observe": "左右の端のサイズは保たれたまま、間の段階はどう変わりましたか？",
+      "demoState": [
+        {
+          "selector": "#cols",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "title": "列数を12に増やす",
+      "action": "列数を 12 にします。",
+      "observe": "小から大への変化は、5列のときより滑らかに見えますか？",
+      "demoState": [
+        {
+          "selector": "#cols",
+          "value": "12"
+        }
+      ]
+    },
+    {
+      "title": "真ん中の値を計算する",
+      "action": "9列に戻し、左から5番目の円（col 4）に注目します。",
+      "observe": "4 ÷ (9−1) = 0.5。最小16 px、最大64 pxなら直径は40 pxです。式と図の中央を対応させてみましょう。",
+      "demoState": [
+        {
+          "selector": "#cols",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "title": "端の値を確かめる",
+      "action": "列数を3にします。",
+      "observe": "左端 t=0 は最小サイズ、右端 t=1 は最大サイズです。両端の円の大きさを見比べましょう。",
+      "demoState": [
+        {
+          "selector": "#cols",
+          "value": "3"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Wassily Kandinsky",
+    "work": "Several Circles (1926)",
+    "context": "ワシリー・カンディンスキーの《Several Circles》は、さまざまな大きさの円を画面に配置した1926年の作品です。Wikimedia Commonsの情報では、ソロモン・R・グッゲンハイム美術館所蔵と記録されています。",
+    "relation": "この作品を今回の式で作ったわけではありません。円の大きさの違いが、画面の中で視線や重なりの印象を変える例として見ます。",
+    "highlight": "小さな円と大きな円を見つけ、円の直径だけで印象がどう変わるか観察しましょう。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品情報・画像・パブリックドメイン表示",
+        "url": "https://commons.wikimedia.org/wiki/File:Vassily_Kandinsky,_1926_-_Several_Circles,_Gugg_0910_25.jpg"
+      },
+      {
+        "source": "Solomon R. Guggenheim Museum",
+        "label": "Several Circles · 美術館の作品情報",
+        "url": "https://www.guggenheim.org/artwork/1992"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Vassily_Kandinsky%2C_1926_-_Several_Circles%2C_Gugg_0910_25.jpg",
+      "alt": "カンディンスキー《Several Circles》に描かれた、重なり合う大小さまざまな円。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vassily_Kandinsky,_1926_-_Several_Circles,_Gugg_0910_25.jpg",
+      "license": "Public Domain",
+      "credit": "Wassily Kandinsky, Several Circles (1926) · Wikimedia Commons, Public Domain"
+    },
+    "realWorldExample": {
+      "title": "身近な例：大きさの違うお皿",
+      "description": "食卓では、小皿・取り皿・大皿のように、用途に合わせて直径の違う皿を使います。",
+      "relation": "小さい円から大きい円へ直径を変えるデモは、皿の大きさを並べて比べる感覚に似ています。ここでは皿の形を単純化した学習用イラストで、実物の写真ではありません。",
+      "visual": {
+        "src": "./assets/day-06-plates.svg",
+        "alt": "小皿、取り皿、大皿を左から右へ大きさ順に並べた、皿のサイズ比較イラスト。",
+        "caption": "身近な例 · 用途の違う三種類の皿を大きさ順に示した学習用イラスト。"
+      }
+    }
+  },
+  "extension": {
+    "title": "大きさ以外の値にも使える",
+    "keywords": [
+      "線形補間",
+      "0〜1の正規化",
+      "座標と値",
+      "データビジュアライゼーション",
+      "linear mapping"
+    ],
+    "next": "今回は列の位置を 0〜1 にして円の直径へ対応づけました。次は距離を計算し、中心から離れるほど変化する模様につなげます。"
+  },
+  "ruleSummary": "col ÷ (cols − 1) で位置を 0〜1 にし、最小直径から最大直径へ対応させる。",
+  "codeNote": "9列の col 4 なら t = 4 ÷ 8 = 0.5。最小16 px・最大64 pxの間の半分なので、直径は40 pxです。",
+  "algorithmVisual": {
+    "src": "./assets/day-06-map.svg",
+    "alt": "列番号0から8までを位置の割合0から1に対応させ、円が小から大へ変化する流れを示す図。",
+    "caption": "図1 · 列番号を 0〜1 の位置に変換します。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-06-scale.svg",
+    "alt": "最小16 pxから最大64 pxまで、中央40 pxを通って直径が増える目盛り図。",
+    "caption": "図2 · 位置の割合 t を、二つのサイズの間へ当てはめます。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3
+  ],
+  "goalTitle": "位置を割合にして、大きさへつなぐ。",
+  "ruleCode": "t = col / (cols − 1) → diameter = minSize + t × (maxSize − minSize)",
+  "extensionVisual": {
+    "src": "./assets/day-06-next.svg",
+    "alt": "中央の点から遠ざかるにつれて円の大きさが変化する同心的な配置図。",
+    "caption": "図3 · 次は中心からの距離を使って模様を作ります。"
+  }
+}
