@@ -61,6 +61,14 @@
       "description": "3で割った余りをパレット番号にして、行と列から色を選ぶ。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 6,
+      "title": "Position to Size",
+      "topic": "位置から大きさを決める",
+      "description": "列の位置を0〜1に変換し、その割合で円の直径を変える。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
