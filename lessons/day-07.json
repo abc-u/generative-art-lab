@@ -1,0 +1,176 @@
+{
+  "day": 7,
+  "status": "published",
+  "title": "Distance to Size",
+  "subtitle": "中心からの距離で、円の大きさを変える。",
+  "topic": "距離から大きさを決める",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "格子の各点から中心までの距離を計算し、近い点には大きな円、遠い点には小さな円を描きます。Day 6 は左から右への位置を使いました。今日は横と縦の位置を合わせて距離にし、中心から広がる模様を作ります。距離を最大距離で割って0〜1の割合に直し、その割合を使って最大直径から最小直径へ少しずつ縮めます。",
+  "applications": "放射状の模様、中心から広がる波の準備、距離で変わる図形や色。",
+  "prerequisites": "Day 1 の格子とくり返し、Day 3 の行と列、Day 6 の位置を値へ変換する考え方。",
+  "connection": "Day 6 は列の位置を 0〜1 に変換してサイズを変えました。今回は x と y の両方を使い、中心からの距離を 0〜1 にして円のサイズへつなげます.",
+  "intuition": {
+    "title": "中心から遠ざかる足あと",
+    "story": "床の中心に立ち、格子のマスへ一歩ずつ移動すると考えます。中心に近い足あとには大きな丸、遠い足あとには小さな丸を置きます。横の距離と縦の距離を合わせれば、中心からどれだけ離れたかが分かります。",
+    "visual": "格子の中心に大きな円が集まり、外側ほど小さくなる図を見ます。",
+    "diagram": "中心からの距離 d = √(横の差² + 縦の差²) ｜ d が大きいほど円を小さくする"
+  },
+  "numbers": {
+    "title": "中心から3マスの点の円は？",
+    "setup": "9×9格子の中心を (4,4) とします。点 (7,4) までの距離を求めます。1マス=64 px、最大直径48 px、最小直径12 pxとします。",
+    "steps": [
+      {
+        "label": "横と縦の差を出す",
+        "calculation": "dx = 7 − 4 = 3、dy = 4 − 4 = 0"
+      },
+      {
+        "label": "中心からの距離を計算",
+        "calculation": "d = √(3² + 0²) = 3マス"
+      },
+      {
+        "label": "最大距離で割り割合にする",
+        "calculation": "中心から角まで = √(4² + 4²) ≈ 5.66マス。t = 3 ÷ 5.66 ≈ 0.53"
+      },
+      {
+        "label": "サイズの差を割合で縮める",
+        "calculation": "48 − 12 = 36 px。0.53 × 36 ≈ 19 px"
+      },
+      {
+        "label": "最大サイズから引く",
+        "calculation": "48 − 19 = 約29 px"
+      }
+    ],
+    "note": "√ は「二乗すると中の数になる値」です。dx は横の差、dy は縦の差。t は中心から角までを 1 とした距離の割合です。"
+  },
+  "code": "const distance = Math.hypot(x - centerX, y - centerY);\nconst t = Math.min(distance / maxDistance, 1);\nconst diameter = maxSize - t * (maxSize - minSize);",
+  "demo": {
+    "title": "中心からの距離で円を変える",
+    "caption": "格子数を変え、中心から外側へ円の大きさがどう変わるか観察します。距離は中心から角までを最大値とし、最大直径はマス幅の76%、最小直径は18%です。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.7 system-ui,sans-serif}.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-bottom:10px}label,button{font:inherit}select,button{padding:7px 9px;border:1px solid #cdd8ce;background:#fff;border-radius:4px;color:#405246}#stage{height:min(76vw,420px);min-height:260px;background:#eee5d3;border:1px solid #d8d2c3}canvas{display:block;width:100%;height:100%}.hint{margin:7px 0;color:#536354;font-size:13px}@media(max-width:480px){body{padding:8px;font-size:13px}#stage{height:300px;min-height:240px}}</style></head><body><div class=\"bar\"><label for=\"count\">格子数 <select id=\"count\"><option>5</option><option>7</option><option selected>9</option><option>11</option></select></label><button id=\"reset\" type=\"button\">初期値に戻す ↺</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"中心から離れるほど小さくなる円を格子状に並べた図\"></canvas></div><p id=\"hint\" class=\"hint\" aria-live=\"polite\"></p><script>const canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),count=document.querySelector(\"#count\"),palette=[\"#cf684b\",\"#e0ac4e\",\"#347a91\",\"#64836b\"];function draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height,n=Number(count.value),cell=Math.min(w,h)/n,cx=(n-1)/2,cy=(n-1)/2,maxDist=Math.hypot(cx,cy),maxD=cell*.76,minD=cell*.18;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);for(let row=0;row<n;row++)for(let col=0;col<n;col++){const dx=col-cx,dy=row-cy,distance=Math.hypot(dx,dy),t=Math.min(distance/maxDist,1),diameter=maxD-t*(maxD-minD),x=(w-n*cell)/2+(col+.5)*cell,y=(h-n*cell)/2+(row+.5)*cell;ctx.fillStyle=palette[(row+col)%palette.length];ctx.beginPath();ctx.arc(x,y,diameter/2,0,Math.PI*2);ctx.fill()}document.querySelector(\"#hint\").textContent=n+\"×\"+n+\" の格子。中心からの距離が大きい場所ほど円は小さくなります。距離の最大値は中心から角までです。\"}count.addEventListener(\"change\",draw);window.addEventListener(\"resize\",draw);document.querySelector(\"#reset\").addEventListener(\"click\",()=>{count.value=\"9\";draw()});window.addEventListener(\"message\",event=>{if(event.data?.type!==\"gal-experiment\")return;for(const c of event.data.controls||[]){const x=document.querySelector(c.selector);if(x){x.value=c.value;x.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "中心と外側を見比べる",
+      "action": "初期設定の9×9格子で、真ん中から角へ目を動かします。",
+      "observe": "円の大きさはどのように変わりますか？同じ距離の場所同士は似た大きさですか？",
+      "demoState": [
+        {
+          "selector": "#count",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "title": "格子を5×5にする",
+      "action": "格子数だけを9から5に変えます。",
+      "observe": "中心から角までのマス数が減ると、サイズの変化はどう見えますか？",
+      "demoState": [
+        {
+          "selector": "#count",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "title": "格子を11×11にする",
+      "action": "格子数を11に増やして、模様の細かさを確認します。",
+      "observe": "中心から外側への変化は、5×5のときより滑らかに見えますか？",
+      "demoState": [
+        {
+          "selector": "#count",
+          "value": "11"
+        }
+      ]
+    },
+    {
+      "title": "距離を手で確かめる",
+      "action": "9×9に戻し、中心(4,4)から点(7,4)を見つけます。",
+      "observe": "横の差は3、縦の差は0なので距離は3マス。計算例の約29 pxと、同じ距離の点の円を比べます。",
+      "demoState": [
+        {
+          "selector": "#count",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "title": "中心から角までを比べる",
+      "action": "7×7にして、中央と角の円を見比べます。",
+      "observe": "中心は距離0、角は最大距離です。どちらが最大直径・最小直径に対応しますか？",
+      "demoState": [
+        {
+          "selector": "#count",
+          "value": "7"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Piero della Francesca",
+    "work": "The Flagellation of Christ (c. 1459–1460)",
+    "context": "ピエロ・デラ・フランチェスカの《キリストの鞭打ち》は、奥行きのある建築空間を遠近法で描いた作品です。Wikimedia Commonsの作品情報には作者、制作年代、所蔵先、パブリックドメイン表示があります。",
+    "relation": "この絵を距離から円の直径を計算する今回の規則で描いたわけではありません。遠くにあるものが画面上で小さく見えるよう、空間の奥行きと大きさを結びつけた視覚表現の例として紹介します。",
+    "highlight": "建物の床や柱をたどって奥行きを見つけ、手前と奥で人物や物の大きさがどう見えるか比べましょう。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・作者・年代・公開条件",
+        "url": "https://commons.wikimedia.org/wiki/File:Piero_della_Francesca_Flagellazione-gndm-full.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Piero_della_Francesca_Flagellazione-gndm-full.jpg",
+      "alt": "ピエロ・デラ・フランチェスカ《キリストの鞭打ち》に描かれた、奥行きのある建築空間と人物。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Piero_della_Francesca_Flagellazione-gndm-full.jpg",
+      "license": "Public Domain",
+      "credit": "Piero della Francesca, The Flagellation of Christ (c. 1459–1460) · Wikimedia Commons, Public Domain"
+    },
+    "realWorldExample": {
+      "title": "身近な例：遠近法の道と街灯",
+      "description": "まっすぐ続く道では、近くの街灯は大きく、遠くの街灯は小さく見えます。",
+      "relation": "デモでは中心から離れる距離をサイズに結びつけます。道の例では観察者からの距離で見かけの大きさが変わります。どちらも「距離と大きさを対応させる」考え方をつかむ助けになります。",
+      "visual": {
+        "src": "./assets/day-07-perspective.svg",
+        "alt": "道路の両側の街灯が、手前では大きく遠くでは小さく描かれ、消失点へ並ぶ学習用イラスト。",
+        "caption": "身近な例 · 道と街灯の遠近感を示す学習用イラスト。"
+      }
+    }
+  },
+  "extension": {
+    "title": "距離から色や動きへ",
+    "keywords": [
+      "ユークリッド距離",
+      "Math.hypot",
+      "正規化",
+      "放射状パターン",
+      "距離場"
+    ],
+    "next": "今日は中心からの距離を円の大きさへ変えました。次は同じ距離の考え方に波を組み合わせ、中心から広がる模様の変化を作ります。"
+  },
+  "ruleSummary": "中心からの距離を 0〜1 に変換し、遠いほど円の直径を小さくする。",
+  "codeNote": "中心(4,4)から(7,4)は3マス。中心から角まで約5.66マスなので t≈0.53。直径は48 − 0.53×(48−12) ≈ 29 pxです。",
+  "algorithmVisual": {
+    "src": "./assets/day-07-distance-map.svg",
+    "alt": "中心点から横に3、縦に4進んだ点までの距離を直角三角形で表した図。",
+    "caption": "図1 · 横と縦の差から中心までの距離を求めます。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-07-radial.svg",
+    "alt": "中央の大きな円から外側の小さな円へ、距離に応じてサイズが変わる格子模様。",
+    "caption": "図2 · 同じ距離にある点は似た大きさになります。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3
+  ],
+  "goalTitle": "中心からの距離を、円の大きさへ変える。",
+  "ruleCode": "t = min(distance / maxDistance, 1) → diameter = maxSize − t × (maxSize − minSize)",
+  "extensionVisual": {
+    "src": "./assets/day-07-next.svg",
+    "alt": "円の輪が中心から外側へ波のように広がる模様の予告図。",
+    "caption": "図3 · 次は距離に波を組み合わせます。"
+  }
+}
