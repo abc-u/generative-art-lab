@@ -1,0 +1,154 @@
+{
+  "day": 8,
+  "status": "published",
+  "title": "Radial Wave",
+  "subtitle": "距離に波を重ねて、輪の模様をつくる。",
+  "topic": "距離と波で輪をつくる",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "中心からの距離を波の位置として使い、波の山では大きな円、谷では小さな円を描きます。同じ距離にある点には同じサイズが並び、中心から同心円の模様が広がります。Day 7で距離をサイズに変えた方法に、波のくり返しを加えます。",
+  "applications": "同心円の模様、波紋、距離に応じて変わる図形。",
+  "prerequisites": "Day 1 の格子とくり返し、Day 6 の値の変換、Day 7 の中心からの距離。",
+  "connection": "Day 7では中心から遠いほど円を小さくしました。今日は距離が増えるたびにサイズを大・小とくり返し、輪の模様をつくります。",
+  "intuition": {
+    "title": "水面に広がる波紋",
+    "story": "水面に小石を落とすと、波の山と谷が交互に外へ広がります。中心からの距離を調べ、山の位置には大きな円、谷には小さな円を置くと考えます。",
+    "visual": "中心から外へ大・中・小の円が交互に並びます。",
+    "diagram": "サイズ = 中間サイズ + 波の高さ × サイズの幅"
+  },
+  "numbers": {
+    "title": "距離で円の大きさはどう変わる？",
+    "setup": "最大直径48 px、最小直径12 pxとします。波の1周期は約2.83マスです。",
+    "steps": [
+      {
+        "label": "大きさの中間と幅を求める",
+        "calculation": "中間 = (48 + 12) ÷ 2 = 30 px。幅 = (48 − 12) ÷ 2 = 18 px"
+      },
+      {
+        "label": "波の山・谷を決める",
+        "calculation": "波の高さは -1〜1。山は1、谷は-1です。"
+      },
+      {
+        "label": "中心では山",
+        "calculation": "距離0では波の高さ1。直径 = 30 + 18 × 1 = 48 px"
+      },
+      {
+        "label": "1/4周期先では中間",
+        "calculation": "距離約0.71マスでは高さ0。直径 = 30 + 18 × 0 = 30 px"
+      },
+      {
+        "label": "半周期先では谷",
+        "calculation": "距離約1.41マスでは高さ-1。直径 = 30 + 18 × (-1) = 12 px"
+      }
+    ],
+    "note": "波の高さは Math.cos() で計算します。距離が増えると高さが1→0→-1→0→1と変化します。"
+  },
+  "code": "const distance = Math.hypot(x - centerX, y - centerY);\nconst wave = Math.cos(distance * frequency);\nconst diameter = midSize + wave * sizeRange;",
+  "demo": {
+    "title": "距離に波を重ねる",
+    "caption": "波の数を2・3・4から選びます。初期値2では、中心から角までに2周期の波が並びます。最大直径はマス幅の76%、最小直径は18%。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.7 system-ui,sans-serif}.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-bottom:10px}label,button{font:inherit}select,button{padding:7px 9px;border:1px solid #cdd8ce;background:#fff;border-radius:4px;color:#405246}#stage{height:min(76vw,420px);min-height:260px;background:#eee5d3;border:1px solid #d8d2c3}canvas{display:block;width:100%;height:100%}.hint{margin:7px 0;color:#536354;font-size:13px}@media(max-width:480px){body{padding:8px;font-size:13px}#stage{height:300px;min-height:240px}}</style></head><body><div class=\"bar\"><label for=\"waves\">波の数 <select id=\"waves\"><option>2</option><option>3</option><option>4</option></select></label><button id=\"reset\" type=\"button\">初期値に戻す ↺</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"大きさの異なる円が波紋のように同心円状に並ぶ図\"></canvas></div><p id=\"hint\" class=\"hint\" aria-live=\"polite\"></p><script>const canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),waves=document.querySelector(\"#waves\"),palette=[\"#cf684b\",\"#e0ac4e\",\"#347a91\",\"#64836b\"];function draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height,n=9,cell=Math.min(w,h)/n,c=(n-1)/2,maxDist=Math.hypot(c,c),maxD=cell*.76,minD=cell*.18,midSize=(maxD+minD)/2,sizeRange=(maxD-minD)/2,frequency=Number(waves.value)*2*Math.PI/maxDist;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);for(let row=0;row<n;row++)for(let col=0;col<n;col++){const distance=Math.hypot(col-c,row-c),wave=Math.cos(distance*frequency),diameter=midSize+wave*sizeRange,x=(w-n*cell)/2+(col+.5)*cell,y=(h-n*cell)/2+(row+.5)*cell;ctx.fillStyle=palette[(row+col)%palette.length];ctx.beginPath();ctx.arc(x,y,diameter/2,0,Math.PI*2);ctx.fill()}document.querySelector(\"#hint\").textContent=\"9×9格子。中心から角までに\"+waves.value+\"周期の波が並びます。\";}waves.addEventListener(\"change\",draw);window.addEventListener(\"resize\",draw);document.querySelector(\"#reset\").addEventListener(\"click\",()=>{waves.value=\"2\";draw()});window.addEventListener(\"message\",event=>{if(event.data?.type!==\"gal-experiment\")return;for(const c of event.data.controls||[]){const x=document.querySelector(c.selector);if(x){x.value=c.value;x.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "2周期の波を見る",
+      "action": "波の数だけを2から2に変えます。",
+      "observe": "輪の間隔と、模様の細かさがどう変わるかを見ます。",
+      "demoState": [
+        {
+          "selector": "#waves",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "title": "波を3周期にする",
+      "action": "波の数だけを2から3に変えます。",
+      "observe": "輪の間隔と、模様の細かさがどう変わるかを見ます。",
+      "demoState": [
+        {
+          "selector": "#waves",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "title": "波を4周期にする",
+      "action": "波の数だけを3から4に変えます。",
+      "observe": "輪の間隔と、模様の細かさがどう変わるかを見ます。",
+      "demoState": [
+        {
+          "selector": "#waves",
+          "value": "4"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Vincent van Gogh",
+    "work": "The Starry Night (1889)",
+    "context": "フィンセント・ファン・ゴッホ《星月夜》には、空にうねる筆づかいが見られます。",
+    "relation": "作品の渦巻きは今回のcos計算による模様ではありません。動きのある線が画面に波の印象をつくる例として観察します。",
+    "highlight": "空のうねりの形や間隔を見比べ、波のくり返しを探しましょう。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・作者・年代・公開条件",
+        "url": "https://commons.wikimedia.org/wiki/File:VanGogh-starry_night.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/1/1a/VanGogh-starry_night.jpg",
+      "alt": "ゴッホ《星月夜》の夜空に、青い渦巻きやうねる筆づかいが描かれている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:VanGogh-starry_night.jpg",
+      "license": "Public Domain",
+      "credit": "Vincent van Gogh, The Starry Night (1889) · Wikimedia Commons, Public Domain"
+    },
+    "realWorldExample": {
+      "title": "身近な例：水面の波紋",
+      "description": "水に小石を落とすと、波の山と谷が輪になって広がります。",
+      "relation": "距離に応じた山と谷のくり返しを、大小の円で表しました。",
+      "visual": {
+        "src": "./assets/day-08-ripples.svg",
+        "alt": "水面の一点から同心円状の波紋が広がる学習用イラスト。",
+        "caption": "身近な例 · 小石を落とした水面の波紋を示す学習用イラスト。"
+      }
+    }
+  },
+  "extension": {
+    "title": "距離の波から色へ",
+    "keywords": [
+      "Math.cos",
+      "周期",
+      "振幅",
+      "波紋",
+      "同心円"
+    ],
+    "next": "波の山と谷をサイズに結びつけました。次は同じ波を使って色も変え、形と色が連動する模様を作ります。"
+  },
+  "ruleSummary": "中心からの距離を波の位置にし、波の高さで円のサイズを大きくしたり小さくしたりする。",
+  "codeNote": "中間サイズ30 px、幅18 px。距離0の山は48 px、1/4周期の距離0.71マスで30 px、半周期の1.41マスで12 px。",
+  "algorithmVisual": {
+    "src": "./assets/day-08-wave-formula.svg",
+    "alt": "距離0では波の山、距離0.71で中間、距離1.41で谷になる波形とサイズの対応図。",
+    "caption": "図1 · 波の高さを円の直径へ変換します。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-08-radial-wave.svg",
+    "alt": "中心から外へ大中小の円が同心円状に交互に並び、波のくり返しを表す図。",
+    "caption": "図2 · 波の山と谷が輪になって広がります。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3
+  ],
+  "goalTitle": "距離のくり返しを、円のサイズへ変える。",
+  "ruleCode": "diameter = midSize + cos(distance × frequency) × sizeRange",
+  "extensionVisual": {
+    "src": "./assets/day-08-next.svg",
+    "alt": "円の輪の模様が色の変化と組み合わさる次回予告図。",
+    "caption": "図3 · 次は波の位置に色も結びつけます。"
+  }
+}
