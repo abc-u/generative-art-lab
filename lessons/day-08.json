@@ -53,7 +53,7 @@
   "experiments": [
     {
       "title": "2周期の波を見る",
-      "action": "波の数だけを2から2に変えます。",
+      "action": "初期設定の2周期で、中心から外側へ円のサイズを観察します。",
       "observe": "輪の間隔と、模様の細かさがどう変わるかを見ます。",
       "demoState": [
         {
@@ -99,7 +99,7 @@
       }
     ],
     "image": {
-      "url": "https://upload.wikimedia.org/wikipedia/commons/1/1a/VanGogh-starry_night.jpg",
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/TheStarryNightByVincentVanGogh.jpg",
       "alt": "ゴッホ《星月夜》の夜空に、青い渦巻きやうねる筆づかいが描かれている。",
       "sourceUrl": "https://commons.wikimedia.org/wiki/File:VanGogh-starry_night.jpg",
       "license": "Public Domain",
