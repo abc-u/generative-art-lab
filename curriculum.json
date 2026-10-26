@@ -77,6 +77,14 @@
       "description": "中心からの距離を0〜1に変換し、近いほど円を大きくする。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 8,
+      "title": "Radial Wave",
+      "topic": "距離と波で輪をつくる",
+      "description": "中心からの距離を波にし、波の山と谷で円の大きさをくり返し変える。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
