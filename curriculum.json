@@ -85,6 +85,14 @@
       "description": "中心からの距離を波にし、波の山と谷で円の大きさをくり返し変える。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 9,
+      "title": "Wave to Color",
+      "topic": "波の値から色を決める",
+      "description": "波の高さを色番号に変換し、輪の模様をつくる。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
