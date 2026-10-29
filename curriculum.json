@@ -93,6 +93,14 @@
       "description": "波の高さを色番号に変換し、輪の模様をつくる。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 10,
+      "title": "Wave to Shape & Color",
+      "topic": "波から形と色を決める",
+      "description": "同じ波の値から、円のサイズと色を同時に決める。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
