@@ -1,0 +1,166 @@
+{
+  "day": 10,
+  "status": "published",
+  "title": "Wave to Shape & Color",
+  "subtitle": "波の値で、円の大きさと色を同時に変える。",
+  "topic": "波から形と色を決める",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "中心からの距離を波の位置にし、波の高さを円の直径と色の両方へ変換します。波の山では大きく黄色い円、谷では小さく紺の円、中間では中くらいの青緑の円を描きます。Day 8・9で別々に扱った変化を、同じ波の値で同時に起こします。 格子ごとの変化を見比べ、同じ値が二つの見た目にどう反映されるか確かめます。",
+  "applications": "波紋の模様、色と形が連動するパターン、距離から図形を変える表現。",
+  "prerequisites": "Day 7 の距離、Day 8 の波とサイズ、Day 9 の波から色を選ぶ方法。",
+  "connection": "Day 8は波でサイズを変え、Day 9は波で色を選びました。今日は同じ波の値をサイズと色の両方に使います。",
+  "intuition": {
+    "title": "波の山と谷に色と大きさを結びつける",
+    "story": "波の山には大きく黄色い丸、谷には小さく紺の丸を置きます。波の高さが変わる途中では、丸の大きさも色も少しずつ変わります。",
+    "visual": "同じ輪の場所で、円のサイズと色がそろって変化します。",
+    "diagram": "wave (-1〜1) → diameter (12〜48 px) ＋ color (紺〜黄)"
+  },
+  "numbers": {
+    "title": "波の値からサイズと色を決める",
+    "setup": "最小直径12 px、最大48 px。波の谷=-1、中間=0、山=1。色は紺・青緑・黄の3段階です。",
+    "steps": [
+      {
+        "label": "波の値を0〜1にする",
+        "calculation": "u = (wave + 1) ÷ 2。wave=-1なら0、0なら0.5、1なら1。"
+      },
+      {
+        "label": "円の直径へ変換",
+        "calculation": "直径 = 12 + u × (48 − 12)。wave=-1なら12 px、0なら30 px、1なら48 px。"
+      },
+      {
+        "label": "色番号へ変換",
+        "calculation": "番号 = 四捨五入(u × (3 − 1))。選べる番号は0・1・2。"
+      },
+      {
+        "label": "谷の例",
+        "calculation": "wave=-1 → u=0 → 直径12 px・番号0（紺）"
+      },
+      {
+        "label": "中間と山の例",
+        "calculation": "wave=0 → 30 px・青緑。wave=1 → 48 px・黄。"
+      }
+    ],
+    "note": "同じ u をサイズと色番号の両方に使うのがポイントです。色は段階的に切り替わり、サイズはなめらかに変わります。"
+  },
+  "code": "const distance = Math.hypot(x - centerX, y - centerY);\nconst wave = Math.cos(distance * frequency);\nconst u = (wave + 1) / 2;\nconst diameter = minSize + u * (maxSize - minSize);\nconst color = palette[Math.round(u * (palette.length - 1))];",
+  "demo": {
+    "title": "波でサイズと色を同時に変える",
+    "caption": "波の周期数を2・3・4から選びます。波の谷は直径12 px・紺、中間は30 px・青緑、山は48 px・黄。9×9格子で観察します。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.7 system-ui,sans-serif}.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-bottom:10px}label,button{font:inherit}select,button{padding:7px 9px;border:1px solid #cdd8ce;background:#fff;border-radius:4px;color:#405246}#stage{height:min(76vw,420px);min-height:260px;background:#eee5d3;border:1px solid #d8d2c3}canvas{display:block;width:100%;height:100%}.hint{margin:7px 0;color:#536354;font-size:13px}@media(max-width:480px){body{padding:8px;font-size:13px}#stage{height:300px;min-height:240px}}</style></head><body><div class=\"bar\"><label for=\"waves\">波の周期数 <select id=\"waves\"><option>2</option><option>3</option><option>4</option></select></label><button id=\"reset\" type=\"button\">初期値に戻す ↺</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"波の高さに応じてサイズと色が変わる円の格子\"></canvas></div><p id=\"hint\" class=\"hint\" aria-live=\"polite\"></p><script>const canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),waves=document.querySelector(\"#waves\"),palette=[\"#263b63\",\"#3c9b91\",\"#f0c75e\"];function draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height,n=9,cell=Math.min(w,h)/n,c=(n-1)/2,maxDist=Math.hypot(c,c),frequency=Number(waves.value)*2*Math.PI/maxDist,minSize=cell*.18,maxSize=cell*.76;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);for(let row=0;row<n;row++)for(let col=0;col<n;col++){const distance=Math.hypot(col-c,row-c),wave=Math.cos(distance*frequency),u=(wave+1)/2,diameter=minSize+u*(maxSize-minSize),color=palette[Math.round(u*(palette.length-1))],x=(w-n*cell)/2+(col+.5)*cell,y=(h-n*cell)/2+(row+.5)*cell;ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,diameter/2,0,Math.PI*2);ctx.fill()}document.querySelector(\"#hint\").textContent=\"波の谷：小さく紺、中間：中くらいの青緑、山：大きく黄。周期数：\"+waves.value+\"。\";}waves.addEventListener(\"change\",draw);window.addEventListener(\"resize\",draw);document.querySelector(\"#reset\").addEventListener(\"click\",()=>{waves.value=\"2\";draw()});window.addEventListener(\"message\",event=>{if(event.data?.type!==\"gal-experiment\")return;for(const c of event.data.controls||[]){const x=document.querySelector(c.selector);if(x){x.value=c.value;x.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "色とサイズの対応を見る",
+      "action": "初期値2周期で、紺・青緑・黄の円の大きさを比べます。",
+      "observe": "各色の円はどのくらいの大きさですか？",
+      "demoState": [
+        {
+          "selector": "#waves",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "title": "周期を3にする",
+      "action": "周期数を2から3へ変えます。",
+      "observe": "色帯とサイズの変化が何回くり返されますか？",
+      "demoState": [
+        {
+          "selector": "#waves",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "title": "周期を4にする",
+      "action": "周期数を3から4へ変えます。",
+      "observe": "輪の間隔と模様の細かさを比べます。",
+      "demoState": [
+        {
+          "selector": "#waves",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "title": "数値例と照らす",
+      "action": "2周期に戻し、最小・中間・最大のサイズに近い円を探します。",
+      "observe": "紺が小さく、青緑が中間、黄が大きいという計算例と対応しますか？",
+      "demoState": [
+        {
+          "selector": "#waves",
+          "value": "2"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Katsushika Hokusai",
+    "work": "The Great Wave off Kanagawa (c. 1830–1832)",
+    "context": "葛飾北斎《神奈川沖浪裏》は、藍色の波と白い泡を大胆に配置した木版画です。",
+    "relation": "作品の波は今回の計算で生成したものではありません。波の形と色が画面の印象をつくる例として見比べます。",
+    "highlight": "大きな波の輪郭や、藍色と白の面積の違いを観察しましょう。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・作者・公開条件",
+        "url": "https://commons.wikimedia.org/wiki/File:The_Great_Wave_at_Kanagawa.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/8b/The_Great_Wave_at_Kanagawa.jpg",
+      "alt": "北斎《神奈川沖浪裏》の大きな藍色の波が、白い泡を立てて小舟に迫る。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_Great_Wave_at_Kanagawa.jpg",
+      "license": "Public Domain",
+      "credit": "Katsushika Hokusai, The Great Wave off Kanagawa (c. 1830–1832) · Wikimedia Commons, Public Domain"
+    },
+    "realWorldExample": {
+      "title": "身近な例：浜辺に寄せる波",
+      "description": "浜辺の波は、山の部分が高く盛り上がり、谷へ向かって低くなります。",
+      "relation": "波の高低に合わせて円の大きさと色を変えると、規則的な波のリズムが目に見えます。",
+      "visual": {
+        "src": "./assets/day-10-shore-wave.svg",
+        "alt": "砂浜へ寄せる青い波に白い泡が重なる学習用イラスト。",
+        "caption": "身近な例 · 浜辺へ寄せる波の高さと色。"
+      }
+    }
+  },
+  "extension": {
+    "title": "波にゆらぎを加える",
+    "keywords": [
+      "Math.cos",
+      "正規化",
+      "パレット",
+      "振幅",
+      "ゆらぎ"
+    ],
+    "next": "同じ波から色とサイズを決めました。次は均一な繰り返しに少しずつゆらぎを加え、自然な表情へ近づけます。"
+  },
+  "ruleSummary": "波の値を0〜1に直し、その同じ割合から円の直径と色番号を決める。",
+  "codeNote": "wave=-1, 0, 1なら、直径は12, 30, 48 px。色番号は0, 1, 2で紺・青緑・黄です。",
+  "algorithmVisual": {
+    "src": "./assets/day-10-wave-mapping.svg",
+    "alt": "波-1・0・1が直径12・30・48ピクセルと紺・青緑・黄の組に変わる図。",
+    "caption": "図1 · 同じ波の値から大きさと色を決めます。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-10-radial.svg",
+    "alt": "中心から外へ、大小と紺・青緑・黄が連動して変わる同心円の格子。",
+    "caption": "図2 · サイズと色が一緒に波打つ模様。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "goalTitle": "同じ波の値から、サイズと色を決める。",
+  "ruleCode": "u=(wave+1)/2 → diameter=12+u×36、color=palette[round(u×2)]",
+  "extensionVisual": {
+    "src": "./assets/day-10-next.svg",
+    "alt": "色や大きさが変わる円の配置に、ゆらぎが加わる次回予告。",
+    "caption": "図3 · 次は規則にゆらぎを加えます。"
+  }
+}
