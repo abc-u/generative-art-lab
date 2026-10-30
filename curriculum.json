@@ -101,6 +101,14 @@
       "description": "同じ波の値から、円のサイズと色を同時に決める。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 11,
+      "title": "Rules with Variation",
+      "topic": "規則にランダムなゆらぎを加える",
+      "description": "波のサイズにランダムな差を足し、規則と偶然を混ぜる。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
