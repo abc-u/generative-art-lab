@@ -7,7 +7,7 @@
   "phase": 1,
   "minutes": 18,
   "level": "はじめて",
-  "algorithm": "Day 10の波で決めた円の大きさに、小さなランダム値を足します。波の輪という基本の規則を残したまま、円ごとに少し違いをつくります。ゆらぎ幅を0にすると整った模様に戻り、幅を大きくすると不規則な表情が強くなります。",
+  "algorithm": "Day 10で作った波の規則から、まず各円の基準サイズを決めます。次に乱数を中心0の小さな差へ変換し、その差を基準サイズへ足します。ゆらぎ幅が8 pxなら直径は最大4 pxずつ増減し、0 pxなら元の規則だけが残ります。",
   "applications": "自然物らしい模様、手描き風のばらつき、規則と偶然を混ぜた表現。",
   "prerequisites": "Day 8 の波、Day 10 の波からサイズと色を決める方法。",
   "connection": "Day 10では波から円のサイズと色を決めました。今日はそのサイズに小さなランダムな差を足し、規則を保ちながら自然な変化を作ります。",
@@ -95,7 +95,7 @@
   "artist": {
     "name": "Ernst Haeckel",
     "work": "Kunstformen der Natur, Plate 30 (1904)",
-    "context": "エルンスト・ヘッケルの『自然の芸術形態』第30図版は、ウニ類の形を細密に描いた図版です。",
+    "context": "エルンスト・ヘッケルは博物学者で、動植物を細部まで観察した図版集『自然の芸術形態』を制作しました。第30図版には放射状の棘をもつウニ類が描かれ、規則的な形と細部を観察できます。",
     "relation": "この図版は乱数で作られたものではありません。自然の形に見られる細かな違いや反復を観察する作例として紹介します。",
     "highlight": "反復する棘や輪郭のまとまりと、一つずつの細部の違いを見比べます。",
     "references": [
@@ -106,7 +106,7 @@
       }
     ],
     "image": {
-      "url": "https://upload.wikimedia.org/wikipedia/commons/PLACEHOLDER.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Kunstformen_der_Natur_%28Tafel_30%29_%286197318031%29.jpg",
       "alt": "ヘッケル『自然の芸術形態』第30図版に描かれた、放射状の棘をもつウニ類の細密図。",
       "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kunstformen_der_Natur_(Tafel_30)_(6197318031).jpg",
       "license": "Public Domain",
@@ -114,7 +114,7 @@
     },
     "realWorldExample": {
       "title": "身近な例：木の葉の並び",
-      "description": "同じ枝の葉も、大きさや向きが少しずつ違います。",
+      "description": "同じ枝につく葉も、葉脈の形は共通しながら、大きさや向き、間隔は一枚ずつ少しずつ異なります。",
       "relation": "枝に並ぶという大まかな規則の上に、葉ごとの小さな違いが重なります。",
       "visual": {
         "src": "./assets/day-11-leaves.svg",
