@@ -1,0 +1,161 @@
+{
+  "day": 11,
+  "status": "published",
+  "title": "Rules with Variation",
+  "subtitle": "整った模様に、少しだけゆらぎを加える。",
+  "topic": "規則にランダムなゆらぎを加える",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "Day 10で作った波の規則から、まず各円の基準サイズを決めます。次に乱数を中心0の小さな差へ変換し、その差を基準サイズへ足します。ゆらぎ幅が8 pxなら直径は最大4 pxずつ増減し、0 pxなら元の規則だけが残ります。こうして輪の配置を保ちながら、サイズだけに自然なばらつきを加えます。",
+  "applications": "自然物らしい模様、手描き風のばらつき、規則と偶然を混ぜた表現。",
+  "prerequisites": "Day 8 の波、Day 10 の波からサイズと色を決める方法。",
+  "connection": "Day 10では波から円のサイズと色を決めました。今日はそのサイズに小さなランダムな差を足し、規則を保ちながら自然な変化を作ります。",
+  "intuition": {
+    "title": "揃った列に少し違う大きさを混ぜる",
+    "story": "同じ形のビーズを並べ、いくつかだけ少し大きくしたり小さくしたりするイメージです。並び方の規則は残るので全体はまとまり、少しの違いが自然な表情を加えます。",
+    "visual": "同心円の輪は保ちつつ、各円の直径に小さな差が生まれます。",
+    "diagram": "最終サイズ = 波で決めたサイズ + ランダムな差"
+  },
+  "numbers": {
+    "title": "円に4 pxのゆらぎを加える",
+    "setup": "波で決まる直径が30 px、ゆらぎ幅が8 pxのとき。Math.random()が0〜1の値を返すとします。",
+    "steps": [
+      {
+        "label": "ランダム値を中心0の差に直す",
+        "calculation": "差 = (r − 0.5) × 8。r=0なら-4、r=0.5なら0、r=1なら+4 px。"
+      },
+      {
+        "label": "今回のrを入れる",
+        "calculation": "r=0.75なら差=(0.75−0.5)×8=+2 px。"
+      },
+      {
+        "label": "元のサイズへ足す",
+        "calculation": "30 px + 2 px = 32 px。"
+      },
+      {
+        "label": "幅を0にする",
+        "calculation": "差は必ず0 px。Day 10の整った波模様と同じになります。"
+      }
+    ],
+    "note": "ゆらぎ幅8 pxは、基準サイズの上下4 pxまで変える設定です。Math.random()は毎回違う0〜1未満の値を返します。"
+  },
+  "code": "const baseDiameter = minSize + u * (maxSize - minSize);\nconst jitter = (Math.random() - 0.5) * variation;\nconst diameter = baseDiameter + jitter;",
+  "demo": {
+    "title": "波の模様にゆらぎを足す",
+    "caption": "ゆらぎ幅を0・8・16 pxから選びます。選んだ幅の半分まで、円の直径をランダムに増減します。再生成すると新しい模様になります。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.7 system-ui,sans-serif}.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-bottom:10px}label,button{font:inherit}select,button{padding:7px 9px;border:1px solid #cdd8ce;background:#fff;border-radius:4px;color:#405246}#stage{height:min(76vw,420px);min-height:260px;background:#eee5d3;border:1px solid #d8d2c3}canvas{display:block;width:100%;height:100%}.hint{margin:7px 0;color:#536354;font-size:13px}@media(max-width:480px){body{padding:8px;font-size:13px}#stage{height:300px;min-height:240px}}</style></head><body><div class=\"bar\"><label for=\"variation\">ゆらぎ幅 <select id=\"variation\"><option value=\"0\">0 px</option><option value=\"8\" selected>8 px</option><option value=\"16\">16 px</option></select></label><button id=\"reroll\" type=\"button\">模様を作り直す ↻</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"同心円の波模様にランダムなサイズのゆらぎが加わった図\"></canvas></div><p id=\"hint\" class=\"hint\" aria-live=\"polite\"></p><script>const canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),variation=document.querySelector(\"#variation\"),palette=[\"#263b63\",\"#3c9b91\",\"#f0c75e\"];function draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height,n=9,cell=Math.min(w,h)/n,c=(n-1)/2,maxDist=Math.hypot(c,c),frequency=2*2*Math.PI/maxDist,minSize=cell*.18,maxSize=cell*.76;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);for(let row=0;row<n;row++)for(let col=0;col<n;col++){const distance=Math.hypot(col-c,row-c),wave=Math.cos(distance*frequency),u=(wave+1)/2,baseDiameter=minSize+u*(maxSize-minSize),jitter=(Math.random()-.5)*Number(variation.value),diameter=Math.max(2,baseDiameter+jitter),color=palette[Math.round(u*(palette.length-1))],x=(w-n*cell)/2+(col+.5)*cell,y=(h-n*cell)/2+(row+.5)*cell;ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,diameter/2,0,Math.PI*2);ctx.fill()}document.querySelector(\"#hint\").textContent=\"波の輪はそのまま。サイズに最大±\"+(Number(variation.value)/2)+\" pxのゆらぎ。\";}variation.addEventListener(\"change\",draw);document.querySelector(\"#reroll\").addEventListener(\"click\",draw);window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",event=>{if(event.data?.type!==\"gal-experiment\")return;for(const c of event.data.controls||[]){const x=document.querySelector(c.selector);if(x){x.value=c.value;x.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "ゆらぎ幅0 pxを見る",
+      "action": "ゆらぎ幅を0 pxにして、規則的な模様を観察します。",
+      "observe": "同じ距離の円は同じ大きさに見えますか？",
+      "demoState": [
+        {
+          "selector": "#variation",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "title": "ゆらぎ幅を8 pxにする",
+      "action": "ゆらぎ幅を8 pxに変え、再生成します。",
+      "observe": "輪の規則を保ったまま、円にどの程度違いが出ましたか？",
+      "demoState": [
+        {
+          "selector": "#variation",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "title": "ゆらぎ幅を16 pxにする",
+      "action": "ゆらぎ幅を16 pxに変え、再生成します。",
+      "observe": "小さなゆらぎと比べ、模様のまとまりはどう変わりましたか？",
+      "demoState": [
+        {
+          "selector": "#variation",
+          "value": "16"
+        }
+      ]
+    },
+    {
+      "title": "同じ幅でもう一度作る",
+      "action": "8 pxへ戻し、模様を作り直すボタンを押します。",
+      "observe": "輪の配置は同じでも、円ごとの大きさが変わることを確認します。",
+      "demoState": [
+        {
+          "selector": "#variation",
+          "value": "8"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Ernst Haeckel",
+    "work": "Kunstformen der Natur, Plate 30 (1904)",
+    "context": "エルンスト・ヘッケルは博物学者で、動植物を細部まで観察した図版集『自然の芸術形態』を制作しました。第30図版には放射状の棘をもつウニ類が描かれ、規則的な形と細部を観察できます。",
+    "relation": "この図版は乱数で作られたものではありません。自然の形に見られる細かな違いや反復を観察する作例として紹介します。",
+    "highlight": "反復する棘や輪郭のまとまりと、一つずつの細部の違いを見比べます。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・作者・年代・公開条件",
+        "url": "https://commons.wikimedia.org/wiki/File:Kunstformen_der_Natur_(Tafel_30)_(6197318031).jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Kunstformen_der_Natur_%28Tafel_30%29_%286197318031%29.jpg",
+      "alt": "ヘッケル『自然の芸術形態』第30図版に描かれた、放射状の棘をもつウニ類の細密図。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kunstformen_der_Natur_(Tafel_30)_(6197318031).jpg",
+      "license": "Public Domain",
+      "credit": "Ernst Haeckel, Kunstformen der Natur, Plate 30 (1904) · Biodiversity Heritage Library via Wikimedia Commons, Public Domain"
+    },
+    "realWorldExample": {
+      "title": "身近な例：木の葉の並び",
+      "description": "同じ枝につく葉も、葉脈の形は共通しながら、大きさや向き、間隔は一枚ずつ少しずつ異なります。",
+      "relation": "枝に並ぶという大まかな規則の上に、葉ごとの小さな違いが重なります。",
+      "visual": {
+        "src": "./assets/day-11-leaves.svg",
+        "alt": "枝に大小や向きの少し異なる葉が並ぶ学習用イラスト。",
+        "caption": "身近な例 · 枝の規則的な並びに重なる葉の違い。"
+      }
+    }
+  },
+  "extension": {
+    "title": "色にもゆらぎを加える",
+    "keywords": [
+      "Math.random",
+      "乱数",
+      "ばらつき",
+      "疑似乱数",
+      "シード"
+    ],
+    "next": "円のサイズにランダムな差を加えました。次は色にもゆらぎを加え、自然なばらつきの重ね方を考えます。"
+  },
+  "ruleSummary": "波で決めた円のサイズに、-ゆらぎ幅/2〜+ゆらぎ幅/2の乱数を足す。",
+  "codeNote": "variation=8 pxなら直径に-4〜+4 pxの差が加わります。variation=0ならDay 10と同じサイズです。",
+  "algorithmVisual": {
+    "src": "./assets/day-11-jitter.svg",
+    "alt": "基準直径30ピクセルの円に、乱数の値でマイナス4からプラス4ピクセルの差が加わる図。",
+    "caption": "図1 · ランダム値を中心0の差へ変換します。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-11-pattern.svg",
+    "alt": "輪状の波模様を保ったまま円ごとに少し異なるサイズになった図。",
+    "caption": "図2 · 小さなばらつきが規則的な模様に加わります。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3
+  ],
+  "goalTitle": "波の規則に、小さなランダムな差を重ねる。",
+  "ruleCode": "diameter = baseDiameter + (random − 0.5) × variation",
+  "extensionVisual": {
+    "src": "./assets/day-11-next.svg",
+    "alt": "サイズのゆらぎに色のゆらぎも加わる次回予告図。",
+    "caption": "図3 · 次は色にもランダムな変化を加えます。"
+  }
+}
