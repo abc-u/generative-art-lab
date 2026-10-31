@@ -83,29 +83,24 @@
     }
   ],
   "artist": {
-    "name": "Brown and Turner families",
+    "name": "Members of the Brown and Turner families",
     "work": "Quilt, Album pattern (begun 1846)",
     "context": "ブラウン家とターナー家による、1846年に制作が始まったキルトです。同じ布片を組み合わせて全体の模様を構成する作品を、反復と配置の視点から観察します。",
     "relation": "布片の配置を変えると全体の印象が変わります。生成アートでもシード値が乱数列を固定し、同じ配置の再現や別案との比較を可能にします。",
     "highlight": "繰り返される形と、配置によって生まれる全体のまとまりを見ます。",
     "references": [
       {
-        "source": "The Metropolitan Museum of Art / Open Museum",
-        "label": "作品情報・画像・CC0利用条件",
-        "url": "https://open-museum.art/art/met:13877"
-      },
-      {
-        "source": "The Metropolitan Museum of Art",
-        "label": "作品ページ",
-        "url": "https://www.metmuseum.org/art/collection/search/13877"
+        "source": "Wikimedia Commons",
+        "label": "作品画像・作者・年代・CC0ライセンス",
+        "url": "https://commons.wikimedia.org/wiki/File:Quilt,_Album_pattern_MET_DP332806.jpg"
       }
     ],
     "image": {
-      "url": "https://images.metmuseum.org/CRDImages/ad/original/DP332444.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Quilt%2C_Album_pattern_MET_DP332806.jpg",
       "alt": "ブラウン家とターナー家が1846年から制作した、布片の反復模様を組み合わせたキルト。",
-      "sourceUrl": "https://www.metmuseum.org/art/collection/search/13877",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Quilt,_Album_pattern_MET_DP332806.jpg",
       "license": "CC0 1.0",
-      "credit": "Brown and Turner families, Quilt, Album pattern, begun 1846 · The Metropolitan Museum of Art, CC0"
+      "credit": "Members of the Brown and Turner families, Quilt, Album pattern, begun 1846 · The Metropolitan Museum of Art via Wikimedia Commons, CC0 1.0"
     },
     "realWorldExample": {
       "title": "身近な例：同じ種から育てる",
