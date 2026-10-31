@@ -1,0 +1,153 @@
+{
+  "day": 12,
+  "status": "published",
+  "title": "Seeded Randomness",
+  "subtitle": "シード値を使って、同じゆらぎをもう一度つくる。",
+  "topic": "シード値で乱数を再現する",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "乱数を使うと、模様を作り直すたびに異なる結果になります。乱数を出す前に同じシード値を設定すると、同じ順番の数値が生成され、同じ模様を再現できます。シードは乱数の出発点です。Day 11で学んだサイズのゆらぎはそのままに、結果を保存・共有できるようにします。",
+  "applications": "作品の再現、生成結果の共有、ゲームのマップ生成など。",
+  "prerequisites": "Day 11 の波のサイズにランダムなゆらぎを加える方法。",
+  "connection": "Day 11では波のサイズにランダムなゆらぎを足しました。今回はシード値を使い、同じゆらぎの並びを何度でも再現します。",
+  "intuition": {
+    "title": "同じレシピ番号なら同じ仕上がり",
+    "story": "料理のレシピ番号を指定すると、材料や手順を同じ順にたどれます。シード値も乱数のレシピ番号のようなものです。同じ値から始めると、乱数の並びも同じになります。",
+    "visual": "シード値 → 同じ乱数列 → 同じサイズのゆらぎ",
+    "diagram": "seed 42 → 0.0003, 0.524..., 0.735... → 同じ模様"
+  },
+  "numbers": {
+    "title": "シード42で同じ円を描く",
+    "setup": "基準直径30 px、ゆらぎ幅8 px。使う生成器は state = (state × 16807) mod 2147483647 です。",
+    "steps": [
+      {
+        "label": "シード値を決める",
+        "calculation": "初期 state を42にします。これが乱数の出発点です。"
+      },
+      {
+        "label": "最初の値を計算する",
+        "calculation": "42 × 16807 = 705894。乱数値は (705894 − 1) ÷ 2147483646 ≈ 0.000329 です。"
+      },
+      {
+        "label": "ゆらぎを計算する",
+        "calculation": "(0.000329 − 0.5) × 8 ≈ −4.00 px。"
+      },
+      {
+        "label": "基準へ足す",
+        "calculation": "30 px − 4.00 px ≈ 26.00 px。同じ生成器とシード42を使えば再び同じ結果です。"
+      }
+    ],
+    "note": "疑似乱数は計算で作る数列です。同じ生成器とシードを使うと同じ数列になります。"
+  },
+  "code": "let state = 42;\nfunction random() {\n  state = (state * 16807) % 2147483647;\n  return (state - 1) / 2147483646;\n}\nconst jitter = (random() - 0.5) * variation;",
+  "demo": {
+    "title": "シード値で模様を再現",
+    "caption": "シード値を入力して「作り直す」を押します。同じシードなら同じ模様になり、値を変えると別のゆらぎになります。ゆらぎ幅は0・8・16 pxから選べます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.7 system-ui,sans-serif}.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-bottom:10px}label,button{font:inherit}input,select,button{padding:7px 9px;border:1px solid #cdd8ce;background:#fff;border-radius:4px;color:#405246}#stage{height:min(76vw,420px);min-height:260px;background:#eee5d3;border:1px solid #d8d2c3}canvas{display:block;width:100%;height:100%}.hint{margin:7px 0;color:#536354;font-size:13px}@media(max-width:480px){body{padding:8px;font-size:13px}#stage{height:300px;min-height:240px}}</style></head><body><div class=\"bar\"><label for=\"seed\">シード値 <input id=\"seed\" type=\"number\" value=\"42\" min=\"1\" max=\"2147483646\" inputmode=\"numeric\"></label><label for=\"variation\">ゆらぎ幅 <select id=\"variation\"><option value=\"0\">0 px</option><option value=\"8\" selected>8 px</option><option value=\"16\">16 px</option></select></label><button id=\"reroll\" type=\"button\">模様を作り直す ↻</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"同心円の波模様にランダムなサイズのゆらぎが加わった図\"></canvas></div><p id=\"hint\" class=\"hint\" aria-live=\"polite\"></p><script>const canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),variation=document.querySelector(\"#variation\"),palette=[\"#263b63\",\"#3c9b91\",\"#f0c75e\"];function draw(){let state=Math.max(1,Number(document.querySelector(\"#seed\").value)||1);const random=()=>{state=(state*16807)%2147483647;return (state-1)/2147483646};const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height,n=9,cell=Math.min(w,h)/n,c=(n-1)/2,maxDist=Math.hypot(c,c),frequency=2*2*Math.PI/maxDist,minSize=cell*.18,maxSize=cell*.76;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);for(let row=0;row<n;row++)for(let col=0;col<n;col++){const distance=Math.hypot(col-c,row-c),wave=Math.cos(distance*frequency),u=(wave+1)/2,baseDiameter=minSize+u*(maxSize-minSize),jitter=(random()-.5)*Number(variation.value),diameter=Math.max(2,baseDiameter+jitter),color=palette[Math.round(u*(palette.length-1))],x=(w-n*cell)/2+(col+.5)*cell,y=(h-n*cell)/2+(row+.5)*cell;ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,diameter/2,0,Math.PI*2);ctx.fill()}document.querySelector(\"#hint\").textContent=\"波の輪はそのまま。サイズに最大±\"+(Number(variation.value)/2)+\" pxのゆらぎ。\";}variation.addEventListener(\"change\",draw);document.querySelector(\"#reroll\").addEventListener(\"click\",draw);window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",event=>{if(event.data?.type!==\"gal-experiment\")return;for(const c of event.data.controls||[]){const x=document.querySelector(c.selector);if(x){x.value=c.value;x.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "同じシードを試す",
+      "action": "シード42のまま模様を作り直し、同じ見た目に戻るか確認します。",
+      "observe": "一度目と同じ円の位置・大きさになりましたか？",
+      "demoState": []
+    },
+    {
+      "title": "シード値を変える",
+      "action": "シード値を43に変えて、模様を作り直します。",
+      "observe": "乱数の並びと円の大きさが変わりましたか？",
+      "demoState": []
+    },
+    {
+      "title": "幅0で比べる",
+      "action": "シードを42に戻し、ゆらぎ幅を0 pxにします。",
+      "observe": "シードが変わっても、ゆらぎが0なら波の模様が同じなのはなぜでしょう？",
+      "demoState": [
+        {
+          "selector": "#variation",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "title": "作品を記録する",
+      "action": "気に入ったシード値とゆらぎ幅をメモして、同じ組合せを再現します。",
+      "observe": "数値を記録すれば、作品を後から作り直せると確認できましたか？",
+      "demoState": [
+        {
+          "selector": "#variation",
+          "value": "8"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Members of the Brown and Turner families",
+    "work": "Quilt, Album pattern (begun 1846)",
+    "context": "ブラウン家とターナー家による、1846年に制作が始まったキルトです。同じ布片を組み合わせて全体の模様を構成する作品を、反復と配置の視点から観察します。",
+    "relation": "布片の配置を変えると全体の印象が変わります。生成アートでもシード値が乱数列を固定し、同じ配置の再現や別案との比較を可能にします。",
+    "highlight": "繰り返される形と、配置によって生まれる全体のまとまりを見ます。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・作者・年代・CC0ライセンス",
+        "url": "https://commons.wikimedia.org/wiki/File:Quilt,_Album_pattern_MET_DP332806.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/3/31/Quilt%2C_Album_pattern_MET_DP332806.jpg",
+      "alt": "ブラウン家とターナー家が1846年から制作した、布片の反復模様を組み合わせたキルト。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Quilt,_Album_pattern_MET_DP332806.jpg",
+      "license": "CC0 1.0",
+      "credit": "Members of the Brown and Turner families, Quilt, Album pattern, begun 1846 · The Metropolitan Museum of Art via Wikimedia Commons, CC0 1.0"
+    },
+    "realWorldExample": {
+      "title": "身近な例：同じ種から育てる",
+      "description": "植物の種まきは同じ手順でも、芽の向きや育ち方に少しずつ違いが出ます。",
+      "relation": "シード値は模様の偶然を固定する番号です。自然のゆらぎそのものとは違いますが、同じ結果を再現するために使えます。",
+      "visual": {
+        "src": "./assets/day-12-seedlings.svg",
+        "alt": "同じ鉢に育つ、少しずつ高さや葉の向きが異なる三本の芽。",
+        "caption": "身近な例 · 同じ条件から育っても少しずつ異なる芽。"
+      }
+    }
+  },
+  "extension": {
+    "title": "乱数を空間の配置に使う",
+    "keywords": [
+      "シード値",
+      "疑似乱数",
+      "再現性",
+      "random seed"
+    ],
+    "next": "同じ数値から乱数列を作れるようになりました。次は乱数を使って、点の位置を決める方法を学びます."
+  },
+  "ruleSummary": "乱数を使う前にシード値を設定すると、同じ疑似乱数列と模様を再現できる。",
+  "codeNote": "同じ生成器・同じシード値・同じ操作順なら同じ模様になります。",
+  "algorithmVisual": {
+    "src": "./assets/day-12-seed.svg",
+    "alt": "シード42から同じ乱数の列を作り、同じ模様を再現する流れ。",
+    "caption": "図1 · シード値は乱数列の出発点です。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-12-repeat.svg",
+    "alt": "同じシード値から同じサイズの円模様が二度描かれる図。",
+    "caption": "図2 · 同じ出発点なら同じ結果になります。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "goalTitle": "シード値を記録して、同じ作品を再現する。",
+  "ruleCode": "seedを固定 → 疑似乱数列を生成 → 同じ模様を描く",
+  "extensionVisual": {
+    "src": "./assets/day-12-repeat.svg",
+    "alt": "同じシード値から同じサイズの円模様が二度描かれる図。",
+    "caption": "図2 · 同じ出発点なら同じ結果になります。"
+  }
+}

@@ -109,6 +109,14 @@
       "description": "波のサイズにランダムな差を足し、規則と偶然を混ぜる。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 12,
+      "title": "Seeded Randomness",
+      "topic": "シード値で乱数を再現する",
+      "description": "シード値を固定し、乱数のゆらぎを同じ模様として再現する。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
