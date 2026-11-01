@@ -3,67 +3,89 @@
   "status": "published",
   "title": "Random Coordinates",
   "subtitle": "シード値から、点の座標をつくる。",
-  "topic": "乱数で点の位置を決める",
+  "topic": "一様乱数で面に点を配置する",
   "phase": 1,
   "minutes": 18,
   "level": "はじめて",
-  "algorithm": "シード値から疑似乱数を2つずつ取り出し、横と縦の割合に割り当てます。割合にキャンバスの幅・高さを掛けると点の座標になります。同じシードなら同じ位置の点が並び、シードを変えると別の配置になります。 点の数を増やすと、座標を決める操作が繰り返され、画面に散らばる様子を比べられます。",
+  "algorithm": "Day 13のアルゴリズムは、一様乱数サンプリングです。0以上1未満の乱数を横用・縦用に一つずつ独立に取り、キャンバスの幅と高さを掛けて座標へ変換します。この手順を点の数だけくり返すと、長方形の面のどこも同じ確率で選ばれます。乱数を座標に変えるだけでなく、面全体から均等に点を選ぶことが肝です。",
   "applications": "作品の再現、生成結果の共有、ゲームのマップ生成など。",
   "prerequisites": "Day 11 の波のサイズにランダムなゆらぎを加える方法。",
-  "connection": "Day 12ではシード値から同じ乱数列を再現しました。今回はその数値を横と縦の位置に変換し、点をキャンバスに配置します。",
+  "connection": "Day 12ではシード値から同じ乱数列を再現しました。今回はその列から横・縦の値を一つずつ取り、キャンバス上の座標に変換します。",
   "intuition": {
     "title": "地図上の住所を二つの割合で指定する",
-    "story": "紙の横幅を0〜1、縦幅も0〜1の目盛りにした地図を考えます。乱数を横と縦に一つずつ割り当てれば、紙のどこに点を置くか決められます。",
+    "story": "地図の横と縦をそれぞれ0から1までの目盛りにして、サイコロのように場所を選びます。横と縦を別々に選ぶので、面のどの小さな区画も同じくらい選ばれます。これを点の数だけくり返すと、面全体に均等な確率で点が散らばります。",
     "visual": "乱数 rₓ・rᵧ → 横幅・高さを掛ける → 点の位置",
-    "diagram": "x = rₓ × 幅　／　y = rᵧ × 高さ"
+    "diagram": "乱数を横・縦に1つずつ → 幅・高さに掛ける → 面全体から位置を選ぶ"
   },
   "numbers": {
-    "title": "乱数0.25と0.75で点を打つ",
-    "setup": "キャンバスを幅400 px、高さ300 pxとし、横の乱数を0.25、縦の乱数を0.75とします。",
+    "title": "面から一様に1点を選ぶ",
+    "setup": "幅400 px、高さ300 pxのキャンバスから、横の乱数 rₓ=0.25、縦の乱数 rᵧ=0.75を独立に選びます。",
     "steps": [
       {
-        "label": "横の位置を計算",
+        "label": "横用の乱数を座標にする",
         "calculation": "x = 0.25 × 400 = 100 px。左端から100 pxです。"
       },
       {
-        "label": "縦の位置を計算",
+        "label": "縦用の乱数を座標にする",
         "calculation": "y = 0.75 × 300 = 225 px。上端から225 pxです。"
       },
       {
-        "label": "点を置く",
-        "calculation": "座標 (100, 225) に点を描きます。"
+        "label": "二つを組にする",
+        "calculation": "横100 px、縦225 pxなので、点の位置は (100, 225) です。"
       },
       {
-        "label": "次の乱数で別の点",
-        "calculation": "乱数0.8と0.2なら、(320, 60) に点が置かれます。"
+        "label": "面から均等に選ぶ",
+        "calculation": "横と縦の乱数を独立に選ぶため、キャンバスを同じ面積の区画に分けると各区画が同じ確率で選ばれます。"
       }
     ],
-    "note": "乱数は0以上1未満です。幅・高さを掛けることでキャンバス内の座標になります。"
+    "note": "一様乱数サンプリングでは、面の一部に点を集める追加ルールがありません。乱数が0以上1未満なので、座標はキャンバスの左端から幅未満、上端から高さ未満になります。"
   },
-  "code": "const x = random() * canvas.width;\nconst y = random() * canvas.height;\nctx.beginPath();\nctx.arc(x, y, 4, 0, Math.PI * 2);\nctx.fill();",
+  "code": "for (let i = 0; i < count; i++) {\n  // 横・縦を独立に選び、面から一様にサンプリング\n  const rx = random();\n  const ry = random();\n  const x = rx * canvas.width;\n  const y = ry * canvas.height;\n  drawPoint(x, y);\n}",
   "demo": {
-    "title": "シード値で点の配置をつくる",
-    "caption": "シードを変えると配置が変わり、同じシードなら再現できます。点の数も選んで、位置の広がりを観察しましょう。",
-    "html": "<!doctype html><html lang=\"ja\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.6 system-ui,sans-serif}.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}label,button,input,select{font:inherit}input,select,button{padding:7px 9px;border:1px solid #cdd8ce;border-radius:5px;background:#fff;color:#405246}#stage{height:min(72vw,400px);min-height:250px;margin-top:12px;background:#eee5d3;border:1px solid #d8d2c3}canvas{width:100%;height:100%;display:block}.hint{font-size:13px;color:#536354} @media(max-width:480px){body{padding:8px}#stage{height:300px;min-height:240px}}</style><body><div class=\"bar\"><label>シード <input id=\"seed\" type=\"number\" value=\"42\" min=\"1\" max=\"2147483646\" inputmode=\"numeric\"></label><label>点の数 <select id=\"count\"><option>30</option><option selected>80</option><option>160</option></select></label><button id=\"draw\" type=\"button\">配置する</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"シード値から作った点のランダム配置\"></canvas></div><p id=\"hint\" class=\"hint\" aria-live=\"polite\"></p><script>const canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\");function draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height;let state=Math.max(1,Number(document.querySelector(\"#seed\").value)||1);function random(){state=state*16807%2147483647;return(state-1)/2147483646}ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);ctx.fillStyle=\"#3c7181\";for(let i=0;i<Number(document.querySelector(\"#count\").value);i++){const x=random()*w,y=random()*h;ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill()}document.querySelector(\"#hint\").textContent=\"シード \"+document.querySelector(\"#seed\").value+\" · \"+document.querySelector(\"#count\").value+\"個の点を配置\";}document.querySelector(\"#draw\").addEventListener(\"click\",draw);window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type!==\"gal-experiment\")return;for(const c of e.data.controls||[]){const x=document.querySelector(c.selector);if(x){x.value=c.value;x.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);</script></body></html>"
+    "title": "乱数の点配置を比較する",
+    "caption": "シードで同じ配置を再現しながら、点の数・大きさ・形・色を変えられます。「面に均等」と「中心に集まりやすい」も切り替えて、点の分布の違いを比べましょう。中心に集める設定は比較用で、今日の一様乱数とは別の分布です。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.6 system-ui,sans-serif}.bar{display:flex;gap:10px 14px;flex-wrap:wrap;align-items:end}label{display:grid;gap:3px;font-size:13px}input,select,button{font:inherit;padding:7px 9px;border:1px solid #cdd8ce;border-radius:5px;background:#fff;color:#405246}input{width:110px}button{cursor:pointer}#stage{height:min(72vw,400px);min-height:250px;margin-top:12px;background:#eee5d3;border:1px solid #d8d2c3}canvas{width:100%;height:100%;display:block}.hint{font-size:13px;color:#536354;margin:7px 0}@media(max-width:480px){body{padding:8px;font-size:14px}.bar{gap:8px 10px}label{flex:1 1 42%}#stage{height:300px;min-height:240px}}</style></head><body><div class=\"bar\"><label>シード<input id=\"seed\" type=\"number\" value=\"42\" min=\"1\" max=\"2147483646\" inputmode=\"numeric\"></label><label>点の数<select id=\"count\"><option value=\"30\">30</option><option value=\"80\" selected>80</option><option value=\"160\">160</option></select></label><label>位置の分布<select id=\"distribution\"><option value=\"uniform\" selected>面に均等</option><option value=\"center\">中心に集まりやすい</option></select></label><label>点の大きさ<select id=\"size\"><option value=\"2\">小</option><option value=\"4\" selected>中</option><option value=\"7\">大</option></select></label><label>形<select id=\"shape\"><option value=\"circle\" selected>円</option><option value=\"square\">四角</option></select></label><label>色<select id=\"palette\"><option value=\"single\" selected>青緑</option><option value=\"rainbow\">カラフル</option></select></label><button id=\"draw\" type=\"button\">描き直す</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"シード値と設定に応じて面に配置された点\"></canvas></div><p id=\"hint\" class=\"hint\" aria-live=\"polite\"></p><script>const canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),controls=[\"#seed\",\"#count\",\"#distribution\",\"#size\",\"#shape\",\"#palette\"];function draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height;let state=Math.max(1,Number(document.querySelector(\"#seed\").value)||1);function random(){state=state*16807%2147483647;return(state-1)/2147483646}ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);const n=Number(document.querySelector(\"#count\").value),size=Number(document.querySelector(\"#size\").value),distribution=document.querySelector(\"#distribution\").value,shape=document.querySelector(\"#shape\").value,palette=document.querySelector(\"#palette\").value;for(let i=0;i<n;i++){let rx=random(),ry=random();if(distribution===\"center\"){rx=(rx+random())/2;ry=(ry+random())/2}const x=rx*w,y=ry*h;ctx.fillStyle=palette===\"rainbow\"?\"hsl(\"+Math.round(i*360/n)+\" 55% 42%)\":\"#3c7181\";if(shape===\"circle\"){ctx.beginPath();ctx.arc(x,y,size,0,Math.PI*2);ctx.fill()}else{ctx.fillRect(x-size,y-size,size*2,size*2)}}document.querySelector(\"#hint\").textContent=\"シード \"+document.querySelector(\"#seed\").value+\"・\"+n+\"個・\"+(distribution===\"uniform\"?\"面に均等\":\"中心に集まりやすい\")+\"・\"+(shape===\"circle\"?\"円\":\"四角\")+\"・\"+(palette===\"rainbow\"?\"カラフル\":\"青緑\");}document.querySelector(\"#draw\").addEventListener(\"click\",draw);for(const s of controls)document.querySelector(s).addEventListener(\"change\",draw);window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type!==\"gal-experiment\")return;for(const c of e.data.controls||[]){const x=document.querySelector(c.selector);if(x){x.value=c.value;x.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);</script></body></html>"
   },
   "experiments": [
     {
-      "title": "シード42の配置",
-      "action": "シード42・点80個で配置し、同じ設定でもう一度描きます。",
-      "observe": "同じシードで同じ座標に戻りますか？",
-      "demoState": []
-    },
-    {
-      "title": "シードを変える",
-      "action": "シードを43に変えて、配置ボタンを押します。",
-      "observe": "点が画面内のどの位置へ動いたか、シード42の配置と比べて観察しましょう。",
-      "demoState": []
-    },
-    {
-      "title": "点の数を増やす",
-      "action": "点の数を160個に増やして配置します。",
-      "observe": "画面のどの範囲に点が集まっていますか？",
+      "title": "一様な配置を観察",
+      "action": "シード42・点80個・「面に均等」で描き、点の広がり方を眺めます。",
+      "observe": "画面の端や中央にだけ集まらず、面全体に広がっていますか？",
       "demoState": [
+        {
+          "selector": "#seed",
+          "value": "42"
+        },
+        {
+          "selector": "#count",
+          "value": "80"
+        },
+        {
+          "selector": "#distribution",
+          "value": "uniform"
+        }
+      ]
+    },
+    {
+      "title": "中心に集める",
+      "action": "「中心に集まりやすい」に切り替え、ほかの設定は変えずに比べます。",
+      "observe": "一様な配置と比べて、中心付近の点の密度はどう変わりましたか？",
+      "demoState": [
+        {
+          "selector": "#distribution",
+          "value": "center"
+        }
+      ]
+    },
+    {
+      "title": "点の数を変える",
+      "action": "「面に均等」に戻し、点を30個、次に160個へ増やします。",
+      "observe": "点が増えると、画面の空きや密度はどのように変わりますか？",
+      "demoState": [
+        {
+          "selector": "#distribution",
+          "value": "uniform"
+        },
         {
           "selector": "#count",
           "value": "160"
@@ -71,13 +93,36 @@
       ]
     },
     {
-      "title": "端の割合を考える",
-      "action": "シード42で点80個に戻し、点の位置を眺めます。",
-      "observe": "横・縦それぞれの乱数が0に近いと、点は画面のどこに寄りますか？",
+      "title": "大きさと形を変える",
+      "action": "点を80個に戻し、大きさを「大」、形を「四角」にします。",
+      "observe": "配置のルールを変えずに、模様の印象がどう変わるか見ます。",
       "demoState": [
         {
           "selector": "#count",
           "value": "80"
+        },
+        {
+          "selector": "#size",
+          "value": "7"
+        },
+        {
+          "selector": "#shape",
+          "value": "square"
+        }
+      ]
+    },
+    {
+      "title": "色とシードを組み合わせる",
+      "action": "色を「カラフル」にし、シードを43にして描き直します。",
+      "observe": "配置の再現性と色の変化を分けて説明できるでしょうか？",
+      "demoState": [
+        {
+          "selector": "#palette",
+          "value": "rainbow"
+        },
+        {
+          "selector": "#seed",
+          "value": "43"
         }
       ]
     }
@@ -114,17 +159,17 @@
     }
   },
   "extension": {
-    "title": "点の集まり方を変える",
+    "title": "確率分布を設計する",
     "keywords": [
-      "ランダム座標",
       "一様分布",
-      "疑似乱数",
-      "分布"
+      "乱数サンプリング",
+      "確率分布",
+      "疑似乱数"
     ],
-    "next": "画面全体へ点を配置しました。次は乱数の出し方を変え、点が一部に集まる分布を作ります。"
+    "next": "今日は一様乱数で面全体に点を配置し、中心に集める比較も試しました。次は確率分布を設計し、点が集まる場所をコントロールします。"
   },
-  "ruleSummary": "x = random() × 幅、y = random() × 高さで、点をキャンバス内に配置する。",
-  "codeNote": "各点に乱数を2つ使い、横・縦の座標を決めます。",
+  "ruleSummary": "一様乱数を横・縦に一つずつ選び、幅・高さを掛けて面上の座標にする。",
+  "codeNote": "random()を2回呼ぶたび、横・縦の位置を独立に選びます。幅と高さを掛けてピクセル座標へ直します。",
   "algorithmVisual": {
     "src": "./assets/day-13-coordinates.svg",
     "alt": "横と縦の乱数をキャンバス幅と高さに掛け、点の座標へ変換する図。",
@@ -136,14 +181,16 @@
     "caption": "図2 · シード値が同じなら配置も再現できます。"
   },
   "codeHighlight": [
-    1,
     2,
     3,
     4,
-    5
+    5,
+    6,
+    7,
+    8
   ],
-  "goalTitle": "乱数を座標に変換して点を置く。",
-  "ruleCode": "x = random() × width;　y = random() × height",
+  "goalTitle": "一様乱数で、面全体から点の位置を選ぶ。",
+  "ruleCode": "rₓ, rᵧ ← 独立な一様乱数[0,1)\nx = rₓ × 幅　／　y = rᵧ × 高さ\nこの手順を点の数だけくり返す",
   "extensionVisual": {
     "src": "./assets/day-13-scatter.svg",
     "alt": "同じシードで同じ位置に点が再現される図。",
