@@ -117,6 +117,14 @@
       "description": "シード値を固定し、乱数のゆらぎを同じ模様として再現する。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 13,
+      "title": "Random Coordinates",
+      "topic": "乱数で点の位置を決める",
+      "description": "横・縦の乱数を座標に変換し、シードで再現できる点の配置をつくる。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
