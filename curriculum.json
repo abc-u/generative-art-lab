@@ -125,6 +125,14 @@
       "description": "横・縦の乱数を独立に座標へ変換し、面から均等に点を選ぶ。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 14,
+      "title": "Sampling with Averages",
+      "topic": "平均で点の密度を設計する",
+      "description": "一様乱数を複数回平均し、点が集まりやすい位置や方向をコントロールする。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
