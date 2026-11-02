@@ -1,0 +1,215 @@
+{
+  "day": 14,
+  "status": "published",
+  "title": "Sampling with Averages",
+  "subtitle": "乱数を平均して、点が集まる場所をつくる。",
+  "topic": "平均で点の密度を設計する",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "Day 14で使うのは、複数の一様乱数を平均して確率分布を変えるサンプリングです。横・縦それぞれで乱数をk個つくり、平均を座標の割合にします。k=1なら面全体から均等に選ばれ、k=2なら中央付近の値が出やすくなります。肝は、乱数の範囲は0〜1のまま、値の出やすさだけを変えている点です。kを大きくすると中央への集まりが強くなります。",
+  "applications": "星雲のような密度差のある模様、点描風の表現、ゲーム内の出現位置の偏りを作れます。",
+  "prerequisites": "Day 12のシード値で乱数列を再現し、Day 13の一様乱数で面上の座標を選びました。",
+  "connection": "Day 13では横と縦に一つずつ一様乱数を使い、面のどこも同じ確率で選びました。今日は乱数を複数回取り、その平均で中央に集まる分布へ変えます。",
+  "intuition": {
+    "title": "くじを何回か引いて、平均の場所に置く",
+    "story": "0から1までの目盛りがあるくじを2回引き、出た数の平均を点の位置にします。端の値を出すには2回とも端に近い必要がありますが、中央の値は小さい数と大きい数の組でも作れます。だから平均は中央付近になりやすいのです。",
+    "visual": "一様な値をk個 → 平均を取る → 0.5付近が出やすくなる",
+    "diagram": "くじの数を足してkで割る → 0〜1の割合にする → 幅・高さに掛けて座標へ"
+  },
+  "numbers": {
+    "title": "2回の平均から座標を計算する",
+    "setup": "幅400 px、高さ300 pxのキャンバスで、平均する数をk=2とします。横は0.2と0.8、縦は0.25と0.55が出ました。",
+    "steps": [
+      {
+        "label": "横の値を平均する",
+        "calculation": "(0.2 + 0.8) ÷ 2 = 0.5。横幅の半分が選ばれました。"
+      },
+      {
+        "label": "縦の値を平均する",
+        "calculation": "(0.25 + 0.55) ÷ 2 = 0.4。縦の上から40%です。"
+      },
+      {
+        "label": "割合をピクセル座標に変える",
+        "calculation": "x = 0.5 × 400 = 200 px、y = 0.4 × 300 = 120 px。"
+      },
+      {
+        "label": "点の場所を決める",
+        "calculation": "平均した割合を組み合わせ、(200, 120) に点を描きます。"
+      },
+      {
+        "label": "回数を増やして比べる",
+        "calculation": "k=1では一様、k=2では中央寄り、k=4ではさらに中央寄りになります。"
+      }
+    ],
+    "note": "k=2の平均は中央付近ほど出やすい三角形の分布です。k=4や8も正規分布そのものではありませんが、平均する数を増やすほど中央への集まりが強まります。"
+  },
+  "code": "function averageRandom(k) {\n  let total = 0;\n  for (let i = 0; i < k; i++) {\n    total += random();\n  }\n  return total / k;\n}\n\nfor (let i = 0; i < count; i++) {\n  const rx = averageRandom(averageCount);\n  const ry = averageRandom(averageCount);\n  const x = rx * canvas.width;\n  const y = ry * canvas.height;\n  drawPoint(x, y);\n}",
+  "demo": {
+    "title": "平均回数で点の分布を変える",
+    "caption": "平均する回数を1・2・4・8回から選び、点の数や方向、形、色も変えて比べます。k=1は面に均等、回数を増やすほど選んだ軸の中央付近に集まります。同じシードなら同じ配置を再現できます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.55 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:9px 12px;align-items:end}label{display:grid;gap:4px;font-size:13px}input,select,button{min-height:40px;padding:7px 9px;border:1px solid #c8d1c5;border-radius:6px;background:#fff;color:#303832;font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #cf7958;outline-offset:2px}.actions{display:flex;gap:8px;align-items:end}.actions button{flex:1}#stage{height:min(70vw,410px);min-height:260px;margin-top:12px;border:1px solid #d4cdbc;background:#eee5d3}canvas{display:block;width:100%;height:100%}.hint{min-height:1.6em;margin:7px 0;color:#536354;font-size:13px}@media(max-width:480px){body{padding:8px;font-size:14px}.controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#stage{height:300px;min-height:240px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}</style></head><body><div class=\"controls\">\n<label for=\"seed\">シード<input id=\"seed\" type=\"number\" min=\"1\" max=\"2147483646\" value=\"42\" inputmode=\"numeric\"></label>\n<label for=\"dotCount\">点の数<select id=\"dotCount\"><option value=\"40\">40</option><option value=\"120\" selected>120</option><option value=\"240\">240</option></select></label>\n<label for=\"averageCount\">平均する回数<select id=\"averageCount\"><option value=\"1\">1回（均等）</option><option value=\"2\" selected>2回</option><option value=\"4\">4回</option><option value=\"8\">8回</option></select></label>\n<label for=\"axis\">密度を変える軸<select id=\"axis\"><option value=\"both\" selected>横と縦</option><option value=\"x\">横だけ</option><option value=\"y\">縦だけ</option></select></label>\n<label for=\"size\">点の大きさ<select id=\"size\"><option value=\"2\">小</option><option value=\"4\" selected>中</option><option value=\"7\">大</option></select></label>\n<label for=\"shape\">点の形<select id=\"shape\"><option value=\"circle\" selected>円</option><option value=\"square\">四角</option><option value=\"diamond\">ひし形</option></select></label>\n<label for=\"palette\">色<select id=\"palette\"><option value=\"teal\" selected>青緑</option><option value=\"warm\">暖色</option><option value=\"rainbow\">カラフル</option></select></label>\n<div class=\"actions\"><button id=\"newSeed\" type=\"button\">別のシード</button><button id=\"redraw\" type=\"button\">描き直す</button></div>\n</div><div id=\"stage\"><canvas id=\"art\" role=\"img\" aria-label=\"平均する回数と軸の設定で密度が変わる点の模様\"></canvas></div><p id=\"hint\" class=\"hint\" aria-live=\"polite\"></p><script>\nconst canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\");\nconst ids=[\"seed\",\"dotCount\",\"averageCount\",\"axis\",\"size\",\"shape\",\"palette\"];\nfunction draw(){const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*dpr));canvas.height=Math.max(1,Math.round(box.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height;let state=Math.floor(Number(document.querySelector(\"#seed\").value)||1);state=((state-1)%2147483646+2147483646)%2147483646+1;function random(){state=state*16807%2147483647;return(state-1)/2147483646}function averageRandom(k){let total=0;for(let j=0;j<k;j++)total+=random();return total/k}const n=Number(document.querySelector(\"#dotCount\").value),k=Number(document.querySelector(\"#averageCount\").value),axis=document.querySelector(\"#axis\").value,size=Number(document.querySelector(\"#size\").value),shape=document.querySelector(\"#shape\").value,palette=document.querySelector(\"#palette\").value;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);for(let i=0;i<n;i++){const rx=axis===\"both\"||axis===\"x\"?averageRandom(k):random(),ry=axis===\"both\"||axis===\"y\"?averageRandom(k):random(),x=rx*w,y=ry*h;ctx.fillStyle=palette===\"rainbow\"?\"hsl(\"+Math.round(i*360/n)+\" 58% 42%)\":palette===\"warm\"?\"#c56545\":\"#397889\";if(shape===\"circle\"){ctx.beginPath();ctx.arc(x,y,size,0,Math.PI*2);ctx.fill()}else if(shape===\"diamond\"){ctx.beginPath();ctx.moveTo(x,y-size);ctx.lineTo(x+size,y);ctx.lineTo(x,y+size);ctx.lineTo(x-size,y);ctx.closePath();ctx.fill()}else{ctx.fillRect(x-size,y-size,size*2,size*2)}}const axisName=axis===\"both\"?\"横と縦\":axis===\"x\"?\"横だけ\":\"縦だけ\";document.querySelector(\"#hint\").textContent=\"シード \"+document.querySelector(\"#seed\").value+\"・\"+n+\"個・平均\"+k+\"回・\"+axisName+\"・\"+(shape===\"circle\"?\"円\":shape===\"square\"?\"四角\":\"ひし形\")}document.querySelector(\"#redraw\").addEventListener(\"click\",draw);document.querySelector(\"#newSeed\").addEventListener(\"click\",()=>{const field=document.querySelector(\"#seed\");field.value=String((Number(field.value)||1)%2147483646+1);draw()});for(const id of ids){const el=document.querySelector(\"#\"+id);el.addEventListener(id===\"seed\"?\"change\":\"input\",draw);el.addEventListener(\"change\",draw)}window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",event=>{if(event.data?.type!==\"gal-experiment\")return;for(const control of event.data.controls||[]){const el=document.querySelector(control.selector);if(el){el.value=control.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "まずは均等に選ぶ",
+      "action": "シード42・点120個・平均1回・横と縦で描きます。",
+      "observe": "一様乱数の点は、面のどこにどんな密度で広がっていますか？",
+      "demoState": [
+        {
+          "selector": "#seed",
+          "value": "42"
+        },
+        {
+          "selector": "#dotCount",
+          "value": "120"
+        },
+        {
+          "selector": "#averageCount",
+          "value": "1"
+        },
+        {
+          "selector": "#axis",
+          "value": "both"
+        }
+      ]
+    },
+    {
+      "title": "2回の平均にする",
+      "action": "他はそのまま、平均する回数を2回に変えます。",
+      "observe": "k=1の配置と比べて、中央の密度はどう変わりましたか？",
+      "demoState": [
+        {
+          "selector": "#averageCount",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "title": "平均する回数を増やす",
+      "action": "平均する回数を4回、次に8回にします。",
+      "observe": "回数が増えると、点が現れやすい範囲はどう変わりますか？",
+      "demoState": [
+        {
+          "selector": "#averageCount",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "title": "片方の軸だけを変える",
+      "action": "平均2回に戻し、「横だけ」を選びます。次に「縦だけ」と比べます。",
+      "observe": "横だけを中央寄りにすると、点の集まりは縦帯・横帯のどちらになりますか？",
+      "demoState": [
+        {
+          "selector": "#averageCount",
+          "value": "2"
+        },
+        {
+          "selector": "#axis",
+          "value": "x"
+        }
+      ]
+    },
+    {
+      "title": "作品の見た目を組み合わせる",
+      "action": "点を240個、形をひし形、色を暖色にして好みのシードを選びます。",
+      "observe": "分布のルールを保ったまま、点数・形・色で印象はどう変わりますか？",
+      "demoState": [
+        {
+          "selector": "#dotCount",
+          "value": "240"
+        },
+        {
+          "selector": "#shape",
+          "value": "diamond"
+        },
+        {
+          "selector": "#palette",
+          "value": "warm"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Georges Seurat",
+    "work": "Study for “La Grande Jatte” (1884/1885)",
+    "context": "ジョルジュ・スーラの《ラ・グランド・ジャット島のための習作》は、1884〜1885年の油彩画です。青・緑・紫・ピンクなどの点や短い筆触が重なり、岸辺の風景として見えてきます。",
+    "relation": "点の密度や色の近さによって、離れて見ると色面や形がまとまって見える点を観察します。スーラは画面を意図して描いており、乱数で配置したデモと制作方法は異なります。",
+    "highlight": "細かな点と筆触が集まる場所、離れて見たときに形としてまとまる場所を見比べます。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・作者・年代・CC0ライセンス",
+        "url": "https://commons.wikimedia.org/wiki/File:Georges_Seurat,_Study_for_%22La_Grande_Jatte%22,_1884-1885,_NGA_52225.jpg"
+      },
+      {
+        "source": "National Gallery of Art",
+        "label": "作品情報・パブリックドメインの確認",
+        "url": "https://www.nga.gov/artworks/52225-study-la-grande-jatte"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Georges_Seurat%2C_Study_for_%22La_Grande_Jatte%22%2C_1884-1885%2C_NGA_52225.jpg/1280px-Georges_Seurat%2C_Study_for_%22La_Grande_Jatte%22%2C_1884-1885%2C_NGA_52225.jpg",
+      "alt": "スーラが1884〜1885年に描いた川辺の習作。緑の草地、青い水辺や空、紫・ピンク・黄色の点と筆触で風景を表す。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Georges_Seurat,_Study_for_%22La_Grande_Jatte%22,_1884-1885,_NGA_52225.jpg",
+      "license": "CC0 1.0",
+      "credit": "Georges Seurat, Study for “La Grande Jatte,” 1884/1885 · National Gallery of Art, via Wikimedia Commons, CC0 1.0"
+    },
+    "realWorldExample": {
+      "title": "身近な例：木の根元に集まる落ち葉",
+      "description": "風が吹いたあと、落ち葉が木の幹や塀の近くに多くたまり、開けた場所には少なくなることがあります。",
+      "relation": "一様な配置と違い、場所によって出やすさが変わる例です。風や障害物が影響する実際の落ち葉と、平均乱数の仕組みが同じという意味ではありません。",
+      "visual": {
+        "src": "./assets/day-14-leaves.svg",
+        "alt": "緑の木の根元に赤茶色の落ち葉が多く集まり、少し離れた地面には数枚だけある図。",
+        "caption": "身近な例 · 風で運ばれ、木の根元にたまる落ち葉の模式図。"
+      }
+    }
+  },
+  "extension": {
+    "title": "分布の形を設計する",
+    "keywords": [
+      "一様分布",
+      "三角分布",
+      "確率分布",
+      "平均",
+      "乱数サンプリング"
+    ],
+    "next": "平均回数で点の密度を変えられました。次は中心以外にも注目地点を置き、そこへ点が集まる確率分布を設計します。"
+  },
+  "ruleSummary": "一様乱数をk個平均し、値が集まりやすい範囲を作って座標へ変換する。",
+  "codeNote": "k=1なら一様、kを増やすと平均値は中央付近になりやすくなります。横と縦で別々に計算します。",
+  "algorithmVisual": {
+    "src": "./assets/day-14-average.svg",
+    "alt": "2個の一様乱数0.2と0.8を平均して0.5にし、中央付近が出やすい分布を作る図。",
+    "caption": "図1 · 乱数の平均を使うと、中央付近が選ばれやすくなります。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-14-draws.svg",
+    "alt": "0.2と0.8のくじの値を平均し、中央の0.5を場所として選ぶ図。",
+    "caption": "図2 · くじを複数回引き、平均した位置を選びます。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "goalTitle": "乱数を平均して、点が集まる場所をコントロールする。",
+  "ruleCode": "一様乱数をk個つくる → 合計をkで割る → 座標の割合にする",
+  "extensionVisual": {
+    "src": "./assets/day-14-average.svg",
+    "alt": "乱数の平均を取り中央付近が選ばれやすくなる図。",
+    "caption": "発展 · 回数を変えると、分布の広がりも変わります。"
+  }
+}
