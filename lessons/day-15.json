@@ -1,0 +1,153 @@
+{
+  "day": 15,
+  "status": "published",
+  "title": "Weighted Zone Sampling",
+  "subtitle": "重みを決めて、点が集まる場所を選ぶ。",
+  "topic": "重み付き抽選で密度を操る",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は離散重み付きサンプリングを学びます。画面を左・中央・右の3領域に分け、各領域に重みを設定します。合計重みの範囲から乱数でくじを引き、その値が入る累積区間の領域を選びます。選ばれた領域の中では一様乱数で位置を決めます。肝は、領域を選ぶ確率を重みの比率で決め、その後の領域内の位置選びを分けることです。",
+  "applications": "画面内の注目地点を作る、ゲームの出現場所に偏りをつける、作品の構図に密度差を設ける用途に使えます。",
+  "prerequisites": "Day 13の一様乱数による座標選びとDay 14の点密度を変える考え方。",
+  "connection": "Day 14は平均で中央寄りの値を作りました。今回は画面を領域に分けて重みを付け、中央以外の場所にも狙って点を集めます。",
+  "intuition": {
+    "title": "当たりくじの枚数を領域ごとに変える",
+    "story": "左・中央・右の箱にくじを1枚・4枚・1枚入れます。箱を一つ選ぶと、中央の箱が選ばれる確率は4枚÷合計6枚です。選んだ箱の中で、もう一度くじを引いて位置を決めます。",
+    "visual": "重みを合計 → くじを引く → 累積区間の領域を選ぶ → 領域内の位置を決める",
+    "diagram": "重み 1 : 4 : 1 → 中央を4/6で選ぶ"
+  },
+  "numbers": {
+    "title": "重み1・4・1で中央を選ぶ",
+    "setup": "幅600 px、高さ300 pxの画面を横に3等分します。左・中央・右の重みは1・4・1、合計6です。くじ用乱数 r=0.53、中央内の位置用乱数 q=0.25、縦用乱数 ry=0.70とします。",
+    "steps": [
+      {
+        "label": "合計重みを出す",
+        "calculation": "1 + 4 + 1 = 6。くじの範囲は0以上6未満です。"
+      },
+      {
+        "label": "くじの値を計算する",
+        "calculation": "r × 合計重み = 0.53 × 6 = 3.18。"
+      },
+      {
+        "label": "累積区間から領域を選ぶ",
+        "calculation": "左は0〜1、中央は1〜5、右は5〜6。3.18は中央の区間なので中央です。"
+      },
+      {
+        "label": "領域内で横位置を決める",
+        "calculation": "x = (中央の番号1 + q) ÷ 3 × 600 = 250 px。"
+      },
+      {
+        "label": "縦位置を決めて点を置く",
+        "calculation": "y = ry × 300 = 210 px。点は (250, 210) に置かれます。"
+      }
+    ],
+    "note": "領域が選ばれる確率は重み÷合計重みです。中央は4/6で約67%。重みを増やすほど選ばれやすくなりますが、箱の中では位置は一様に選ばれます。"
+  },
+  "code": "const weights = [leftWeight, focusWeight, rightWeight];\nconst total = weights.reduce((sum, w) => sum + w, 0);\nconst ticket = random() * total;\nlet zone = 0;\nlet edge = weights[0];\nwhile (ticket >= edge && zone < weights.length - 1) {\n  zone++;\n  edge += weights[zone];\n}\nconst x = (zone + random()) / 3 * canvas.width;\nconst y = random() * canvas.height;\ndrawPoint(x, y);",
+  "demo": {
+    "title": "3領域の重みを変える",
+    "caption": "注目する列を左・中央・右から選び、重みを1・2・4・8で変更します。合計重みに対する比率が選ばれる確率です。点数、形、色、シードも変えて、同じ重みのまま見た目を組み立てられます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.55 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px 12px}label{display:grid;gap:4px;font-size:13px}input,select,button{min-height:40px;padding:7px 9px;border:1px solid #c8d1c5;border-radius:6px;background:#fff;color:#303832;font:inherit}button{cursor:pointer}#stage{height:min(70vw,410px);min-height:250px;margin-top:12px;border:1px solid #d4cdbc;background:#eee5d3}canvas{display:block;width:100%;height:100%}.hint{min-height:1.6em;margin:7px 0;color:#536354;font-size:13px}@media(max-width:480px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}#stage{height:300px;min-height:240px}}</style></head><body><div class=\"controls\"><label>シード<input id=\"seed\" type=\"number\" min=\"1\" value=\"42\"></label><label>点の数<select id=\"count\"><option>60</option><option selected>150</option><option>300</option></select></label><label>注目する列<select id=\"focus\"><option value=\"0\">左</option><option value=\"1\" selected>中央</option><option value=\"2\">右</option></select></label><label>注目列の重み<select id=\"weight\"><option>1</option><option>2</option><option selected>4</option><option>8</option></select></label><label>点の形<select id=\"shape\"><option value=\"circle\" selected>円</option><option value=\"square\">四角</option></select></label><label>色<select id=\"palette\"><option value=\"teal\" selected>青緑</option><option value=\"warm\">暖色</option><option value=\"rainbow\">カラフル</option></select></label><button id=\"newSeed\" type=\"button\">別のシード</button><button id=\"draw\" type=\"button\">描き直す</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"重み付けした3列のどこかに点を配置するCanvas\"></canvas></div><p id=\"hint\" aria-live=\"polite\" class=\"hint\"></p><script>\nconst c=document.querySelector(\"#art\"),ctx=c.getContext(\"2d\"),ids=[\"seed\",\"count\",\"focus\",\"weight\",\"shape\",\"palette\"];function draw(){const b=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);c.width=Math.max(1,Math.round(b.width*d));c.height=Math.max(1,Math.round(b.height*d));ctx.setTransform(d,0,0,d,0,0);const w=b.width,h=b.height;let s=Math.max(1,Number(document.querySelector(\"#seed\").value)||1);s=(Math.floor(s-1)%2147483646+2147483646)%2147483646+1;function random(){s=s*16807%2147483647;return(s-1)/2147483646}const n=Number(document.querySelector(\"#count\").value),focus=Number(document.querySelector(\"#focus\").value),f=Number(document.querySelector(\"#weight\").value),weights=[1,1,1];weights[focus]=f;const total=weights.reduce((a,v)=>a+v,0),size=4,shape=document.querySelector(\"#shape\").value,pal=document.querySelector(\"#palette\").value;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);ctx.fillStyle=\"rgba(217,126,85,.10)\";ctx.fillRect(focus*w/3,0,w/3,h);ctx.strokeStyle=\"#c8c3b6\";ctx.setLineDash([5,6]);ctx.beginPath();ctx.moveTo(w/3,0);ctx.lineTo(w/3,h);ctx.moveTo(2*w/3,0);ctx.lineTo(2*w/3,h);ctx.stroke();ctx.setLineDash([]);for(let i=0;i<n;i++){const ticket=random()*total;let zone=0,edge=weights[0];while(ticket>=edge&&zone<2){zone++;edge+=weights[zone]}const x=(zone+random())/3*w,y=random()*h;ctx.fillStyle=pal===\"rainbow\"?\"hsl(\"+Math.round(i*360/n)+\" 58% 42%)\":pal===\"warm\"?\"#bd6345\":\"#397889\";if(shape===\"circle\"){ctx.beginPath();ctx.arc(x,y,size,0,Math.PI*2);ctx.fill()}else ctx.fillRect(x-size,y-size,size*2,size*2)}const chance=Math.round(f/total*100);document.querySelector(\"#hint\").textContent=\"重み \"+weights.join(\" : \")+\" · 注目列は\"+chance+\"% · \"+n+\"点\"}function redraw(){draw()}document.querySelector(\"#draw\").addEventListener(\"click\",draw);document.querySelector(\"#newSeed\").addEventListener(\"click\",()=>{const x=document.querySelector(\"#seed\");x.value=String((Number(x.value)||1)%2147483646+1);draw()});for(const id of ids){const e=document.querySelector(\"#\"+id);e.addEventListener(\"change\",draw);e.addEventListener(\"input\",draw)}window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type!==\"gal-experiment\")return;for(const x of e.data.controls||[]){const el=document.querySelector(x.selector);if(el){el.value=x.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "重み1・1・1で比べる",
+      "action": "中央を選び、重みを1にして点150個を描きます。",
+      "observe": "3列におおむね同じ数ずつ点が入りますか？"
+    },
+    {
+      "title": "中央の重みを4にする",
+      "action": "重みを4に変え、同じシードと点数で描きます。",
+      "observe": "中央列は全体の約4/6に近い数になっていますか？"
+    },
+    {
+      "title": "注目列を移動する",
+      "action": "注目列を左、次に右に変えます。",
+      "observe": "密度の高い列が選択に合わせて移動しますか？"
+    },
+    {
+      "title": "重みを8にする",
+      "action": "注目列を中央に戻し、重みを8にします。",
+      "observe": "選ばれる確率は8/(1+8+1)=80%になります。見た目はどう変わりますか？"
+    },
+    {
+      "title": "点数とスタイルを改造する",
+      "action": "点を300個に増やし、形を四角、色をカラフルにします。",
+      "observe": "重みの比率を保ったまま、密度や印象はどう変わりますか？"
+    }
+  ],
+  "artist": {
+    "name": "Katsushika Hokusai",
+    "work": "The Great Wave off Kanagawa (c. 1830–1833)",
+    "context": "葛飾北斎の《神奈川沖浪裏》は、富士山を背景に大波と小舟を描いた浮世絵版画です。波の大きな形が画面の視線を強く引きつけます。",
+    "relation": "画面のどこに視線が集まるかを観察します。北斎は構図を意図して設計し、デモは確率で列を選ぶため、制作方法は異なります。",
+    "highlight": "大波の形が視線の焦点になる構図を、点の密度を確率で寄せる操作と比べます。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・作者・年代・CC0 1.0",
+        "url": "https://commons.wikimedia.org/wiki/File:The_Great_Wave_off_Kanagawa.png"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/86/The_Great_Wave_off_Kanagawa.png",
+      "alt": "葛飾北斎の《神奈川沖浪裏》。大きくうねる青い波の向こうに小さな富士山と舟が描かれた版画。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_Great_Wave_off_Kanagawa.png",
+      "license": "CC0 1.0",
+      "credit": "Katsushika Hokusai, The Great Wave off Kanagawa, c. 1829–1833 · via Wikimedia Commons, CC0 1.0"
+    },
+    "realWorldExample": {
+      "title": "身近な例：木陰に集まる人",
+      "description": "暑い日の公園では、日なたより木陰を選んで休む人が多くなることがあります。",
+      "relation": "場所ごとに選ばれやすさが違う実例です。重みを高くした列を選びやすくするモデルと似ていますが、人の行動は気温や混雑などにも左右されます。",
+      "visual": {
+        "src": "./assets/day-15-shade.svg",
+        "alt": "公園の木の下に数人が集まり、周りの日なたには人がいない模式図。",
+        "caption": "身近な例 · 暑い日に木陰が選ばれやすい様子。"
+      }
+    }
+  },
+  "extension": {
+    "title": "複数領域へ重みを割り当てる",
+    "keywords": [
+      "重み付き抽選",
+      "累積分布",
+      "確率分布",
+      "カテゴリ選択"
+    ],
+    "next": "3列のうち1列の確率を高めました。次は複数の領域へ別々の重みを配り、複雑な配置を設計します。"
+  },
+  "ruleSummary": "領域ごとの重みで抽選確率を決め、選んだ領域内では一様乱数で位置を決める。",
+  "codeNote": "くじの値が入る累積重みの区間を探し、領域を選びます。",
+  "algorithmVisual": {
+    "src": "./assets/day-15-weighted.svg",
+    "alt": "左・中央・右の重みを1・4・1にし、中央が4/6で選ばれる累積区間の図。",
+    "caption": "図1 · 重みの比率が領域の選ばれやすさになります。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-15-weighted.svg",
+    "alt": "重み1・4・1の3領域から抽選し、中央が選ばれやすくなる図。",
+    "caption": "図2 · 箱の中のくじの枚数で選ばれる確率が決まります。"
+  },
+  "extensionVisual": {
+    "src": "./assets/day-15-weighted.svg",
+    "alt": "重みを変えると領域の選択確率が変わる図。",
+    "caption": "発展 · 領域ごとに異なる重みを設定できます。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "goalTitle": "重みと累積区間で、点が集まる領域を選ぶ。",
+  "ruleCode": "くじ=random()×重み合計 → 累積区間で領域を選択 → 領域内に配置"
+}
