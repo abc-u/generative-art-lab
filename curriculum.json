@@ -133,6 +133,14 @@
       "description": "一様乱数を複数回平均し、点が集まりやすい位置や方向をコントロールする。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 15,
+      "title": "Weighted Zone Sampling",
+      "topic": "重み付き抽選で密度を操る",
+      "description": "領域ごとに重みを付け、点が集まりやすい場所を確率で設計する。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
