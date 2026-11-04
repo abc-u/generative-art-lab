@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" role="img" aria-labelledby="t d">
+<title id="t">候補点を試し、円の内側だけ採用する流れ</title><desc id="d">正方形の画面から候補点を一様に選び、円の中なら採用、外なら不採用にする図。</desc>
+<rect width="720" height="330" rx="18" fill="#f4f0e6"/>
+<text x="30" y="38" font-family="sans-serif" font-size="20" font-weight="700" fill="#293c39">棄却サンプリング：候補を試して、形の内側だけ残す</text>
+<rect x="34" y="65" width="260" height="220" rx="8" fill="#e8e0cf" stroke="#78877a" stroke-width="2"/>
+<circle cx="164" cy="175" r="72" fill="#d9eee4" stroke="#237a67" stroke-width="3"/>
+<g fill="#237a67"><circle cx="128" cy="133" r="5"/><circle cx="172" cy="151" r="5"/><circle cx="183" cy="203" r="5"/><circle cx="141" cy="211" r="5"/></g>
+<g fill="#cf654d"><circle cx="66" cy="108" r="5"/><circle cx="240" cy="96" r="5"/><circle cx="268" cy="242" r="5"/><circle cx="87" cy="257" r="5"/></g>
+<text x="42" y="308" font-family="sans-serif" font-size="14" fill="#48544b">緑＝採用　赤＝不採用</text>
+<path d="M320 175h70" stroke="#66766b" stroke-width="3"/><path d="m380 166 12 9-12 9" fill="none" stroke="#66766b" stroke-width="3"/>
+<rect x="405" y="80" width="275" height="65" rx="10" fill="#fff" stroke="#c8d1c5"/>
+<text x="424" y="108" font-family="sans-serif" font-size="16" font-weight="700" fill="#293c39">1. 候補を一様に作る</text><text x="424" y="130" font-family="sans-serif" font-size="14" fill="#48544b">x = random() × 幅、y = random() × 高さ</text>
+<rect x="405" y="160" width="275" height="65" rx="10" fill="#fff" stroke="#c8d1c5"/>
+<text x="424" y="188" font-family="sans-serif" font-size="16" font-weight="700" fill="#293c39">2. 形の条件を調べる</text><text x="424" y="210" font-family="sans-serif" font-size="14" fill="#48544b">円の外なら、この候補を捨てる</text>
+<rect x="405" y="240" width="275" height="50" rx="10" fill="#d9eee4"/>
+<text x="424" y="270" font-family="sans-serif" font-size="16" font-weight="700" fill="#205d51">3. 内側の点だけ描く</text>
+</svg>
