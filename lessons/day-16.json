@@ -1,0 +1,193 @@
+{
+  "day": 16,
+  "status": "published",
+  "title": "Rejection Sampling",
+  "subtitle": "候補を試し、狙った形の内側だけを残す。",
+  "topic": "棄却サンプリングで形を切り出す",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は棄却サンプリングを学びます。まず画面全体から一様乱数で候補点を作り、点ごとに「残したい形の内側か」を判定します。内側なら採用して描き、外側なら捨てます。肝は、候補を作る処理と、形に入っているかを調べる判定を分けることです。同じ判定を変えるだけで円・ひし形・帯などの形に点を切り出せます。形が小さいほど捨てる候補が増えます。",
+  "applications": "複雑な輪郭に沿って模様を配置する、地図上の指定エリアに物を出す、マスク形状の中に粒子を置く用途に使えます。",
+  "prerequisites": "Day 13の一様乱数による座標選びとDay 15の領域選択を使います。",
+  "connection": "Day 15は重みで「どの領域を選ぶか」を決めました。今回は画面から候補を作り、条件に合う点だけ採用して、領域の輪郭そのものを選別に使います。",
+  "intuition": {
+    "title": "クッキー型で生地から形を切り出す",
+    "story": "四角い生地の上に、候補の点をランダムに打ちます。クッキー型の内側にある点は残し、外側にある点は捨てます。候補を作ることと、型に入っているか調べることの二段階です。",
+    "visual": "候補を一様に作る → 形の内側か判定 → 内側だけ描く",
+    "diagram": "円の条件：中心からの距離² ≤ 半径²"
+  },
+  "numbers": {
+    "title": "半径60の円に入る？",
+    "setup": "幅200 px・高さ200 pxの画面の中央を (100,100)、円の半径を60 pxとします。候補Aは (115,120)、候補Bは (170,150) です。",
+    "steps": [
+      {
+        "label": "円の条件を書く",
+        "calculation": "(x−100)² + (y−100)² ≤ 60² なら、円の内側です。"
+      },
+      {
+        "label": "候補Aの距離を比べる",
+        "calculation": "(115−100)² + (120−100)² = 15² + 20² = 625。60²=3600以下なので採用。"
+      },
+      {
+        "label": "候補Bの距離を比べる",
+        "calculation": "(170−100)² + (150−100)² = 70² + 50² = 7400。3600より大きいので不採用。"
+      },
+      {
+        "label": "100個試したときの目安",
+        "calculation": "円の面積は約3.14×60²=11,304 px²。画面は40,000 px²なので、平均すると約28個が採用されます。"
+      }
+    ],
+    "note": "これは平均の見込みで、毎回ちょうど28個になるわけではありません。点の候補は毎回ランダムなので、採用数も少し変わります。"
+  },
+  "code": "const accepted = [];\nfor (let i = 0; i < attempts; i++) {\n  const x = random() * width;\n  const y = random() * height;\n  const dx = x - width / 2;\n  const dy = y - height / 2;\n  const inside = dx * dx + dy * dy <= radius * radius;\n  if (inside) accepted.push({ x, y });\n}\ndrawPoints(accepted);",
+  "demo": {
+    "title": "候補を試して、形の中に残す",
+    "caption": "円・ひし形・斜め帯の内側だけに点を残します。候補数、形の大きさ、不採用点の表示、点の形、色、シードを変えられます。灰色が不採用、色付きが採用です。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.55 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px 12px}label{display:grid;gap:4px;font-size:13px}input,select,button{min-height:42px;padding:7px 9px;border:1px solid #c8d1c5;border-radius:6px;background:#fff;color:#303832;font:inherit}button{cursor:pointer}.check{display:flex;align-items:center;gap:8px;min-height:42px}.check input{width:20px;height:20px}#stage{height:min(70vw,420px);min-height:260px;margin-top:12px;border:1px solid #d4cdbc;background:#eee5d3}canvas{display:block;width:100%;height:100%}.hint{min-height:1.6em;margin:7px 0;color:#536354;font-size:13px}@media(max-width:480px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#stage{height:300px;min-height:240px}}</style></head><body><div class=\"controls\"><label>シード<input id=\"seed\" type=\"number\" min=\"1\" value=\"42\"></label><label>候補の数<select id=\"tries\"><option value=\"100\">100</option><option value=\"300\" selected>300</option><option value=\"600\">600</option></select></label><label>残す形<select id=\"shape\"><option value=\"circle\" selected>円</option><option value=\"diamond\">ひし形</option><option value=\"band\">斜め帯</option></select></label><label>形の大きさ<select id=\"size\"><option value=\"20\">小 20%</option><option value=\"30\" selected>中 30%</option><option value=\"40\">大 40%</option></select></label><label>点の形<select id=\"mark\"><option value=\"circle\" selected>円</option><option value=\"square\">四角</option><option value=\"triangle\">三角</option></select></label><label>色<select id=\"palette\"><option value=\"teal\" selected>青緑</option><option value=\"warm\">暖色</option><option value=\"rainbow\">カラフル</option></select></label><label class=\"check\"><input id=\"showRejected\" type=\"checkbox\" checked>不採用点も表示</label><button id=\"newSeed\" type=\"button\">別のシード</button><button id=\"draw\" type=\"button\">描き直す</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"ランダムな候補点のうち選んだ形の内側だけを残すCanvas\"></canvas></div><p id=\"hint\" aria-live=\"polite\" class=\"hint\"></p><script>\nconst canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),ids=[\"seed\",\"tries\",\"shape\",\"size\",\"mark\",\"palette\",\"showRejected\"];\nfunction draw(){const box=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*d));canvas.height=Math.max(1,Math.round(box.height*d));ctx.setTransform(d,0,0,d,0,0);const w=box.width,h=box.height,m=Math.min(w,h);let seed=Math.max(1,Number(document.querySelector(\"#seed\").value)||1);seed=(Math.floor(seed-1)%2147483646+2147483646)%2147483646+1;function random(){seed=seed*16807%2147483647;return(seed-1)/2147483646}\nconst attempts=Number(document.querySelector(\"#tries\").value),shape=document.querySelector(\"#shape\").value,size=Number(document.querySelector(\"#size\").value)/100,r=m*size,palette=document.querySelector(\"#palette\").value,mark=document.querySelector(\"#mark\").value,showRejected=document.querySelector(\"#showRejected\").checked;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);\nctx.save();ctx.fillStyle=\"rgba(54,137,112,.12)\";ctx.strokeStyle=\"#368970\";ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();if(shape===\"circle\"){ctx.arc(w/2,h/2,r,0,Math.PI*2)}else if(shape===\"diamond\"){ctx.moveTo(w/2,h/2-r);ctx.lineTo(w/2+r,h/2);ctx.lineTo(w/2,h/2+r);ctx.lineTo(w/2-r,h/2);ctx.closePath()}else{ctx.moveTo(0,0);ctx.lineTo(w,h);ctx.lineWidth=2*r}ctx.fill();ctx.stroke();ctx.restore();\nconst rejected=[],accepted=[];for(let i=0;i<attempts;i++){const x=random()*w,y=random()*h,dx=x-w/2,dy=y-h/2;let inside;if(shape===\"circle\")inside=dx*dx+dy*dy<=r*r;else if(shape===\"diamond\")inside=Math.abs(dx)+Math.abs(dy)<=r;else inside=Math.abs(dx-dy)<=r;if(inside)accepted.push({x,y,i});else rejected.push({x,y})}\nfunction paintPoint(x,y,color,s){ctx.fillStyle=color;if(mark===\"square\"){ctx.fillRect(x-s,y-s,s*2,s*2)}else if(mark===\"triangle\"){ctx.beginPath();ctx.moveTo(x,y-s*1.25);ctx.lineTo(x+s*1.1,y+s);ctx.lineTo(x-s*1.1,y+s);ctx.closePath();ctx.fill()}else{ctx.beginPath();ctx.arc(x,y,s,0,Math.PI*2);ctx.fill()}}\nif(showRejected){for(const p of rejected)paintPoint(p.x,p.y,\"rgba(105,112,104,.24)\",2)}\nfor(const p of accepted){const color=palette===\"rainbow\"?\"hsl(\"+Math.round(p.i*360/attempts)+\" 58% 42%)\":palette===\"warm\"?\"#bd6345\":\"#397889\";paintPoint(p.x,p.y,color,4)}\ndocument.querySelector(\"#hint\").textContent=\"候補 \"+attempts+\" 個のうち \"+accepted.length+\" 個を採用 · 不採用 \"+rejected.length+\" 個\"+(showRejected?\"（灰色）\":\"を非表示\")+\" · 形：\"+({circle:\"円\",diamond:\"ひし形\",band:\"斜め帯\"}[shape])}\ndocument.querySelector(\"#draw\").addEventListener(\"click\",draw);document.querySelector(\"#newSeed\").addEventListener(\"click\",()=>{const e=document.querySelector(\"#seed\");e.value=String((Number(e.value)||1)%2147483646+1);draw()});for(const id of ids){const e=document.querySelector(\"#\"+id);e.addEventListener(\"change\",draw);e.addEventListener(\"input\",draw)}window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type!==\"gal-experiment\")return;for(const c of e.data.controls||[]){const el=document.querySelector(c.selector);if(el){el.value=c.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "円の中に入る条件を見る",
+      "action": "円・大きさ30%・候補300個にして、不採用点も表示します。",
+      "observe": "灰色の点を円の内側に採用しない判定が見えますか？",
+      "demoState": [
+        {
+          "selector": "#shape",
+          "value": "circle"
+        },
+        {
+          "selector": "#size",
+          "value": "30"
+        },
+        {
+          "selector": "#tries",
+          "value": "300"
+        },
+        {
+          "selector": "#showRejected",
+          "value": "on"
+        }
+      ]
+    },
+    {
+      "title": "候補数を増やす",
+      "action": "候補数を100、300、600と順に変えます。",
+      "observe": "候補数を増やすと採用点も増えますか？形の境界は変わりますか？",
+      "demoState": [
+        {
+          "selector": "#tries",
+          "value": "600"
+        }
+      ]
+    },
+    {
+      "title": "形を切り替える",
+      "action": "円をひし形、斜め帯へ切り替えます。",
+      "observe": "候補は同じでも、内外を判定する条件が違うと分布がどう変わりますか？",
+      "demoState": [
+        {
+          "selector": "#shape",
+          "value": "band"
+        }
+      ]
+    },
+    {
+      "title": "小さい形と大きい形を比べる",
+      "action": "形の大きさを20%から40%へ変えます。",
+      "observe": "大きくすると採用率と採用点の数はどう変わりますか？",
+      "demoState": [
+        {
+          "selector": "#size",
+          "value": "40"
+        }
+      ]
+    },
+    {
+      "title": "自分の模様に仕上げる",
+      "action": "点の形を三角、色を暖色にし、シードを変えます。",
+      "observe": "採用ルールを保ったまま、作品の印象はどう変わりましたか？",
+      "demoState": [
+        {
+          "selector": "#mark",
+          "value": "triangle"
+        },
+        {
+          "selector": "#palette",
+          "value": "warm"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Wassily Kandinsky",
+    "work": "Circles in a Circle (1923)",
+    "context": "ワシリー・カンディンスキーの《円の中の円》は、円形の画面に色のついた円や線を重ねた1923年の作品です。円の境界と、その内側で展開する図形の関係を観察できます。",
+    "relation": "外側の円の中に形が収まる構成を、形の内側だけ点を採用するデモと比べます。作品の制作方法は棄却サンプリングではありません。",
+    "highlight": "大きな円の内側に、色と向きの違う図形を配置する構成を観察します。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・作者・年代・Public Domain表示",
+        "url": "https://commons.wikimedia.org/wiki/File:Vassily_Kandinsky,_1923_-_Circles_in_a_Circle.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/f/f0/Vassily_Kandinsky%2C_1923_-_Circles_in_a_Circle.jpg",
+      "alt": "カンディンスキーの《円の中の円》。白い背景の中央の大きな円の内側に、青や赤などの円と直線が重なっている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vassily_Kandinsky,_1923_-_Circles_in_a_Circle.jpg",
+      "license": "Public Domain",
+      "credit": "Wassily Kandinsky, Circles in a Circle, 1923 · Philadelphia Museum of Art, via Wikimedia Commons, Public Domain"
+    },
+    "realWorldExample": {
+      "title": "身近な例：花壇の中に苗を植える",
+      "description": "決まった輪郭の花壇を作るとき、植える苗の位置は花壇の範囲の中から選びます。花壇の外に出た候補は使いません。",
+      "relation": "候補位置を広く作り、境界の内側かを調べて残すイメージです。実際の植栽は日当たりや間隔など別の条件も考えます。",
+      "visual": {
+        "src": "./assets/day-16-flowerbed.svg",
+        "alt": "長方形の敷地の中に曲線の花壇があり、花壇の内側に紫の苗、外側に候補位置の灰色の点が描かれた模式図。",
+        "caption": "身近な例 · 花壇の輪郭を使って苗の候補位置を選ぶ模式図。"
+      }
+    }
+  },
+  "extension": {
+    "title": "確率マスクを画像に重ねる",
+    "keywords": [
+      "棄却サンプリング",
+      "点-in-形判定",
+      "マスク",
+      "採用率",
+      "境界判定"
+    ],
+    "next": "今回は円・ひし形・帯の内外判定で点を選びました。次は画像の明るさや模様をマスクにして、残す場所ごとに確率を変える方法へつなげられます。"
+  },
+  "ruleSummary": "画面から一様に候補点を作り、残したい形の内側に入った点だけ採用して描く。",
+  "codeNote": "円なら中心からの距離の二乗が、半径の二乗以下かで内側を判定します。",
+  "algorithmVisual": {
+    "src": "./assets/day-16-rejection.svg",
+    "alt": "画面全体から候補点を一様に作り、円の外の点を捨て、内側の点だけ採用する流れ。",
+    "caption": "図1 · 候補生成と内外判定を分け、条件を満たす点だけ残します。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-16-cookie.svg",
+    "alt": "四角い生地からクッキー型の内側にある候補だけを残すたとえの図。",
+    "caption": "図2 · 型の中に入った候補を採用し、外にある候補を捨てるイメージです。"
+  },
+  "extensionVisual": {
+    "src": "./assets/day-16-rejection.svg",
+    "alt": "条件に合う候補だけ描く棄却サンプリングの流れ。",
+    "caption": "発展 · 内外の条件を画像のマスクや確率へ広げられます。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ]
+}
