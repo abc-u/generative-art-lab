@@ -141,6 +141,14 @@
       "description": "領域ごとに重みを付け、点が集まりやすい場所を確率で設計する。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 16,
+      "title": "Rejection Sampling",
+      "topic": "棄却サンプリングで形を切り出す",
+      "description": "一様に作った候補から、狙った形の内側にある点だけを採用する。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }

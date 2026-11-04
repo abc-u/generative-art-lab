@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-labelledby="t d">
+<title id="t">花壇の範囲に植える苗の位置の模式図</title><desc id="d">長方形の敷地の中に曲線の花壇があり、花壇の中の苗だけを植える点として示す。</desc>
+<rect width="720" height="300" rx="18" fill="#f4f0e6"/>
+<text x="28" y="40" font-family="sans-serif" font-size="20" font-weight="700" fill="#293c39">身近な例：花壇の輪郭の中に苗を植える</text>
+<rect x="42" y="66" width="420" height="200" rx="14" fill="#dce8d0" stroke="#809177" stroke-width="2"/>
+<path d="M112 158 C122 104 194 94 247 119 C300 78 389 111 397 163 C405 207 348 239 292 215 C230 251 143 226 112 185Z" fill="#b8c78c" stroke="#718655" stroke-width="3"/>
+<g fill="#755e9e"><circle cx="164" cy="153" r="7"/><circle cx="211" cy="187" r="7"/><circle cx="273" cy="139" r="7"/><circle cx="329" cy="179" r="7"/><circle cx="365" cy="148" r="7"/></g>
+<g fill="#718655"><circle cx="164" cy="153" r="2"/><circle cx="211" cy="187" r="2"/><circle cx="273" cy="139" r="2"/><circle cx="329" cy="179" r="2"/><circle cx="365" cy="148" r="2"/></g>
+<g fill="#9ca39a"><circle cx="72" cy="98" r="5"/><circle cx="430" cy="235" r="5"/><circle cx="82" cy="231" r="5"/></g>
+<text x="496" y="105" font-family="sans-serif" font-size="16" font-weight="700" fill="#293c39">境界の内側</text>
+<text x="496" y="132" font-family="sans-serif" font-size="14" fill="#48544b">苗を植える候補を採用。</text>
+<text x="496" y="180" font-family="sans-serif" font-size="16" font-weight="700" fill="#293c39">花壇の外側</text>
+<text x="496" y="207" font-family="sans-serif" font-size="14" fill="#48544b">候補を植えない。</text>
+<text x="496" y="253" font-family="sans-serif" font-size="13" fill="#48544b">点は位置関係を表した模式図です。</text>
+</svg>
