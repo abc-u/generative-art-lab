@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img" aria-labelledby="t d">
+<title id="t">クッキー型と生地で棄却サンプリングを考える</title><desc id="d">四角い生地の上の候補を型でふるい、型の内側の点だけを残すたとえ。</desc>
+<rect width="720" height="300" rx="18" fill="#f4f0e6"/>
+<text x="28" y="40" font-family="sans-serif" font-size="20" font-weight="700" fill="#293c39">クッキー型で、形の外をふるい落とす</text>
+<rect x="38" y="70" width="290" height="190" rx="12" fill="#edd8ae" stroke="#b89968" stroke-width="2"/>
+<path d="M184 88 C136 88 108 117 110 159 C112 204 144 237 184 237 C224 237 257 204 258 159 C260 117 232 88 184 88Z" fill="#f7edd6" stroke="#a9533d" stroke-width="5"/>
+<g fill="#a9533d"><circle cx="178" cy="116" r="5"/><circle cx="147" cy="148" r="5"/><circle cx="206" cy="159" r="5"/><circle cx="184" cy="203" r="5"/></g>
+<g fill="#8b8d82"><circle cx="62" cy="101" r="5"/><circle cx="293" cy="118" r="5"/><circle cx="74" cy="224" r="5"/><circle cx="282" cy="226" r="5"/></g>
+<text x="356" y="105" font-family="sans-serif" font-size="16" font-weight="700" fill="#293c39">候補を広く作る</text><text x="356" y="132" font-family="sans-serif" font-size="14" fill="#48544b">生地の上に、点をランダムに置く。</text>
+<text x="356" y="178" font-family="sans-serif" font-size="16" font-weight="700" fill="#293c39">型の中だけを残す</text><text x="356" y="205" font-family="sans-serif" font-size="14" fill="#48544b">型の外にある点は描かない。</text>
+<text x="356" y="252" font-family="sans-serif" font-size="14" fill="#48544b">図の点は説明用。実際の食品加工工程とは異なる比喩です。</text>
+</svg>
