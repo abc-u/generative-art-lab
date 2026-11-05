@@ -1,0 +1,192 @@
+{
+  "day": 17,
+  "status": "published",
+  "title": "Probability Masks",
+  "subtitle": "場所ごとに採用確率を変えて、点の密度を設計する。",
+  "topic": "確率マスクで密度をなめらかに変える",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は確率マスクを使った棄却サンプリングを学びます。候補点を画面から一様に作り、その場所の採用確率 p を計算します。0から1の乱数 r をもう一度引き、r < p なら点を残し、そうでなければ捨てます。肝は、場所ごとに変わる確率を乱数と比較することです。Day 16の「内側なら必ず採用」という二択を、0〜100%の確率に広げると、硬い境界を作らず密度の濃淡を描けます。",
+  "applications": "粒子の濃淡を作る、絵の一部へ視線を集める、画像の明るさに合わせて点描を配置する用途に使えます。",
+  "prerequisites": "Day 13の一様乱数とDay 16の候補を採用・棄却する考え方を使います。",
+  "connection": "Day 16は形の内側を確率100%、外側を0%として点を選びました。今回は場所ごとに中間の確率を設定し、密度をなめらかに変えます。",
+  "intuition": {
+    "title": "場所によって当たりやすさが違うくじ",
+    "story": "画面の場所ごとに、くじの当たりやすさを決めます。候補点の場所で確率pを見て、0〜1のくじrを引きます。rがpより小さければ点を残します。同じ場所でも、くじによって採用されたり捨てられたりします。",
+    "visual": "候補点を作る → 場所の確率 p を計算 → 乱数 r と比べる → r < p なら採用",
+    "diagram": "位置→確率 p→乱数 r と比較→点を採用または棄却"
+  },
+  "numbers": {
+    "title": "左へ寄せる確率を計算する",
+    "setup": "幅200 pxの画面で、左から右へ確率を下げます。x=80 pxの候補を考え、p = 1 − x ÷ 幅 とします。",
+    "steps": [
+      {
+        "label": "候補位置を割合にする",
+        "calculation": "80 ÷ 200 = 0.4。画面の左から40%の場所です。"
+      },
+      {
+        "label": "この場所の採用確率",
+        "calculation": "p = 1 − 0.4 = 0.6。採用確率は60%です。"
+      },
+      {
+        "label": "乱数0.42なら",
+        "calculation": "r=0.42はp=0.6より小さいので採用します。"
+      },
+      {
+        "label": "乱数0.82なら",
+        "calculation": "r=0.82はp=0.6以上なので棄却します。"
+      }
+    ],
+    "note": "同じx=80でも、候補を作るたびにrが変わります。平均すると採用率が60%に近づき、左側ほど点が多く見えます。"
+  },
+  "code": "const x = random() * width;\nconst y = random() * height;\nconst probability = 1 - x / width;\nconst roll = random();\nif (roll < probability) {\n  drawPoint(x, y);\n}",
+  "demo": {
+    "title": "場所ごとの確率を変える",
+    "caption": "左から右へ薄く、中央を濃く、波のしま模様の3種類を切り替えられます。候補数、採用確率の強さ、点の形、色、シードも変えて、採用・不採用の違いを観察します。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.55 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px 12px}label{display:grid;gap:4px;font-size:13px}input,select,button{min-height:42px;padding:7px 9px;border:1px solid #c8d1c5;border-radius:6px;background:#fff;color:#303832;font:inherit}button{cursor:pointer}.check{display:flex;align-items:center;gap:8px;min-height:42px}.check input{width:20px;height:20px}#stage{height:min(70vw,420px);min-height:260px;margin-top:12px;border:1px solid #d4cdbc;background:#eee5d3}canvas{display:block;width:100%;height:100%}.hint{min-height:1.6em;margin:7px 0;color:#536354;font-size:13px}@media(max-width:480px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#stage{height:300px;min-height:240px}}</style></head><body><div class=\"controls\"><label>シード<input id=\"seed\" type=\"number\" min=\"1\" value=\"42\"></label><label>候補の数<select id=\"tries\"><option>100</option><option selected>300</option><option>600</option></select></label><label>確率の形<select id=\"mode\"><option value=\"left\" selected>左から右へ薄く</option><option value=\"center\">中央が高い</option><option value=\"stripe\">波のしま模様</option></select></label><label>採用確率の強さ<select id=\"strength\"><option value=\".25\">25%</option><option value=\".5\">50%</option><option value=\".75\" selected>75%</option><option value=\"1\">100%</option></select></label><label>点の形<select id=\"mark\"><option value=\"circle\" selected>円</option><option value=\"square\">四角</option><option value=\"triangle\">三角</option></select></label><label>色<select id=\"palette\"><option value=\"teal\" selected>青緑</option><option value=\"warm\">暖色</option><option value=\"rainbow\">カラフル</option></select></label><label class=\"check\"><input id=\"showRejected\" type=\"checkbox\" checked>不採用点も表示</label><button id=\"newSeed\" type=\"button\">別のシード</button><button id=\"draw\" type=\"button\">描き直す</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"場所ごとの確率で候補点を採用するCanvas\"></canvas></div><p id=\"hint\" aria-live=\"polite\" class=\"hint\"></p><script>\nconst canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),ids=[\"seed\",\"tries\",\"mode\",\"strength\",\"mark\",\"palette\",\"showRejected\"];\nfunction draw(){const box=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(box.width*d));canvas.height=Math.max(1,Math.round(box.height*d));ctx.setTransform(d,0,0,d,0,0);const w=box.width,h=box.height;let seed=Math.max(1,Number(document.querySelector(\"#seed\").value)||1);seed=(Math.floor(seed-1)%2147483646+2147483646)%2147483646+1;function random(){seed=seed*16807%2147483647;return(seed-1)/2147483646}\nconst attempts=Number(document.querySelector(\"#tries\").value),mode=document.querySelector(\"#mode\").value,strength=Number(document.querySelector(\"#strength\").value),palette=document.querySelector(\"#palette\").value,mark=document.querySelector(\"#mark\").value,show=document.querySelector(\"#showRejected\").checked;ctx.fillStyle=\"#eee5d3\";ctx.fillRect(0,0,w,h);\nconst accepted=[],rejected=[];for(let i=0;i<attempts;i++){const x=random()*w,y=random()*h,nx=x/w,ny=y/h;let base;if(mode===\"left\")base=1-nx;else if(mode===\"center\"){const dx=nx-.5,dy=ny-.5;base=Math.max(0,1-Math.sqrt(dx*dx+dy*dy)/.7071)}else base=(Math.sin((nx+ny)*Math.PI*4)+1)/2;const probability=base*strength,roll=random(),p={x,y,i,probability};if(roll<probability)accepted.push(p);else rejected.push(p)}\nfunction paint(p,color,size){ctx.fillStyle=color;if(mark===\"square\")ctx.fillRect(p.x-size,p.y-size,size*2,size*2);else if(mark===\"triangle\"){ctx.beginPath();ctx.moveTo(p.x,p.y-size*1.3);ctx.lineTo(p.x+size,p.y+size);ctx.lineTo(p.x-size,p.y+size);ctx.closePath();ctx.fill()}else{ctx.beginPath();ctx.arc(p.x,p.y,size,0,Math.PI*2);ctx.fill()}}\nif(show)for(const p of rejected)paint(p,\"rgba(105,112,104,.24)\",2);for(const p of accepted){const color=palette===\"rainbow\"?\"hsl(\"+Math.round(p.probability*220+180)+\" 58% 42%)\":palette===\"warm\"?\"#bd6345\":\"#397889\";paint(p,color,4)}\ndocument.querySelector(\"#hint\").textContent=\"候補 \"+attempts+\" 個 · 採用 \"+accepted.length+\" 個 · 不採用 \"+rejected.length+\" 個\"+(show?\"（灰色）\":\"を非表示\")+\" · 濃い場所ほど採用確率が高い\"}\ndocument.querySelector(\"#draw\").addEventListener(\"click\",draw);document.querySelector(\"#newSeed\").addEventListener(\"click\",()=>{const e=document.querySelector(\"#seed\");e.value=String((Number(e.value)||1)%2147483646+1);draw()});for(const id of ids){const e=document.querySelector(\"#\"+id);e.addEventListener(\"change\",draw);e.addEventListener(\"input\",draw)}window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type!==\"gal-experiment\")return;for(const c of e.data.controls||[]){const el=document.querySelector(c.selector);if(el){el.value=c.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "確率の濃淡を見る",
+      "action": "「左から右へ薄く」、強さ100%、候補600個にします。",
+      "observe": "同じ画面でも、左と右で採用点の密度がどう違いますか？",
+      "demoState": [
+        {
+          "selector": "#mode",
+          "value": "left"
+        },
+        {
+          "selector": "#strength",
+          "value": "1"
+        },
+        {
+          "selector": "#tries",
+          "value": "600"
+        }
+      ]
+    },
+    {
+      "title": "強さを変える",
+      "action": "採用確率の強さを25%、50%、100%にします。",
+      "observe": "全体の採用数と、左右の濃淡の比率はどう変わりますか？",
+      "demoState": [
+        {
+          "selector": "#strength",
+          "value": ".25"
+        }
+      ]
+    },
+    {
+      "title": "濃い場所を移動する",
+      "action": "確率の形を「中央が高い」に切り替えます。",
+      "observe": "点が集まる場所が左端から画面中央へ移りますか？",
+      "demoState": [
+        {
+          "selector": "#mode",
+          "value": "center"
+        }
+      ]
+    },
+    {
+      "title": "しま模様を作る",
+      "action": "「波のしま模様」を選び、シードを変えます。",
+      "observe": "ランダムな候補の中に、密度の高い帯がどのように残りますか？",
+      "demoState": [
+        {
+          "selector": "#mode",
+          "value": "stripe"
+        }
+      ]
+    },
+    {
+      "title": "点の見た目を仕上げる",
+      "action": "候補600個、三角形、暖色にして好みのシードで描きます。",
+      "observe": "同じ確率マスクでも、形・色・シードで印象はどう変わりますか？",
+      "demoState": [
+        {
+          "selector": "#tries",
+          "value": "600"
+        },
+        {
+          "selector": "#mark",
+          "value": "triangle"
+        },
+        {
+          "selector": "#palette",
+          "value": "warm"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Vincent van Gogh",
+    "work": "Starry Night Over the Rhône (1888)",
+    "context": "ファン・ゴッホの《ローヌ川の星月夜》は、夜空の星と川面に映る光を描いた1888年の作品です。明るい部分と暗い部分が画面の中に広がり、色の密度の差を観察できます。",
+    "relation": "明るい場所へ点が多く残る確率マスクを想像しながら、作品の光の分布を見ます。ゴッホがこの確率アルゴリズムで描いたという意味ではありません。",
+    "highlight": "星空と水面の光が、周囲の暗い色とどのように対比しているか見ます。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品の写真・撮影者・CC0 1.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Starry_Night_by_Van_Gogh.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Starry_Night_by_Van_Gogh.jpg",
+      "alt": "ファン・ゴッホ《ローヌ川の星月夜》の絵画写真。深い青の夜空に星が輝き、川面には街の明かりが黄色く映る。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Starry_Night_by_Van_Gogh.jpg",
+      "license": "CC0 1.0",
+      "credit": "Vincent van Gogh, Starry Night Over the Rhône, 1888 · photograph by Dmarcovitz, Wikimedia Commons, CC0 1.0"
+    },
+    "realWorldExample": {
+      "title": "身近な例：木陰の近くに集まる人",
+      "description": "暑い公園では、木陰のそばで休む人が多く、日なたから離れた場所には少ないことがあります。",
+      "relation": "場所ごとに選ばれやすさが違う例です。実際の人の行動は天気や混雑などにも左右され、確率マスクと同じ仕組みという意味ではありません。",
+      "visual": {
+        "src": "./assets/day-17-park.svg",
+        "alt": "公園の木陰の周辺に赤い人の印が多く、遠い日なたに少数ある様子を示した模式図。",
+        "caption": "身近な例 · 木陰から離れるにつれて人の密度が下がる様子の模式図。"
+      }
+    }
+  },
+  "extension": {
+    "title": "画像の明るさを確率にする",
+    "keywords": [
+      "確率マスク",
+      "棄却サンプリング",
+      "密度関数",
+      "点描",
+      "グレースケール"
+    ],
+    "next": "今回は位置を使って確率マスクを作りました。次は白黒画像の明るさを確率に読み替え、画像の形を点描で再現する方法へ進みます。"
+  },
+  "ruleSummary": "候補の場所ごとに採用確率pを決め、0〜1の乱数rがpより小さいときだけ点を残す。",
+  "codeNote": "確率pは0〜1で表します。r < pなら採用される割合はおよそpです。",
+  "algorithmVisual": {
+    "src": "./assets/day-17-probability.svg",
+    "alt": "一様に候補を作り、場所の採用確率と乱数を比べて、点を残す流れ。",
+    "caption": "図1 · 場所ごとの確率と新しい乱数を比べると、密度の濃淡ができます。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-17-lottery.svg",
+    "alt": "画面の左・中央・右の場所で当たりくじの割合が違い、点の採用率が変わるたとえ。",
+    "caption": "図2 · くじの当たりやすさが場所によって変わるイメージです。"
+  },
+  "extensionVisual": {
+    "src": "./assets/day-17-probability.svg",
+    "alt": "場所の確率を点の採用へ変換する図。",
+    "caption": "発展 · 確率の値を画像の明るさに置き換えると、画像を点描で表せます。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "goalTitle": "位置で変わる採用確率を使って、点の密度を設計する。",
+  "ruleCode": "場所からpを計算 → 乱数rを引く → r < p なら採用"
+}
