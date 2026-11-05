@@ -149,6 +149,14 @@
       "description": "一様に作った候補から、狙った形の内側にある点だけを採用する。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 17,
+      "title": "Probability Masks",
+      "topic": "確率マスクで密度をなめらかに変える",
+      "description": "場所ごとの採用確率を使い、点の密度を段階的に変える。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
