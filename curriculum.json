@@ -157,6 +157,14 @@
       "description": "場所ごとの採用確率を使い、点の密度を段階的に変える。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 18,
+      "title": "Luminance Dot Sampling",
+      "topic": "画像の明るさを点の密度に変える",
+      "description": "画素の明るさを採用確率へ変え、点で画像の形を表す。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
