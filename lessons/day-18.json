@@ -1,0 +1,187 @@
+{
+  "day": 18,
+  "status": "published",
+  "title": "Luminance Dot Sampling",
+  "subtitle": "画像の暗さを確率に変えて、点で形を描く。",
+  "topic": "画像の明るさを点の密度に変える",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は輝度サンプリングを使った点描を学びます。画面上に候補位置を一様に作り、その位置の白黒画像の明るさを読みます。明るさを0〜255とし、採用確率を p = 1 − 明るさ ÷ 255 にします。0〜1の乱数 r が p より小さければ点を描きます。肝は、ピクセルの明るさを場所ごとの確率へ置き換えることです。暗い部分には点が増え、明るい部分には点が減り、点の集まりで元画像の形が浮かびます。",
+  "applications": "写真を点描風に変換する、模様を画像の明暗に沿って配置する、粒子でロゴやシルエットを描く用途に使えます。",
+  "prerequisites": "Day 13の一様乱数、Day 17の場所ごとの採用確率を使います。",
+  "connection": "Day 17は位置から確率を計算しました。今回は位置にある画像ピクセルの明るさから確率を計算し、画像の形を点の密度として写します。",
+  "intuition": {
+    "title": "暗い場所ほど点を置きやすいくじ",
+    "story": "画面をくじ売り場、画像の暗さを当たりやすさと考えます。候補位置の画素が黒に近いほど当たりやすく、白に近いほど当たりにくくします。何度も候補を試すと、暗いところへ点が多く残ります。",
+    "visual": "候補位置を決める → その画素の明るさを読む → 確率を計算 → 乱数と比べる",
+    "diagram": "黒 0 → p=1.00 ／ 灰 128 → p≈0.50 ／ 白 255 → p=0"
+  },
+  "numbers": {
+    "title": "明るさ128の画素を判定する",
+    "setup": "明るさは黒0から白255です。候補位置の画素が中間の灰色128なら、採用確率 p = 1 − 128 ÷ 255 です。",
+    "steps": [
+      {
+        "label": "明るさを割合にする",
+        "calculation": "128 ÷ 255 ≈ 0.502。白さは約50%です。"
+      },
+      {
+        "label": "採用確率を出す",
+        "calculation": "p = 1 − 0.502 = 0.498。採用確率は約50%。"
+      },
+      {
+        "label": "乱数0.32の場合",
+        "calculation": "0.32 < 0.498 なので点を描きます。"
+      },
+      {
+        "label": "乱数0.81の場合",
+        "calculation": "0.81 ≥ 0.498 なので点を描きません。"
+      }
+    ],
+    "note": "白に近い画素では点が少なく、黒に近い画素では点が多くなります。白い背景に黒い形がある画像を使うと形が読み取りやすくなります。"
+  },
+  "code": "const gray = getBrightnessAt(x, y); // 0=黒、255=白\nconst probability = 1 - gray / 255;\nconst roll = random();\nif (roll < probability) {\n  drawPoint(x, y);\n}",
+  "demo": {
+    "title": "明暗画像を点で写す",
+    "caption": "暗い円・しま模様・山と空の簡易画像から候補位置を選びます。画素の明るさから採用確率を計算し、点を描きます。候補数、点の大きさ、色、シード、不採用候補の表示を変えられます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e6;color:#303832;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:42px;padding:7px;border:1px solid #c8d1c5;border-radius:6px;background:white;font:inherit}.check{display:flex;align-items:center;gap:8px}.check input{width:20px;height:20px}#stage{height:min(70vw,400px);min-height:240px;margin-top:12px}canvas{width:100%;height:100%;display:block}.hint{min-height:1.5em;font-size:13px}@media(max-width:480px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}#stage{height:300px}}</style></head><body><div class=\"controls\"><label>シード<input id=\"seed\" value=\"42\" type=\"number\"></label><label>候補数<select id=\"count\"><option>300</option><option selected>800</option><option>1600</option></select></label><label>元画像<select id=\"picture\"><option value=\"moon\">暗い円</option><option value=\"stripes\">しま模様</option><option value=\"landscape\">山と空</option></select></label><label>点の大きさ<select id=\"size\"><option>2</option><option selected>3</option><option>5</option></select></label><label>色<select id=\"color\"><option value=\"black\">黒</option><option value=\"blue\">青</option><option value=\"warm\">暖色</option></select></label><label class=\"check\"><input id=\"reject\" type=\"checkbox\">不採用候補も表示</label><button id=\"reroll\">別のシード</button><button id=\"draw\">描き直す</button></div><div id=\"stage\"><canvas id=\"art\" aria-label=\"白黒画像の明るさに応じ確率で点を描くデモ\"></canvas></div><p id=\"hint\" aria-live=\"polite\" class=\"hint\"></p><script>\nconst c=document.querySelector(\"#art\"),ctx=c.getContext(\"2d\"),mask=document.createElement(\"canvas\"),mc=mask.getContext(\"2d\");\nfunction draw(){const b=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,b.width),h=Math.max(1,b.height);c.width=mask.width=Math.round(w*d);c.height=mask.height=Math.round(h*d);ctx.setTransform(d,0,0,d,0,0);mc.setTransform(d,0,0,d,0,0);const mode=document.querySelector(\"#picture\").value;mc.fillStyle=\"#fff\";mc.fillRect(0,0,w,h);if(mode===\"moon\"){const g=mc.createRadialGradient(w/2,h/2,5,w/2,h/2,Math.min(w,h)*.42);g.addColorStop(0,\"#111\");g.addColorStop(.72,\"#555\");g.addColorStop(1,\"#fff\");mc.fillStyle=g;mc.fillRect(0,0,w,h)}else if(mode===\"stripes\"){for(let x=0;x<w;x+=24){mc.fillStyle=x%48===0?\"#222\":\"#fff\";mc.fillRect(x,0,24,h)}}else{mc.fillStyle=\"#bbb\";mc.fillRect(0,0,w,h);mc.fillStyle=\"#333\";mc.beginPath();mc.moveTo(0,h*.75);mc.lineTo(w*.38,h*.25);mc.lineTo(w*.62,h*.7);mc.lineTo(w*.8,h*.4);mc.lineTo(w,h*.72);mc.lineTo(w,h);mc.lineTo(0,h);mc.fill()}ctx.drawImage(mask,0,0,w,h);let s=Math.max(1,Number(document.querySelector(\"#seed\").value)||1);s=(Math.floor(s-1)%2147483646+2147483646)%2147483646+1;function rand(){s=s*16807%2147483647;return(s-1)/2147483646}const n=Number(document.querySelector(\"#count\").value),size=Number(document.querySelector(\"#size\").value),color=document.querySelector(\"#color\").value;let kept=0;const pix=mc.getImageData(0,0,mask.width,mask.height).data;for(let i=0;i<n;i++){const x=rand()*w,y=rand()*h,ix=Math.min(mask.width-1,Math.floor(x*d)),iy=Math.min(mask.height-1,Math.floor(y*d)),k=(iy*mask.width+ix)*4,gray=.299*pix[k]+.587*pix[k+1]+.114*pix[k+2],p=1-gray/255;if(rand()<p){kept++;ctx.fillStyle=color===\"blue\"?\"#397889\":color===\"warm\"?\"#bd6345\":\"#202522\";ctx.beginPath();ctx.arc(x,y,size,0,Math.PI*2);ctx.fill()}else if(document.querySelector(\"#reject\").checked){ctx.fillStyle=\"rgba(80,80,80,.18)\";ctx.fillRect(x,y,2,2)}}document.querySelector(\"#hint\").textContent=\"候補 \"+n+\" 個 · 採用 \"+kept+\" 個 · 暗い画素ほど確率が高い\"}\nfor(const id of [\"seed\",\"count\",\"picture\",\"size\",\"color\",\"reject\"]){const e=document.querySelector(\"#\"+id);e.addEventListener(\"change\",draw);e.addEventListener(\"input\",draw)}document.querySelector(\"#draw\").onclick=draw;document.querySelector(\"#reroll\").onclick=()=>{document.querySelector(\"#seed\").value=Number(document.querySelector(\"#seed\").value||1)+1;draw()};window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type===\"gal-experiment\")for(const x of e.data.controls||[]){const el=document.querySelector(x.selector);if(el){el.value=x.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "暗い部分を点で表す",
+      "action": "暗い円、候補800個で描きます。",
+      "observe": "円の暗い中心や輪郭に点が多く残りますか？",
+      "demoState": [
+        {
+          "selector": "#picture",
+          "value": "moon"
+        },
+        {
+          "selector": "#count",
+          "value": "800"
+        }
+      ]
+    },
+    {
+      "title": "候補数を増やす",
+      "action": "候補数を300、800、1600と増やします。",
+      "observe": "点が増えるほど元の画像の形が読み取りやすくなりますか？",
+      "demoState": [
+        {
+          "selector": "#count",
+          "value": "1600"
+        }
+      ]
+    },
+    {
+      "title": "白黒のしま模様",
+      "action": "元画像を白黒のしま模様へ切り替えます。",
+      "observe": "暗い帯と白い帯の採用率にどんな差が出ますか？",
+      "demoState": [
+        {
+          "selector": "#picture",
+          "value": "stripes"
+        }
+      ]
+    },
+    {
+      "title": "山のシルエット",
+      "action": "山と空に切り替え、不採用候補も表示します。",
+      "observe": "灰色の候補と採用点の分布を比べ、どこで多く棄却されますか？",
+      "demoState": [
+        {
+          "selector": "#picture",
+          "value": "landscape"
+        },
+        {
+          "selector": "#reject",
+          "value": "on"
+        }
+      ]
+    },
+    {
+      "title": "作品の印象を調整",
+      "action": "点の大きさ5、暖色、別シードにします。",
+      "observe": "明暗ルールを保ったまま印象はどう変化しましたか？",
+      "demoState": [
+        {
+          "selector": "#size",
+          "value": "5"
+        },
+        {
+          "selector": "#color",
+          "value": "warm"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Georges Seurat",
+    "work": "Man with a Hoe (c. 1882)",
+    "context": "ジョルジュ・スーラの《Man with a Hoe》は、人物と畑の風景を色の筆触で描いた作品です。明暗と色のまとまりが、少し離れて見ると形として感じられます。",
+    "relation": "点の密度から形が見えてくる様子を、画像の明暗で採用率を変えるデモと比べます。作品の制作方法はこのアルゴリズムとは異なります。",
+    "highlight": "人物や地面の明暗のまとまりと、筆触が集まる様子を見ます。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品・作者・年代・CC0 1.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Georges_Seurat,_Man_with_a_Hoe,_c._1882,_NGA_164969.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Georges_Seurat%2C_Man_with_a_Hoe%2C_c._1882%2C_NGA_164969.jpg/1280px-Georges_Seurat%2C_Man_with_a_Hoe%2C_c._1882%2C_NGA_164969.jpg",
+      "alt": "スーラの《Man with a Hoe》。畑で鍬を持つ人物と周囲の草地を細かな色の筆触で描く。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Georges_Seurat,_Man_with_a_Hoe,_c._1882,_NGA_164969.jpg",
+      "license": "CC0 1.0",
+      "credit": "Georges Seurat, Man with a Hoe, c. 1882 · National Gallery of Art, via Wikimedia Commons, CC0 1.0"
+    },
+    "realWorldExample": {
+      "title": "身近な例：木漏れ日が作る地面の明暗",
+      "description": "公園では、木陰の地面は暗く、日差しが直接届く場所は明るく見えます。",
+      "relation": "白黒画像の暗い画素ほど点を多く残すと、明暗の境目が点の密度として見えるようになります。",
+      "visual": {
+        "src": "./assets/day-18-dappled-light.svg",
+        "alt": "木の影が地面に落ち、暗い木陰と明るい日なたができる公園の模式図。",
+        "caption": "身近な例 · 木漏れ日で地面に生まれる明るさの差。"
+      }
+    }
+  },
+  "extension": {
+    "title": "カラー画像で色も写す",
+    "keywords": [
+      "輝度",
+      "ピクセル",
+      "確率マスク",
+      "点描",
+      "サンプリング"
+    ],
+    "next": "今回は白黒の明るさで点の密度を決めました。次は色の値も読み取り、確率で残した点へ元画像の色を付ける方法へ進めます。"
+  },
+  "ruleSummary": "候補位置の明るさgrayから p=1−gray/255 を計算し、乱数がp未満なら点を描く。",
+  "codeNote": "grayは0〜255、黒ほど採用確率が高くなり、白は0になります。",
+  "algorithmVisual": {
+    "src": "./assets/day-18-luminance.svg",
+    "alt": "黒は確率100%、灰色は約50%、白は0%として点を採用する図。",
+    "caption": "図1 · 白黒の明るさを採用確率へ変換します。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-18-luminance.svg",
+    "alt": "暗い画素ほど点が残りやすい明暗から確率への図。",
+    "caption": "図2 · 暗い場所ほど当たりやすいくじとして考えます。"
+  },
+  "extensionVisual": {
+    "src": "./assets/day-18-luminance.svg",
+    "alt": "ピクセルの明るさを確率に置き換える図。",
+    "caption": "発展 · 色の値も一緒に読み込めばカラー点描へつながります。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "goalTitle": "画像の明るさを採用確率に置き換え、点で形を描く。",
+  "ruleCode": "画素の明るさgray → p=1−gray/255 → r<pなら点を描く"
+}
