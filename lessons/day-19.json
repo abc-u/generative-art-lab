@@ -1,0 +1,187 @@
+{
+  "day": 19,
+  "status": "published",
+  "title": "Color Dot Sampling",
+  "subtitle": "暗さで点を選び、残った点に元画像の色を写す。",
+  "topic": "画素の色を読むカラー点描",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日はカラー画像の画素を読み取る棄却サンプリングで、色点描を作ります。まず画面から候補位置 (x,y) を一様に選び、その位置にある元画像の RGB 値を読みます。RGB を輝度 gray = 0.299r + 0.587g + 0.114b に変換し、採用確率 p = 1 − gray/255 を計算します。0〜1の乱数 roll が p より小さい候補だけを残し、点は読み取った元画素の RGB 色で描きます。肝は、色を飾りとして後付けするのではなく、同じ画素から「残す確率」と「描く色」の両方を得ることです。暗い色は密に、明るい色はまばらに現れ、色のまとまりと明暗が点の集まりとして再構成されます。",
+  "applications": "写真やイラストを点描風に変換する、画像の輪郭を粒子で表現する、元画像の色を保ちながら密度を調整する用途に使えます。",
+  "prerequisites": "Day 18の輝度による採用確率と、Day 13の一様乱数を使います。",
+  "connection": "Day 18は画素の明るさだけを読み、採用された点を同じ色で描きました。今回はカラー画素のRGBも読み、確率判定には輝度を、点の色には元画素のRGBを使います。",
+  "intuition": {
+    "title": "色見本つきの抽選",
+    "story": "大きな色見本の上に、目をつぶって小さなシールを貼る場所を選びます。選んだ場所の色が暗いほどシールを貼る抽選に当たりやすくし、当たったらその場所の色でシールを塗ります。何度も試すと、暗い場所に点が多く残り、青や黄色などの色の境目も点の色で伝わります。",
+    "visual": "候補位置を選ぶ → 画素 RGB を読む → 輝度から確率を計算 → 抽選 → 採用点を画素の色で描く",
+    "diagram": "同じ画素 RGB → 輝度で採用率 ／ RGBで点の色"
+  },
+  "numbers": {
+    "title": "RGBから確率と点の色を出す",
+    "setup": "候補位置の画素が RGB=(60, 120, 180) とします。輝度は gray=0.299r+0.587g+0.114b、採用確率は p=1−gray/255 です。",
+    "steps": [
+      {
+        "label": "輝度を計算",
+        "calculation": "gray=0.299×60+0.587×120+0.114×180=17.94+70.44+20.52=108.90。"
+      },
+      {
+        "label": "採用確率に変換",
+        "calculation": "p=1−108.90÷255≈0.573。約57.3%の確率で採用します。"
+      },
+      {
+        "label": "乱数0.42なら",
+        "calculation": "roll=0.42 < p=0.573 なので採用。円を rgb(60,120,180) の色で描きます。"
+      },
+      {
+        "label": "乱数0.81なら",
+        "calculation": "roll=0.81 ≥ p=0.573 なので棄却。点は描きません。"
+      }
+    ],
+    "note": "黒に近い画素はpが1に近く、白に近い画素はpが0に近くなります。採用判定に使った画素のRGBを点の色に使うので、説明の輝度・式・コードとデモの処理が対応します。"
+  },
+  "code": "const { r, g, b } = getPixelColor(x, y);\\nconst gray = 0.299 * r + 0.587 * g + 0.114 * b;\\nconst probability = 1 - gray / 255;\\nif (random() < probability) {\\n  drawCircle(x, y, `rgb(${r}, ${g}, ${b})`);\\n}",
+  "codeNote": "RGBの各値は0〜255です。grayは確率計算にだけ使い、採用点の色には同じ画素のr,g,bをそのまま使います。",
+  "demo": {
+    "title": "色を読み取って点描にする",
+    "caption": "3種類の元画像を切り替え、候補数・点の半径・シード・色の表示方法を変えます。デフォルトの「元画素の色」では、画素RGBから輝度で採否を決め、採用点をそのRGBで描きます。灰色の棄却位置を表示して抽選も観察できます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f3efe7;color:#292f32;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:42px;padding:7px;border:1px solid #c7c2b6;border-radius:7px;background:#fff;color:inherit;font:inherit}.check{display:flex;align-items:center;gap:8px}.check input{width:20px;height:20px}#stage{height:min(72vw,430px);min-height:240px;margin-top:12px;background:#fff;border:1px solid #d0c9bb}canvas{display:block;width:100%;height:100%}.note{min-height:1.6em;margin:7px 0;font-size:13px;color:#4b5c60}@media(max-width:480px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}#stage{height:300px}}</style></head><body><div class=\"controls\"><label>シード<input id=\"seed\" type=\"number\" value=\"42\"></label><label>候補数<select id=\"count\"><option>400</option><option selected>900</option><option>1800</option><option>3200</option></select></label><label>元画像<select id=\"source\"><option value=\"blobs\">色のかたまり</option><option value=\"stripes\">青黄ストライプ</option><option value=\"flower\">花の形</option></select></label><label>点の半径<select id=\"radius\"><option>2</option><option selected>3</option><option>5</option><option>7</option></select></label><label>点の色<select id=\"color\"><option value=\"sample\" selected>元画素の色</option><option value=\"gray\">白黒</option><option value=\"warm\">暖色で統一</option></select></label><label class=\"check\"><input id=\"rejected\" type=\"checkbox\">棄却位置を薄く表示</label><button id=\"newseed\" type=\"button\">別のシード</button><button id=\"redraw\" type=\"button\">描き直す</button></div><div id=\"stage\"><canvas id=\"art\" role=\"img\" aria-label=\"色のある元画像を画素ごとに抽選し、採用された色点で再現するデモ\"></canvas></div><p class=\"note\" id=\"note\" aria-live=\"polite\"></p><script>\nconst canvas=document.querySelector(\"#art\"),ctx=canvas.getContext(\"2d\"),source=document.createElement(\"canvas\"),sc=source.getContext(\"2d\",{willReadFrequently:true});\nfunction draw(){\n const box=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,box.width),h=Math.max(1,box.height);\n canvas.width=source.width=Math.round(w*d);canvas.height=source.height=Math.round(h*d);ctx.setTransform(d,0,0,d,0,0);sc.setTransform(d,0,0,d,0,0);\n sc.fillStyle=\"#fff\";sc.fillRect(0,0,w,h);const mode=document.querySelector(\"#source\").value;\n if(mode===\"blobs\"){sc.fillStyle=\"#226c91\";sc.beginPath();sc.ellipse(w*.33,h*.48,w*.28,h*.37,-.25,0,Math.PI*2);sc.fill();sc.fillStyle=\"#efbf45\";sc.beginPath();sc.ellipse(w*.68,h*.43,w*.25,h*.31,.3,0,Math.PI*2);sc.fill();sc.fillStyle=\"#d6573b\";sc.beginPath();sc.ellipse(w*.58,h*.78,w*.19,h*.12,-.1,0,Math.PI*2);sc.fill()}\n if(mode===\"stripes\"){for(let x=0;x<w;x+=Math.max(10,w/12)){sc.fillStyle=Math.floor(x/(w/12))%2?\"#edc849\":\"#327e9a\";sc.fillRect(x,0,w/12+1,h)}}\n if(mode===\"flower\"){sc.fillStyle=\"#347e9a\";sc.beginPath();sc.arc(w*.5,h*.5,Math.min(w,h)*.12,0,Math.PI*2);sc.fill();for(let i=0;i<8;i++){const a=i*Math.PI/4;sc.fillStyle=i%2?\"#f0c74f\":\"#d95f42\";sc.beginPath();sc.ellipse(w*.5+Math.cos(a)*Math.min(w,h)*.22,h*.5+Math.sin(a)*Math.min(w,h)*.22,Math.min(w,h)*.12,Math.min(w,h)*.07,a,0,Math.PI*2);sc.fill()}}\n const pix=sc.getImageData(0,0,source.width,source.height).data;ctx.fillStyle=\"#fff\";ctx.fillRect(0,0,w,h);\n let seed=Math.max(1,Math.floor(Number(document.querySelector(\"#seed\").value)||1));seed=(seed-1)%2147483646+1;function random(){seed=seed*16807%2147483647;return(seed-1)/2147483646}\n const n=Number(document.querySelector(\"#count\").value),radius=Number(document.querySelector(\"#radius\").value),colorMode=document.querySelector(\"#color\").value,showReject=document.querySelector(\"#rejected\").checked;let kept=0;\n for(let i=0;i<n;i++){const x=random()*w,y=random()*h,ix=Math.min(source.width-1,Math.floor(x*d)),iy=Math.min(source.height-1,Math.floor(y*d)),k=(iy*source.width+ix)*4,r=pix[k],g=pix[k+1],b=pix[k+2],gray=.299*r+.587*g+.114*b,p=1-gray/255,roll=random();\n if(roll<p){kept++;let color;if(colorMode===\"sample\")color=\"rgb(\"+r+\",\"+g+\",\"+b+\")\";else if(colorMode===\"gray\"){const v=Math.round(gray);color=\"rgb(\"+v+\",\"+v+\",\"+v+\")\"}else color=\"#c75d43\";ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill()}\n else if(showReject){ctx.fillStyle=\"rgba(40,45,47,.18)\";ctx.fillRect(x-1,y-1,2,2)}\n }\n document.querySelector(\"#note\").textContent=\"候補 \"+n+\" 個 · 採用 \"+kept+\" 個 · 元画素を読み、輝度から採用確率を決めています。\";\n}\nfor(const id of [\"seed\",\"count\",\"source\",\"radius\",\"color\",\"rejected\"]){const e=document.querySelector(\"#\"+id);e.addEventListener(\"change\",draw);e.addEventListener(\"input\",draw)}\ndocument.querySelector(\"#redraw\").addEventListener(\"click\",draw);document.querySelector(\"#newseed\").addEventListener(\"click\",()=>{const e=document.querySelector(\"#seed\");e.value=String((Number(e.value)||1)+1);draw()});\nwindow.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type===\"gal-experiment\")for(const c of e.data.controls||[]){const el=document.querySelector(c.selector);if(el){el.value=c.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "色と密度を確かめる",
+      "action": "「色のかたまり」、元画素の色、候補900個で描きます。",
+      "observe": "青・黄・赤の色が点として残り、暗い青の領域ほど密度が高く見えますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "blobs"
+        },
+        {
+          "selector": "#color",
+          "value": "sample"
+        },
+        {
+          "selector": "#count",
+          "value": "900"
+        }
+      ]
+    },
+    {
+      "title": "候補を増やす",
+      "action": "候補数を400から1800へ増やし、他の設定は保ちます。",
+      "observe": "点の数と画像の形の読み取りやすさはどのように変わりますか？",
+      "demoState": [
+        {
+          "selector": "#count",
+          "value": "1800"
+        }
+      ]
+    },
+    {
+      "title": "元画素の色を比べる",
+      "action": "色を「白黒」にしてから「元画素の色」に戻します。",
+      "observe": "点の位置や密度を保ったまま、色を変えると何が伝わりやすくなりますか？",
+      "demoState": [
+        {
+          "selector": "#color",
+          "value": "gray"
+        }
+      ]
+    },
+    {
+      "title": "元画像の模様を変える",
+      "action": "元画像を「青黄ストライプ」と「花の形」に切り替えます。",
+      "observe": "模様ごとの色と暗さが、点の色と密度にどう表れますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "stripes"
+        }
+      ]
+    },
+    {
+      "title": "点の粒をデザインする",
+      "action": "半径2と7、シード42と43を試し、棄却位置も表示します。",
+      "observe": "点の大きさと乱数列を変えると、色の境界や作品の印象がどう変わりますか？",
+      "demoState": [
+        {
+          "selector": "#radius",
+          "value": "7"
+        },
+        {
+          "selector": "#rejected",
+          "value": "on"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Fons Heijnsbroek",
+    "work": "Transparant Look (2020)",
+    "context": "Fons Heijnsbroekの《Transparant Look》は、青と黄色を対比させた紙上の水彩作品です。画面を大きく見ると、色の面と筆の重なりが組み合わさっています。",
+    "relation": "色の領域を点の色として残す見方を比べられます。この作品がサンプリングのアルゴリズムで作られたという意味ではありません。",
+    "highlight": "青と黄色の領域の境目、明るい部分と暗い部分に注目します。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品・作者・2020年・CC0 1.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Abstract_painting_%27Transparant_Look%27_in_contrasting_blue_and_yellow_colors_-_watercolor_art_on_paper_by_Fons_Heijnsbroek%2C_2020_-_free_download_CC0_art_image_in_high_resolution.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Abstract_painting_%27Transparant_Look%27_in_contrasting_blue_and_yellow_colors_-_watercolor_art_on_paper_by_Fons_Heijnsbroek%2C_2020_-_free_download_CC0_art_image_in_high_resolution.jpg/960px-Abstract_painting_%27Transparant_Look%27_in_contrasting_blue_and_yellow_colors_-_watercolor_art_on_paper_by_Fons_Heijnsbroek%2C_2020_-_free_download_CC0_art_image_in_high_resolution.jpg",
+      "alt": "青と黄色を中心にした抽象水彩画。紙の上で複数の絵の具の面が重なり、濃淡と筆跡が見える。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Abstract_painting_%27Transparant_Look%27_in_contrasting_blue_and_yellow_colors_-_watercolor_art_on_paper_by_Fons_Heijnsbroek%2C_2020_-_free_download_CC0_art_image_in_high_resolution.jpg",
+      "license": "CC0 1.0",
+      "credit": "Fons Heijnsbroek, “Transparant Look,” 2020 · Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "身近な例：色紙を細かく切ったモザイク",
+      "description": "色紙を小さく切って貼ると、一枚ずつの色片が集まり、少し離れて見たときに全体の絵としてまとまります。",
+      "relation": "カラー点描では、画像の画素色を小さな点へ写します。点の採用率には画素の明暗も反映されるため、色片の大きさだけでなく密度も変化します。",
+      "visual": {
+        "src": "./assets/day-19-color-mosaic.svg",
+        "alt": "青、黄、赤の小さな色片を並べ、離れて見ると丸い花の形に見えるモザイクの模式図。",
+        "caption": "身近な例 · 色片の集まりで全体の形を作るモザイク。"
+      }
+    }
+  },
+  "extension": {
+    "title": "色を保ったまま表現を広げる",
+    "keywords": [
+      "RGB",
+      "輝度",
+      "画素サンプリング",
+      "棄却サンプリング",
+      "カラー点描"
+    ],
+    "next": "画素から読み出す輝度と色を分けて使いました。次は点の形や向きにも元画像の情報を反映し、色と密度以外の表現を組み合わせます。"
+  },
+  "ruleSummary": "画素RGBを読み、輝度で採用確率 p=1−gray/255 を計算。乱数 r<p の点を、その画素のRGB色で描く。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "goalTitle": "画素の輝度で点を選び、RGBで元画像の色を写す。",
+  "ruleCode": "画素RGB → gray=0.299r+0.587g+0.114b → p=1−gray/255 → roll<pなら同じRGB色で描く",
+  "algorithmVisual": {
+    "src": "./assets/day-19-color-sampling.svg",
+    "alt": "候補位置で画素のRGBを読み、輝度を確率へ変換し、採用点を元画素の色で描く処理の図。",
+    "caption": "図1 · 一つの画素から確率と点の色を取り出します。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-19-color-sampling.svg",
+    "alt": "画素RGBから採用率と点の色を別々に取り出す流れを示す図。",
+    "caption": "図2 · 同じ画素を抽選率と色見本の両方に使います。"
+  },
+  "extensionVisual": {
+    "src": "./assets/day-19-color-sampling.svg",
+    "alt": "点の色や形にも画素の情報を使う発展の図。",
+    "caption": "発展 · 色に加えて点の形や向きにも画像情報を使えます。"
+  }
+}
