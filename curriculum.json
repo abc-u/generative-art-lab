@@ -165,6 +165,14 @@
       "description": "画素の明るさを採用確率へ変え、点で画像の形を表す。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 19,
+      "title": "Color Dot Sampling",
+      "topic": "画素の色を読むカラー点描",
+      "description": "画素の輝度で点を選び、採用した点を元画像の色で描く。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
