@@ -40,7 +40,7 @@
     ],
     "note": "黒に近い画素はpが1に近く、白に近い画素はpが0に近くなります。採用判定に使った画素のRGBを点の色に使うので、説明の輝度・式・コードとデモの処理が対応します。"
   },
-  "code": "const { r, g, b } = getPixelColor(x, y);\\nconst gray = 0.299 * r + 0.587 * g + 0.114 * b;\\nconst probability = 1 - gray / 255;\\nif (random() < probability) {\\n  drawCircle(x, y, `rgb(${r}, ${g}, ${b})`);\\n}",
+  "code": "const { r, g, b } = getPixelColor(x, y);\nconst gray = 0.299 * r + 0.587 * g + 0.114 * b;\nconst probability = 1 - gray / 255;\nif (random() < probability) {\n  drawCircle(x, y, `rgb(${r}, ${g}, ${b})`);\n}",
   "codeNote": "RGBの各値は0〜255です。grayは確率計算にだけ使い、採用点の色には同じ画素のr,g,bをそのまま使います。",
   "demo": {
     "title": "色を読み取って点描にする",
