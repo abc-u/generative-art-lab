@@ -3,9 +3,9 @@ name: Lesson checks
 on:
   push:
     branches: [main]
-    paths: ['lessons/**', 'curriculum.json', 'scripts/validate_lesson.py']
+    paths: ['lessons/**', 'curriculum.json', 'scripts/validate_lesson.py', '.github/workflows/lesson-checks.yml']
   pull_request:
-    paths: ['lessons/**', 'curriculum.json', 'scripts/validate_lesson.py']
+    paths: ['lessons/**', 'curriculum.json', 'scripts/validate_lesson.py', '.github/workflows/lesson-checks.yml']
   workflow_dispatch:
 
 permissions:
@@ -16,11 +16,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Validate every published lesson
-        run: python3 scripts/validate_lesson.py --all
+      - name: Validate changed lessons
+        shell: bash
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            python3 scripts/validate_lesson.py --all
+            exit $?
+          fi
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          if [[ ! "$base" =~ ^[0-9a-f]{40}$ ]] || [[ "$base" =~ ^0+$ ]]; then
+            python3 scripts/validate_lesson.py --all
+            exit $?
+          fi
+          mapfile -t changed < <(git diff --name-only "$base" "$GITHUB_SHA" -- 'lessons/day-*.json')
+          if (( ${#changed[@]} > 0 )); then
+            python3 scripts/validate_lesson.py "${changed[@]}"
+          else
+            python3 scripts/validate_lesson.py
+          fi
