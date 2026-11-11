@@ -173,6 +173,14 @@
       "description": "画素の輝度で点を選び、採用した点を元画像の色で描く。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 20,
+      "title": "Gradient Stroke Sampling",
+      "topic": "画像勾配で筆の向きを決める",
+      "description": "近くの画素の輝度差から輪郭に沿う線の向きを決め、短い筆跡で画像を描く。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }

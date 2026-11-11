@@ -1,0 +1,206 @@
+{
+  "day": 20,
+  "status": "published",
+  "title": "Gradient Stroke Sampling",
+  "subtitle": "画素の明暗の変化から、短い筆の向きを決める。",
+  "topic": "画像勾配で筆の向きを決める",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は画像勾配を使って、点の代わりに短い線を置く方法を学びます。候補位置を選び、その画素のRGBから輝度を計算して、暗い画素ほど残りやすい確率を出します。さらに左右・上下の隣の輝度差 gx, gy から、明るさが変わる向きを求めます。筆の向きはその向きに90度足した角度にします。肝は、明るくなる向き（勾配）と、輪郭に沿う向き（勾配に垂直）を区別することです。採用された線は画素の色で描くので、Day 19の色と採用率に、画像の局所的な方向が加わります。",
+  "applications": "写真の輪郭に沿う筆跡を作る、風景を短い線で描き直す、明暗の境界を保ったまま絵画風の表現にする用途に使えます。",
+  "prerequisites": "Day 19の画素RGBと輝度による確率、Day 13の一様乱数を使います。",
+  "connection": "Day 19では画素の明るさと色を点へ写しました。今回は近くの画素との明るさの差も読み、点を線に変えて、線の向きを画像の輪郭に沿わせます。",
+  "intuition": {
+    "title": "坂の向きと等高線",
+    "story": "丘の斜面で「どちらへ行くと明るさが増すか」を矢印にすると、そこが明暗の勾配です。短い筆をその矢印と直角に置くと、同じ明るさの境目に沿って並びます。坂を上る向きと等高線の向きが直角なのと同じです。",
+    "visual": "画素の近所を読む → 明るくなる向きを計算 → 90°回す → 短い線を置く",
+    "diagram": "輝度の変化方向 gx,gy ↗ ／ 筆の向きは直角 ↘"
+  },
+  "numbers": {
+    "title": "画素の色と近所から線を決める",
+    "setup": "中心画素は RGB=(40,100,160)。左80・右140、上130・下70の明るさで、候補位置の乱数は0.42、線の長さは12pxとします。",
+    "steps": [
+      {
+        "label": "RGBから輝度を計算",
+        "calculation": "gray=0.299×40+0.587×100+0.114×160=11.96+58.70+18.24=88.90。"
+      },
+      {
+        "label": "採用確率を計算",
+        "calculation": "p=1−88.90÷255≈0.651。暗さに応じて約65.1%で候補を採用します。"
+      },
+      {
+        "label": "明るくなる向きを出す",
+        "calculation": "gx=右140−左80=60、gy=下70−上130=−60。勾配の角度は atan2(−60,60)=−45°。"
+      },
+      {
+        "label": "輪郭に沿う向きへ回転",
+        "calculation": "線の角度は−45°+90°=45°。乱数0.42はpより小さいので、長さ12px・色 rgb(40,100,160) の線を描きます。"
+      }
+    ],
+    "note": "gx,gyは明るくなる向きです。線はその向きと直角にするため、画像の明暗の境界に沿います。明るさがほぼ一定で向きが定まらない場所は、デモでは水平線にします。"
+  },
+  "code": "const { r, g, b } = sampleRGB(x, y);\nconst gray = 0.299 * r + 0.587 * g + 0.114 * b;\nconst p = 1 - gray / 255;\nconst gx = grayAt(x + 1, y) - grayAt(x - 1, y);\nconst gy = grayAt(x, y + 1) - grayAt(x, y - 1);\nconst angle = Math.atan2(gy, gx) + Math.PI / 2;\nif (random() < p) {\n  drawStroke(x, y, 12, angle, `rgb(${r}, ${g}, ${b})`);\n}",
+  "codeNote": "左右・上下の輝度差で明暗勾配を出し、Math.atan2で角度にします。90°回した線を、採用画素のRGB色で描きます。",
+  "demo": {
+    "title": "画像の明暗に沿って筆を置く",
+    "caption": "波と水面・帆船・花を選び、候補数、線の長さと太さ、色、シードを変えます。「明るさの向き」では勾配矢印を表示できます。デフォルトは候補900、線長12px、幅3px、シード42です。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f2efe7;color:#29343a;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:42px;padding:7px 9px;border:1px solid #c7c1b5;border-radius:7px;background:#fff;color:inherit;font:inherit}.check{display:flex;align-items:center;gap:8px}.check input{width:20px;height:20px}.views{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.panel{min-width:0}.panel strong{display:block;margin-bottom:4px;font-size:13px}canvas{width:100%;display:block;aspect-ratio:1.45;border:1px solid #d0c9bc;background:#fff}.note{min-height:1.6em;margin:7px 0;color:#526266;font-size:13px}@media(max-width:560px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.views{grid-template-columns:1fr}canvas{aspect-ratio:1.5}}</style></head><body><div class=\"controls\"><label>シード<input id=\"seed\" type=\"number\" value=\"42\"></label><label>候補数<select id=\"count\"><option>400</option><option selected>900</option><option>1800</option><option>3000</option></select></label><label>元画像<select id=\"source\"><option value=\"wave\">波と水面</option><option value=\"boat\">帆船と海</option><option value=\"flower\">花</option></select></label><label>ストローク長<select id=\"length\"><option>6</option><option selected>12</option><option>24</option></select></label><label>線幅<select id=\"width\"><option>1</option><option selected>3</option><option>5</option></select></label><label>色<select id=\"color\"><option value=\"sample\" selected>元画素の色</option><option value=\"gray\">白黒</option><option value=\"warm\">朱色</option></select></label><label class=\"check\"><input id=\"guides\" type=\"checkbox\">明るさの向きを表示</label><button id=\"redraw\" type=\"button\">描き直す</button><button id=\"newseed\" type=\"button\">別のシード</button></div><div class=\"views\"><div class=\"panel\"><strong>元画像 <span id=\"guideLabel\"></span></strong><canvas id=\"sourceCanvas\" role=\"img\" aria-label=\"ストロークの方向を決める元画像のプレビュー\"></canvas></div><div class=\"panel\"><strong>方向付きストローク</strong><canvas id=\"resultCanvas\" role=\"img\" aria-label=\"画像勾配に沿う短い線で描いた結果\"></canvas></div></div><p id=\"note\" class=\"note\" aria-live=\"polite\"></p><script>\nconst src=document.querySelector(\"#sourceCanvas\"),sc=src.getContext(\"2d\"),out=document.querySelector(\"#resultCanvas\"),ctx=out.getContext(\"2d\");\nfunction grayAt(data,w,h,x,y){x=Math.max(0,Math.min(w-1,x));y=Math.max(0,Math.min(h-1,y));const i=(y*w+x)*4;return .299*data[i]+.587*data[i+1]+.114*data[i+2]}\nfunction makeSource(w,h,d,mode){\n sc.fillStyle=\"#f8f5ec\";sc.fillRect(0,0,w,h);\n if(mode===\"wave\"){sc.fillStyle=\"#9bc8d2\";sc.fillRect(0,h*.42,w,h*.58);for(let j=0;j<5;j++){sc.beginPath();const base=h*(.51+j*.11);sc.moveTo(0,base);for(let x=0;x<=w;x+=4)sc.lineTo(x,base+Math.sin(x*.025+j*1.3)*h*.035);sc.lineTo(w,h);sc.lineTo(0,h);sc.closePath();sc.fillStyle=[\"#78afbd\",\"#5d96aa\",\"#3d748e\",\"#315c78\",\"#24465f\"][j];sc.fill()}for(let j=0;j<9;j++){const x=w*(.08+j*.105),y=h*(.54+(j%3)*.105);sc.strokeStyle=\"rgba(245,244,225,.8)\";sc.lineWidth=2;sc.beginPath();sc.moveTo(x,y);sc.quadraticCurveTo(x+14,y-5,x+28,y);sc.stroke()}}\n if(mode===\"boat\"){sc.fillStyle=\"#b4d5dc\";sc.fillRect(0,0,w,h*.5);sc.fillStyle=\"#397f99\";sc.fillRect(0,h*.5,w,h*.5);for(let j=0;j<7;j++){const y=h*(.58+j*.055);sc.strokeStyle=j%2?\"#8fc2c9\":\"#d3e4d9\";sc.lineWidth=2;sc.beginPath();sc.moveTo(0,y);sc.quadraticCurveTo(w*.25,y-8,w*.5,y);sc.quadraticCurveTo(w*.75,y+8,w,y);sc.stroke()}sc.fillStyle=\"#253d4a\";sc.beginPath();sc.moveTo(w*.38,h*.57);sc.lineTo(w*.67,h*.57);sc.lineTo(w*.61,h*.65);sc.lineTo(w*.43,h*.65);sc.closePath();sc.fill();sc.fillStyle=\"#e8bc58\";sc.beginPath();sc.moveTo(w*.49,h*.56);sc.lineTo(w*.49,h*.26);sc.lineTo(w*.36,h*.54);sc.closePath();sc.fill();sc.fillStyle=\"#f6ead0\";sc.beginPath();sc.moveTo(w*.52,h*.54);sc.lineTo(w*.65,h*.54);sc.lineTo(w*.52,h*.34);sc.closePath();sc.fill()}\n if(mode===\"flower\"){sc.fillStyle=\"#e9d9bd\";sc.fillRect(0,0,w,h);for(let i=0;i<10;i++){const a=i*Math.PI/5;sc.save();sc.translate(w*.5,h*.5);sc.rotate(a);sc.fillStyle=i%2?\"#d76f59\":\"#eea761\";sc.beginPath();sc.ellipse(0,-h*.2,w*.12,h*.24,0,0,Math.PI*2);sc.fill();sc.restore()}sc.fillStyle=\"#614d37\";sc.beginPath();sc.arc(w*.5,h*.5,Math.min(w,h)*.105,0,Math.PI*2);sc.fill();sc.fillStyle=\"#66845c\";sc.fillRect(w*.48,h*.72,w*.04,h*.28)}\n}\nfunction draw(){\n const a=src.getBoundingClientRect(),b=out.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,a.width),h=Math.max(1,a.height);\n src.width=out.width=Math.round(w*d);src.height=out.height=Math.round(h*d);sc.setTransform(d,0,0,d,0,0);ctx.setTransform(d,0,0,d,0,0);\n const mode=document.querySelector(\"#source\").value;makeSource(w,h,d,mode);const pixels=sc.getImageData(0,0,src.width,src.height).data;\n const guide=document.querySelector(\"#guides\").checked;if(guide){const step=32;for(let y=16;y<h;y+=step)for(let x=16;x<w;x+=step){const ix=Math.floor(x*d),iy=Math.floor(y*d),gx=grayAt(pixels,src.width,src.height,ix+1,iy)-grayAt(pixels,src.width,src.height,ix-1,iy),gy=grayAt(pixels,src.width,src.height,ix,iy+1)-grayAt(pixels,src.width,src.height,ix,iy-1),m=Math.hypot(gx,gy);if(m<4)continue;const an=Math.atan2(gy,gx),len=8;sc.strokeStyle=\"rgba(30,44,51,.8)\";sc.lineWidth=1.4;sc.beginPath();sc.moveTo(x-Math.cos(an)*len/2,y-Math.sin(an)*len/2);sc.lineTo(x+Math.cos(an)*len/2,y+Math.sin(an)*len/2);sc.stroke();sc.beginPath();sc.moveTo(x+Math.cos(an)*len/2,y+Math.sin(an)*len/2);sc.lineTo(x+Math.cos(an)*len/2-Math.cos(an-.55)*3,y+Math.sin(an)*len/2-Math.sin(an-.55)*3);sc.stroke()}}\n document.querySelector(\"#guideLabel\").textContent=guide?\"（矢印は明るくなる向き）\":\"\";\n ctx.fillStyle=\"#f8f5ec\";ctx.fillRect(0,0,w,h);\n let seed=Math.floor(Number(document.querySelector(\"#seed\").value)||1);seed=(seed-1)%2147483646+1;function random(){seed=seed*16807%2147483647;return(seed-1)/2147483646}\n const n=Number(document.querySelector(\"#count\").value),length=Number(document.querySelector(\"#length\").value),lineWidth=Number(document.querySelector(\"#width\").value),colorMode=document.querySelector(\"#color\").value;let kept=0;\n for(let i=0;i<n;i++){const x=random()*w,y=random()*h,ix=Math.floor(x*d),iy=Math.floor(y*d),k=(iy*src.width+ix)*4,r=pixels[k],g=pixels[k+1],bl=pixels[k+2],gray=.299*r+.587*g+.114*bl,p=1-gray/255,gx=grayAt(pixels,src.width,src.height,ix+1,iy)-grayAt(pixels,src.width,src.height,ix-1,iy),gy=grayAt(pixels,src.width,src.height,ix,iy+1)-grayAt(pixels,src.width,src.height,ix,iy-1),m=Math.hypot(gx,gy),angle=m<4?0:Math.atan2(gy,gx)+Math.PI/2;\n if(random()<p){kept++;let strokeColor;if(colorMode===\"sample\")strokeColor=\"rgb(\"+r+\",\"+g+\",\"+bl+\")\";else if(colorMode===\"gray\"){const v=Math.round(gray);strokeColor=\"rgb(\"+v+\",\"+v+\",\"+v+\")\"}else strokeColor=\"#c85c43\";ctx.strokeStyle=strokeColor;ctx.lineWidth=lineWidth;ctx.lineCap=\"round\";ctx.beginPath();ctx.moveTo(x-Math.cos(angle)*length/2,y-Math.sin(angle)*length/2);ctx.lineTo(x+Math.cos(angle)*length/2,y+Math.sin(angle)*length/2);ctx.stroke()}\n }\n document.querySelector(\"#note\").textContent=\"候補 \"+n+\" 個 · 採用 \"+kept+\" 個 · 線は明るさの境界に沿い、色は選んだ画素から取得\";\n}\nfor(const id of [\"seed\",\"count\",\"source\",\"length\",\"width\",\"color\",\"guides\"]){const el=document.querySelector(\"#\"+id);el.addEventListener(\"change\",draw);el.addEventListener(\"input\",draw)}\ndocument.querySelector(\"#redraw\").addEventListener(\"click\",draw);document.querySelector(\"#newseed\").addEventListener(\"click\",()=>{const el=document.querySelector(\"#seed\");el.value=String((Number(el.value)||1)+1);draw()});\nwindow.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type!==\"gal-experiment\")return;for(const c of e.data.controls||[]){const el=document.querySelector(c.selector);if(el){el.value=c.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "線が輪郭に沿うか見る",
+      "action": "「波と水面」、候補900、長さ12、幅3、元画素の色にします。",
+      "observe": "波の明暗に沿って、短い線の向きが場所ごとに変わりますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "wave"
+        },
+        {
+          "selector": "#count",
+          "value": "900"
+        },
+        {
+          "selector": "#length",
+          "value": "12"
+        },
+        {
+          "selector": "#width",
+          "value": "3"
+        },
+        {
+          "selector": "#color",
+          "value": "sample"
+        }
+      ]
+    },
+    {
+      "title": "勾配の矢印を重ねる",
+      "action": "「明るさの向き」をオンにして、元画像の矢印を見ます。",
+      "observe": "矢印と筆跡は直角に近く、筆跡は明暗の帯に沿っていますか？",
+      "demoState": [
+        {
+          "selector": "#guides",
+          "value": "on"
+        }
+      ]
+    },
+    {
+      "title": "筆の長さを変える",
+      "action": "長さを6、12、24pxに切り替えます。",
+      "observe": "短い線は細かな表情を、長い線はどんなまとまりを作りますか？",
+      "demoState": [
+        {
+          "selector": "#length",
+          "value": "24"
+        }
+      ]
+    },
+    {
+      "title": "同じ位置で色を比べる",
+      "action": "色を白黒にし、次に元画素の色へ戻します。",
+      "observe": "向きと採用率を保ったまま、色を替えると形の見え方は変わりますか？",
+      "demoState": [
+        {
+          "selector": "#color",
+          "value": "gray"
+        }
+      ]
+    },
+    {
+      "title": "題材と密度を組み合わせる",
+      "action": "帆船と海に切り替え、候補1800・線幅1・別シードにします。",
+      "observe": "船の輪郭と水面で、勾配から決まる線の向きはどう違いますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "boat"
+        },
+        {
+          "selector": "#count",
+          "value": "1800"
+        },
+        {
+          "selector": "#width",
+          "value": "1"
+        },
+        {
+          "selector": "#seed",
+          "value": "43"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Claude Monet",
+    "work": "Argenteuil (c. 1872)",
+    "context": "クロード・モネの《Argenteuil》は、帆船と水辺の風景を描いた1872年頃の油彩画です。水面の細かな筆触を見て、線の向きが周囲の流れとどう関わるかを観察します。",
+    "relation": "水面に並ぶ筆触と、明暗の変化から線の方向を作るデモを見比べます。モネがこの勾配計算で描いたという意味ではありません。",
+    "highlight": "帆の輪郭、船体、水面で筆触の向きがどう変わるか見ます。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品・作者・年代・CC0 1.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Argenteuil,_c._1872,_NGA_52186.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Claude_Monet_-_Argenteuil%2C_c._1872%2C_NGA_52186.jpg/1280px-Claude_Monet_-_Argenteuil%2C_c._1872%2C_NGA_52186.jpg",
+      "alt": "クロード・モネの風景画。帆船がアルジャントゥイユの水辺に浮かび、水面と空に青や緑の筆触が重なる。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Argenteuil,_c._1872,_NGA_52186.jpg",
+      "license": "CC0 1.0",
+      "credit": "Claude Monet, “Argenteuil,” c. 1872 · National Gallery of Art, via Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "身近な例：水面の波紋",
+      "description": "水面に小石を落とすと、波紋は同じ高さの輪として広がり、その輪に沿った方向が場所ごとに変わります。",
+      "relation": "画像勾配は明るさが変わる向き、短い筆はその向きと直角の方向に置きます。波紋の輪に沿って線の向きが回る様子を想像できます。",
+      "visual": {
+        "src": "./assets/day-20-ripples.svg",
+        "alt": "水面の中心から同心円の波紋が広がり、円周に沿う短い筆跡が異なる向きに並ぶ模式図。",
+        "caption": "身近な例 · 波紋の輪に沿って、短い線の向きが場所ごとに変わります。"
+      }
+    }
+  },
+  "extension": {
+    "title": "画像の情報を筆の形にも使う",
+    "keywords": [
+      "画像勾配",
+      "輝度差",
+      "atan2",
+      "方向場",
+      "ストロークサンプリング"
+    ],
+    "next": "今回は明暗勾配に直角な線を置きました。次は線の長さや密度も勾配の強さに合わせ、輪郭は細かく、平らな面は大きくまとめる表現へつなげられます。"
+  },
+  "ruleSummary": "左右・上下の輝度差から勾配角を出し、90°回した短線を採用画素のRGB色で描く。",
+  "goalTitle": "明るさが変わる向きと輪郭に沿う筆の向きを区別する。",
+  "ruleCode": "gx=右−左, gy=下−上 → angle=atan2(gy,gx)+90° → 採用点にRGB色の線",
+  "algorithmVisual": {
+    "src": "./assets/day-20-gradient-flow.svg",
+    "alt": "中心画素の上下左右を読み、輝度差から勾配の角度を計算し、90度回転した線を描く図。",
+    "caption": "図1 · 明暗の変化方向を求め、直角方向のストロークを置きます。"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-20-contour.svg",
+    "alt": "明るくなる勾配の矢印に対して直角な線が、同じ明るさの輪郭に沿う関係の図。",
+    "caption": "図2 · 坂を上る方向と等高線の方向は直角です。"
+  },
+  "extensionVisual": {
+    "src": "./assets/day-20-gradient-flow.svg",
+    "alt": "色・採用確率・勾配方向を短いストロークに組み合わせる図。",
+    "caption": "発展 · 勾配の強さから線の太さや長さも変えられます。"
+  },
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ]
+}
