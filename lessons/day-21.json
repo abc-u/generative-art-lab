@@ -52,7 +52,7 @@
     ],
     "note": "勾配基準180は、強さmを0〜1へ直す目安です。mが180以上なら強さを1で止めます。強さが0なら最大線長、1なら最小線長になります。デモの最大長を変えると最小長はその4分の1に連動します。"
   },
-  "code": "const gx = grayAt(x + 1, y) - grayAt(x - 1, y);\\nconst gy = grayAt(x, y + 1) - grayAt(x, y - 1);\\nconst magnitude = Math.hypot(gx, gy);\\nconst strength = Math.min(magnitude / 180, 1);\\nconst length = 6 + (24 - 6) * (1 - strength);\\nconst angle = magnitude < 4 ? 0 : Math.atan2(gy, gx) + Math.PI / 2;\\nif (random() < 1 - gray / 255) {\\n  drawStroke(x, y, length, angle, sampleRGB(x, y));\\n}",
+  "code": "const gx = grayAt(x + 1, y) - grayAt(x - 1, y);\nconst gy = grayAt(x, y + 1) - grayAt(x, y - 1);\nconst magnitude = Math.hypot(gx, gy);\nconst strength = Math.min(magnitude / 180, 1);\nconst length = 6 + (24 - 6) * (1 - strength);\nconst angle = magnitude < 4 ? 0 : Math.atan2(gy, gx) + Math.PI / 2;\nif (random() < 1 - gray / 255) {\n  drawStroke(x, y, length, angle, sampleRGB(x, y));\n}",
   "codeNote": "左右・上下の輝度差で勾配の強さmを出します。m/180を0〜1に収め、強いほど短く、平坦なほど長くします。勾配がほぼ0の場所は角度が不定なので水平にします。",
   "codeHighlight": [
     1,
@@ -165,11 +165,6 @@
     "context": "1876年頃の油彩画です。丘や木々、空、建物が色面と方向のある筆跡で組み立てられており、平坦な面と形の境目を見比べられます。",
     "relation": "作品の筆跡を観察し、境界で短く平坦部で長くする今回の規則を自分のデモで試します。作家がこのアルゴリズムを使ったという意味ではありません。",
     "references": [
-      {
-        "source": "National Gallery of Art",
-        "label": "Landscape near Paris — collection record",
-        "url": "https://www.nga.gov/artworks/46578-landscape-near-paris"
-      },
       {
         "source": "Wikimedia Commons",
         "label": "作品画像・CC0 1.0確認",
