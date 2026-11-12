@@ -1,0 +1,201 @@
+{
+  "day": 21,
+  "status": "published",
+  "title": "Gradient Strength to Stroke Length",
+  "subtitle": "明暗の変化が強い境界では短く、なだらかな場所では長く描く。",
+  "topic": "画像勾配の強さを筆の長さに変える",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は勾配強度マッピングを使い、画像の場所ごとに筆の長さを決めます。候補位置のRGBから輝度を計算し、Day 19と同じく暗い画素ほど採用されやすくします。左右・上下の輝度差 gx, gy から勾配の大きさ m = √(gx²+gy²) を求めます。強い変化ほど線を短く、平坦な場所ほど長くするため、強さを0〜1に収めて L = Lmin + (Lmax−Lmin)×(1−強さ) に変換します。向きは Day 20 と同じく勾配に垂直にします。肝は「向き」と「強さ」を別々に読み、向きは線の回転、強さは線の長さへ割り当てることです。",
+  "applications": "写真を絵画風に描き直すとき、輪郭を短い筆跡で保ち、なだらかな面を長い筆跡でまとめられます。風景・花・建物の質感を変える用途にも使えます。",
+  "prerequisites": "Day 19の画素RGBと輝度による採用確率、Day 20の勾配方向と輪郭に沿う筆の向きを使います。",
+  "connection": "Day 20では輝度差から筆の向きを決め、線長は一定でした。今日は同じ輝度差の「大きさ」も取り出し、輪郭では短く、平坦な場所では長くします。",
+  "ruleSummary": "輝度の勾配が強いほど筆を短くし、平坦な場所では長くする。",
+  "goalTitle": "境界で短く、平坦部で長くなるのはなぜ？",
+  "ruleCode": "勾配の強さ → 筆の長さ",
+  "intuition": {
+    "title": "坂の急さで筆の長さを変える",
+    "story": "丘の斜面を横切る等高線を描くと想像します。坂が急に変わる境目では短い線を置けば形を越えにくく、広くなだらかな場所では長い線で面をまとめられます。ここで読む「急さ」は、隣の画素どうしの明るさの差です。",
+    "visual": "隣の明るさを比べる → 差の大きさを測る → 長さへ変換する",
+    "diagram": "変化が小さい m=0 → 長い線 ／ 変化が大きい m≥180 → 短い線"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-21-gradient-strength.svg",
+    "alt": "勾配0では24ピクセル、勾配90では15ピクセル、180以上では6ピクセルとなる線長の比較図。",
+    "caption": "勾配の強さが増えるほど線を短くし、明暗の境界の形を残します。"
+  },
+  "numbers": {
+    "title": "輝度差を実際の線長に変える",
+    "setup": "Day 20の例を引き継ぎ、中心RGB=(40,100,160)、左右の輝度は80と140、上下は130と70とします。デモの初期値は最大線長24px、最小線長6px、勾配基準180です。",
+    "steps": [
+      {
+        "label": "中心画素の輝度",
+        "calculation": "gray=0.299×40+0.587×100+0.114×160=88.90。採用確率 p=1−88.90÷255≈0.651。"
+      },
+      {
+        "label": "横と縦の明るさの変化",
+        "calculation": "gx=右140−左80=60、gy=下70−上130=−60。"
+      },
+      {
+        "label": "勾配の強さ",
+        "calculation": "m=√(60²+(−60)²)=√7200≈84.85。基準180に対する強さは84.85÷180≈0.471。"
+      },
+      {
+        "label": "強さから線長へ",
+        "calculation": "L=6+(24−6)×(1−0.471)≈6+9.52=15.52px。"
+      },
+      {
+        "label": "向きと採用を確かめる",
+        "calculation": "勾配角はatan2(−60,60)=−45°、筆の角度は−45°+90°=45°。乱数0.42はp≈0.651より小さいので、色rgb(40,100,160)・長さ約15.5pxの線を描きます。"
+      }
+    ],
+    "note": "勾配基準180は、強さmを0〜1へ直す目安です。mが180以上なら強さを1で止めます。強さが0なら最大線長、1なら最小線長になります。デモの最大長を変えると最小長はその4分の1に連動します。"
+  },
+  "code": "const gx = grayAt(x + 1, y) - grayAt(x - 1, y);\nconst gy = grayAt(x, y + 1) - grayAt(x, y - 1);\nconst magnitude = Math.hypot(gx, gy);\nconst strength = Math.min(magnitude / 180, 1);\nconst length = 6 + (24 - 6) * (1 - strength);\nconst angle = magnitude < 4 ? 0 : Math.atan2(gy, gx) + Math.PI / 2;\nif (random() < 1 - gray / 255) {\n  drawStroke(x, y, length, angle, sampleRGB(x, y));\n}",
+  "codeNote": "左右・上下の輝度差で勾配の強さmを出します。m/180を0〜1に収め、強いほど短く、平坦なほど長くします。勾配がほぼ0の場所は角度が不定なので水平にします。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "demo": {
+    "title": "強い輪郭と平坦部で筆の長さを比べる",
+    "caption": "候補900個、最大線長24px（最小6px）、勾配基準180、線幅3、シード42が初期値です。勾配の向きはDay 20と同じ向き、勾配強度で線長を調整します。元画像・候補数・長さ・基準・線幅・色・シードを変えられます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f3f0e8;color:#28373b;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px 9px;border:1px solid #c7c2b8;border-radius:7px;background:white;color:inherit;font:inherit}.check{display:flex;align-items:center;gap:8px}.check input{width:22px;height:22px}.views{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.panel{min-width:0}.panel strong{display:block;margin-bottom:5px;font-size:13px}canvas{width:100%;display:block;aspect-ratio:1.45;border:1px solid #cfc8bb;background:#fff}.note{min-height:1.6em;margin:7px 0;color:#516367;font-size:13px}@media(max-width:560px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.views{grid-template-columns:1fr}canvas{aspect-ratio:1.5}}</style></head><body><div class=\"controls\"><label>シード<input id=\"seed\" type=\"number\" value=\"42\"></label><label>候補数<select id=\"count\"><option>400</option><option selected>900</option><option>1800</option><option>3000</option></select></label><label>元画像<select id=\"source\"><option value=\"wave\">波と水面</option><option value=\"land\">丘と空</option><option value=\"flower\">花</option></select></label><label>最大線長<select id=\"maxLength\"><option value=\"12\">12 px</option><option value=\"24\" selected>24 px</option><option value=\"36\">36 px</option></select></label><label>勾配の基準<select id=\"reference\"><option value=\"90\">90</option><option value=\"180\" selected>180</option><option value=\"360\">360</option></select></label><label>線幅<select id=\"width\"><option>1</option><option selected>3</option><option>5</option></select></label><label>色<select id=\"color\"><option value=\"sample\" selected>画素の色</option><option value=\"gray\">白黒</option><option value=\"warm\">朱色</option></select></label><label class=\"check\"><input id=\"guides\" type=\"checkbox\">勾配の向きを表示</label><button id=\"redraw\" type=\"button\">描き直す</button><button id=\"newseed\" type=\"button\">別のシード</button></div><div class=\"views\"><div class=\"panel\"><strong>元画像 <span id=\"guideLabel\"></span></strong><canvas id=\"sourceCanvas\" role=\"img\" aria-label=\"元画像と明るくなる勾配の矢印\"></canvas></div><div class=\"panel\"><strong>勾配の強さで線長を変えた結果</strong><canvas id=\"resultCanvas\" role=\"img\" aria-label=\"明暗差の強い場所は短く平坦な場所は長く描く画像デモ\"></canvas></div></div><p id=\"note\" class=\"note\" aria-live=\"polite\"></p><script>\nconst src=document.querySelector(\"#sourceCanvas\"),sc=src.getContext(\"2d\"),out=document.querySelector(\"#resultCanvas\"),ctx=out.getContext(\"2d\");\nfunction grayAt(data,w,h,x,y){x=Math.max(0,Math.min(w-1,x));y=Math.max(0,Math.min(h-1,y));const i=(y*w+x)*4;return .299*data[i]+.587*data[i+1]+.114*data[i+2]}\nfunction makeSource(w,h,mode){sc.fillStyle=\"#f7f2e8\";sc.fillRect(0,0,w,h);if(mode===\"wave\"){sc.fillStyle=\"#94c5d0\";sc.fillRect(0,h*.43,w,h*.57);for(let j=0;j<5;j++){sc.beginPath();const base=h*(.5+j*.105);sc.moveTo(0,base);for(let x=0;x<=w;x+=4)sc.lineTo(x,base+Math.sin(x*.025+j*1.2)*h*.03);sc.lineTo(w,h);sc.lineTo(0,h);sc.closePath();sc.fillStyle=[\"#82bac5\",\"#649faf\",\"#4e8398\",\"#3b667d\",\"#2c4e64\"][j];sc.fill()}}else if(mode===\"land\"){sc.fillStyle=\"#d9e7df\";sc.fillRect(0,0,w,h*.62);sc.fillStyle=\"#789288\";sc.beginPath();sc.moveTo(0,h*.66);sc.lineTo(w*.28,h*.28);sc.lineTo(w*.52,h*.63);sc.lineTo(w*.73,h*.35);sc.lineTo(w,h*.67);sc.lineTo(w,h);sc.lineTo(0,h);sc.fill();sc.fillStyle=\"#385e61\";sc.beginPath();sc.moveTo(0,h*.82);sc.quadraticCurveTo(w*.35,h*.57,w*.6,h*.83);sc.quadraticCurveTo(w*.82,h*.98,w,h*.7);sc.lineTo(w,h);sc.lineTo(0,h);sc.fill()}else{sc.fillStyle=\"#eadbbf\";sc.fillRect(0,0,w,h);for(let i=0;i<10;i++){const a=i*Math.PI/5;sc.save();sc.translate(w*.5,h*.5);sc.rotate(a);sc.fillStyle=i%2?\"#d76f59\":\"#eea761\";sc.beginPath();sc.ellipse(0,-h*.2,w*.12,h*.24,0,0,Math.PI*2);sc.fill();sc.restore()}sc.fillStyle=\"#66503b\";sc.beginPath();sc.arc(w*.5,h*.5,Math.min(w,h)*.105,0,Math.PI*2);sc.fill();sc.fillStyle=\"#6b8659\";sc.fillRect(w*.48,h*.72,w*.04,h*.28)}}\nfunction draw(){const a=src.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,a.width),h=Math.max(1,a.height);src.width=out.width=Math.round(w*d);src.height=out.height=Math.round(h*d);sc.setTransform(d,0,0,d,0,0);ctx.setTransform(d,0,0,d,0,0);makeSource(w,h,document.querySelector(\"#source\").value);const pixels=sc.getImageData(0,0,src.width,src.height).data;const show=document.querySelector(\"#guides\").checked;\nif(show){for(let y=18;y<h;y+=34)for(let x=18;x<w;x+=34){const ix=Math.floor(x*d),iy=Math.floor(y*d),gx=grayAt(pixels,src.width,src.height,ix+1,iy)-grayAt(pixels,src.width,src.height,ix-1,iy),gy=grayAt(pixels,src.width,src.height,ix,iy+1)-grayAt(pixels,src.width,src.height,ix,iy-1),m=Math.hypot(gx,gy);if(m<4)continue;const an=Math.atan2(gy,gx),len=9;sc.strokeStyle=\"rgba(30,48,53,.78)\";sc.lineWidth=1.3;sc.beginPath();sc.moveTo(x-Math.cos(an)*len/2,y-Math.sin(an)*len/2);sc.lineTo(x+Math.cos(an)*len/2,y+Math.sin(an)*len/2);sc.stroke();sc.beginPath();sc.moveTo(x+Math.cos(an)*len/2,y+Math.sin(an)*len/2);sc.lineTo(x+Math.cos(an)*len/2-Math.cos(an-.55)*3,y+Math.sin(an)*len/2-Math.sin(an-.55)*3);sc.stroke()}}\ndocument.querySelector(\"#guideLabel\").textContent=show?\"（矢印は明るくなる向き）\":\"\";ctx.fillStyle=\"#f7f2e8\";ctx.fillRect(0,0,w,h);let seed=Math.floor(Number(document.querySelector(\"#seed\").value)||1);seed=(seed-1)%2147483646+1;function random(){seed=seed*16807%2147483647;return(seed-1)/2147483646}\nconst count=Number(document.querySelector(\"#count\").value),maxLength=Number(document.querySelector(\"#maxLength\").value),minLength=maxLength/4,reference=Number(document.querySelector(\"#reference\").value),lineWidth=Number(document.querySelector(\"#width\").value),colorMode=document.querySelector(\"#color\").value;let kept=0;\nfor(let i=0;i<count;i++){const x=random()*w,y=random()*h,ix=Math.floor(x*d),iy=Math.floor(y*d),k=(iy*src.width+ix)*4,r=pixels[k],g=pixels[k+1],b=pixels[k+2],gray=.299*r+.587*g+.114*b,p=1-gray/255,gx=grayAt(pixels,src.width,src.height,ix+1,iy)-grayAt(pixels,src.width,src.height,ix-1,iy),gy=grayAt(pixels,src.width,src.height,ix,iy+1)-grayAt(pixels,src.width,src.height,ix,iy-1),m=Math.hypot(gx,gy),angle=m<4?0:Math.atan2(gy,gx)+Math.PI/2,strength=Math.min(m/reference,1),length=minLength+(maxLength-minLength)*(1-strength);\nif(random()<p){kept++;let strokeColor;if(colorMode===\"sample\")strokeColor=\"rgb(\"+r+\",\"+g+\",\"+b+\")\";else if(colorMode===\"gray\"){const v=Math.round(gray);strokeColor=\"rgb(\"+v+\",\"+v+\",\"+v+\")\"}else strokeColor=\"#c85c43\";ctx.strokeStyle=strokeColor;ctx.lineWidth=lineWidth;ctx.lineCap=\"round\";ctx.beginPath();ctx.moveTo(x-Math.cos(angle)*length/2,y-Math.sin(angle)*length/2);ctx.lineTo(x+Math.cos(angle)*length/2,y+Math.sin(angle)*length/2);ctx.stroke()}}\ndocument.querySelector(\"#note\").textContent=\"候補 \"+count+\" 個 · 採用 \"+kept+\" 個 · 基準 \"+reference+\" · 線長 \"+minLength+\"〜\"+maxLength+\" px\";}\nfor(const id of [\"seed\",\"count\",\"source\",\"maxLength\",\"reference\",\"width\",\"color\",\"guides\"]){const e=document.querySelector(\"#\"+id);e.addEventListener(\"change\",draw);e.addEventListener(\"input\",draw)}document.querySelector(\"#redraw\").addEventListener(\"click\",draw);document.querySelector(\"#newseed\").addEventListener(\"click\",()=>{const e=document.querySelector(\"#seed\");e.value=String((Number(e.value)||1)+1);draw()});window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type!==\"gal-experiment\")return;for(const c of e.data.controls||[]){const el=document.querySelector(c.selector);if(el){el.value=c.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "長さの規則を見つける",
+      "action": "波と水面・候補900・最大線長24・基準180・シード42で描きます。",
+      "observe": "水面のなだらかな部分と波の境界で、線の長さはどう違いますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "wave"
+        },
+        {
+          "selector": "#count",
+          "value": "900"
+        },
+        {
+          "selector": "#maxLength",
+          "value": "24"
+        },
+        {
+          "selector": "#reference",
+          "value": "180"
+        },
+        {
+          "selector": "#seed",
+          "value": "42"
+        }
+      ]
+    },
+    {
+      "title": "基準を変えて反応を見る",
+      "action": "勾配基準を90、180、360に順に切り替えます。",
+      "observe": "同じ画素差でも基準が大きいと、短い線へ切り替わる場所は増えますか、減りますか？",
+      "demoState": [
+        {
+          "selector": "#reference",
+          "value": "90"
+        }
+      ]
+    },
+    {
+      "title": "長さの幅を広げる",
+      "action": "最大線長を12px、24px、36pxに切り替えます。",
+      "observe": "最小長は最大長の4分の1です。絵のまとまりや輪郭の読み取りやすさはどう変わりますか？",
+      "demoState": [
+        {
+          "selector": "#maxLength",
+          "value": "36"
+        }
+      ]
+    },
+    {
+      "title": "題材と線幅を組み合わせる",
+      "action": "丘と空に切り替え、候補1800・線幅1・最大線長24にします。",
+      "observe": "空の平坦な場所と丘の輪郭で、長さと密度はどう見えますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "land"
+        },
+        {
+          "selector": "#count",
+          "value": "1800"
+        },
+        {
+          "selector": "#width",
+          "value": "1"
+        },
+        {
+          "selector": "#maxLength",
+          "value": "24"
+        }
+      ]
+    },
+    {
+      "title": "色を替えて形を比べる",
+      "action": "花に切り替えて、画素の色・白黒・朱色を順に比べます。",
+      "observe": "同じ向きと長さの規則でも、色が変わると花びらの境界はどう見えますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "flower"
+        },
+        {
+          "selector": "#color",
+          "value": "gray"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "ポール・セザンヌ",
+    "work": "《Landscape near Paris》",
+    "context": "1876年頃の油彩画です。丘や木々、空、建物が色面と方向のある筆跡で組み立てられており、平坦な面と形の境目を見比べられます。",
+    "relation": "作品の筆跡を観察し、境界で短く平坦部で長くする今回の規則を自分のデモで試します。作家がこのアルゴリズムを使ったという意味ではありません。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・CC0 1.0確認",
+        "url": "https://commons.wikimedia.org/wiki/File:Paul_C%C3%A9zanne,_Landscape_near_Paris,_c._1876,_NGA_46578.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Paul_C%C3%A9zanne%2C_Landscape_near_Paris%2C_c._1876%2C_NGA_46578.jpg/1280px-Paul_C%C3%A9zanne%2C_Landscape_near_Paris%2C_c._1876%2C_NGA_46578.jpg",
+      "alt": "セザンヌの風景画。木々や建物のある丘と空が、青緑や黄土色の筆跡で描かれている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Paul_C%C3%A9zanne,_Landscape_near_Paris,_c._1876,_NGA_46578.jpg",
+      "license": "CC0 1.0",
+      "credit": "Paul Cézanne, Landscape near Paris, c. 1876. National Gallery of Art; image via Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "壁に落ちた影の境目",
+      "description": "日なたの壁と影の境目では明るさが急に変わり、壁の広い部分では明るさがほぼ一定です。",
+      "relation": "写真を線で描き直すとき、影の境界の勾配が強くなり、そこで短い筆跡を使うと境目が保たれます。明るさの変化が少ない面では長い線でまとまりを出せます。",
+      "visual": {
+        "src": "./assets/day-21-everyday-shadow.svg",
+        "alt": "明るい壁と影の境目では短い線、壁の平坦な面では長い線を置く自作模式図。",
+        "caption": "身近な例：日なたの壁と影の境目。短い線は強い明暗変化を、長い線は平坦な面を表します。"
+      }
+    }
+  },
+  "extension": {
+    "title": "次は場所ごとに筆の密度も変えよう",
+    "keywords": [
+      "勾配の大きさ",
+      "局所的な描画密度",
+      "画像のエッジ"
+    ],
+    "next": "次回は場所ごとの明るさや勾配を使って筆跡の密度も変え、細部と広い面の描き分けを試します。"
+  }
+}
