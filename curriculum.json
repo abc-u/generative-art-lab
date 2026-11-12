@@ -181,6 +181,14 @@
       "description": "近くの画素の輝度差から輪郭に沿う線の向きを決め、短い筆跡で画像を描く。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 21,
+      "title": "Gradient Strength to Stroke Length",
+      "topic": "画像勾配の強さを筆の長さに変える",
+      "description": "勾配の強さを線の長さに写し、輪郭では短く平坦な面では長く描く。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
