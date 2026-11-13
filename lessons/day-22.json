@@ -1,0 +1,200 @@
+{
+  "day": 22,
+  "status": "published",
+  "title": "Gradient Strength to Stroke Density",
+  "subtitle": "輪郭が強く出る場所ほど、筆跡を多く置く。",
+  "topic": "画像勾配の強さを筆跡の密度に変える",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は勾配重み付きサンプリングを使い、画像のどこに筆跡を多く置くか決めます。画面上の候補位置は一様に選び、左右・上下の輝度差から勾配の強さ m=√(gx²+gy²) を求めます。強さを基準値で割って0〜1に収め、採用確率 p=pmin+(pmax−pmin)×強さ にします。乱数 r が p より小さい候補だけ筆跡として残します。肝は、候補は面全体から均等に選びながら、採用確率を勾配の強さで変えることです。輪郭では候補が残りやすく、平坦な面では少なくなるので、筆跡の密度が画像の変化に沿います。",
+  "applications": "画像の輪郭を点描や線描で強調する、画面の細部と平坦な面に異なる描き込み量を与える、画像から視線を集める装飾を作る用途に使えます。",
+  "prerequisites": "Day 20の勾配方向と輪郭に沿う角度、Day 21の勾配強さを使います。",
+  "connection": "Day 21では勾配が強い場所ほど線を短くしました。今日は同じ強さを確率に変え、強い輪郭では筆跡の本数を増やします。",
+  "ruleSummary": "候補位置を均等に選び、勾配が強いほど採用確率を高くして筆跡を増やす。",
+  "goalTitle": "輪郭のまわりで筆跡を増やすには？",
+  "ruleCode": "勾配の強さ → 採用確率",
+  "intuition": {
+    "title": "波打ち際の縁を描き込む",
+    "story": "水面のスケッチで、波の縁には線や点をたくさん置き、静かな水面には少しだけ置くとします。場所を選ぶ候補はどこでも均等に出し、波の縁らしさ（明るさの急な変化）に応じて採用する確率を上げます。",
+    "visual": "画素の近所を比較 → 勾配の強さを測る → 採用確率を決める → 抽選して筆跡を置く",
+    "diagram": "変化が小さい m=0 → p=10% ／ 中 m=90 → p=50% ／ 強 m≥180 → p=90%"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-22-gradient-density.svg",
+    "alt": "勾配の強さ0、90、180以上を採用確率10%、50%、90%へ変え、筆跡の本数を増やす図。",
+    "caption": "最大候補数が同じでも、勾配の強い場所ほど確率抽選を通る筆跡が増えます。"
+  },
+  "numbers": {
+    "title": "勾配から筆跡を残す確率を出す",
+    "setup": "初期設定は候補1000個、採用確率の範囲10〜90%、勾配基準180、線長16px、シード42です。例としてgx=120、gy=0の輪郭候補を考えます。",
+    "steps": [
+      {
+        "label": "勾配の強さ",
+        "calculation": "m=√(120²+0²)=120。左右の明るさが大きく変わるので、勾配は強めです。"
+      },
+      {
+        "label": "基準に対する強さ",
+        "calculation": "strength=min(120÷180,1)=0.667。0〜1のうち約3分の2です。"
+      },
+      {
+        "label": "採用確率",
+        "calculation": "p=0.10+(0.90−0.10)×0.667≈0.633。候補は約63.3%で採用されます。"
+      },
+      {
+        "label": "乱数で採否を決める",
+        "calculation": "乱数0.42なら0.42<pなので採用。0.81なら0.81≥pなので棄却します。"
+      },
+      {
+        "label": "線の向きと数",
+        "calculation": "gx=120, gy=0なので勾配は右向き、線は直角の縦向きです。採用された線を16pxで描きます。"
+      }
+    ],
+    "note": "m=0ならp=10%、m=90ならp=50%、mが180以上ならp=90%です。これは1つの候補位置の採用率です。候補数を増やすと全体の筆跡も増え、同じ候補数なら輪郭付近が平坦部より密になります。"
+  },
+  "code": "const gx = grayAt(x + 1, y) - grayAt(x - 1, y);\nconst gy = grayAt(x, y + 1) - grayAt(x, y - 1);\nconst magnitude = Math.hypot(gx, gy);\nconst strength = Math.min(magnitude / 180, 1);\nconst probability = 0.10 + (0.90 - 0.10) * strength;\nconst angle = Math.atan2(gy, gx) + Math.PI / 2;\nif (random() < probability) {\n  drawStroke(x, y, 16, angle);\n}",
+  "codeNote": "明るさの差から勾配強さを出し、0〜1へ直します。初期値では採用率を10〜90%に変換し、乱数が確率より小さい候補だけ残します。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "demo": {
+    "title": "輪郭に沿って筆跡の数を変える",
+    "caption": "候補1000個、採用確率10〜90%、勾配基準180、線長16px、線幅3、シード42が初期値です。左に元画像、中に勾配から作った確率マップ、右に確率抽選で残った筆跡を表示します。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f2efe6;color:#29383d;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px 9px;border:1px solid #c8c2b6;border-radius:7px;background:#fff;color:inherit;font:inherit}.views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}.panel{min-width:0}.panel strong{display:block;margin-bottom:4px;font-size:13px}canvas{width:100%;display:block;aspect-ratio:1.48;border:1px solid #cfc9bd;background:#fff}.check{display:flex;align-items:center;gap:8px}.check input{width:22px;height:22px}.note{min-height:1.6em;margin:7px 0;color:#52666a;font-size:13px}@media(max-width:760px){.views{grid-template-columns:1fr}canvas{aspect-ratio:1.55}}@media(max-width:480px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}</style></head><body><div class=\"controls\"><label>シード<input id=\"seed\" type=\"number\" value=\"42\"></label><label>候補数<select id=\"count\"><option>400</option><option selected>1000</option><option>2000</option><option>3000</option></select></label><label>元画像<select id=\"source\"><option value=\"wave\">波と水面</option><option value=\"hill\">丘と空</option><option value=\"flower\">花</option></select></label><label>確率の幅<select id=\"range\"><option value=\"0.1,0.9\" selected>10〜90%</option><option value=\"0,0.5\">0〜50%</option><option value=\"0.25,0.95\">25〜95%</option></select></label><label>勾配基準<select id=\"reference\"><option>90</option><option selected>180</option><option>360</option></select></label><label>線の長さ<select id=\"length\"><option>10</option><option selected>16</option><option>24</option></select></label><label>線幅<select id=\"width\"><option>1</option><option selected>3</option><option>5</option></select></label><label>色<select id=\"color\"><option value=\"sample\" selected>画素の色</option><option value=\"gray\">白黒</option><option value=\"warm\">朱色</option></select></label><label class=\"check\"><input id=\"guides\" type=\"checkbox\">勾配の向きを表示</label><button id=\"redraw\" type=\"button\">描き直す</button><button id=\"newseed\" type=\"button\">別のシード</button></div><div class=\"views\"><div class=\"panel\"><strong>元画像 <span id=\"guideLabel\"></span></strong><canvas id=\"sourceCanvas\" role=\"img\" aria-label=\"元画像と明るくなる方向の矢印\"></canvas></div><div class=\"panel\"><strong>採用確率マップ</strong><canvas id=\"mapCanvas\" role=\"img\" aria-label=\"勾配の強さから計算した筆跡の採用確率を明暗で表示する図\"></canvas></div><div class=\"panel\"><strong>確率抽選で描いた筆跡</strong><canvas id=\"resultCanvas\" role=\"img\" aria-label=\"輪郭の勾配が強い場所ほど筆跡の数が多い結果\"></canvas></div></div><p id=\"note\" class=\"note\" aria-live=\"polite\"></p><script>\nconst src=document.querySelector(\"#sourceCanvas\"),sc=src.getContext(\"2d\"),map=document.querySelector(\"#mapCanvas\"),mc=map.getContext(\"2d\"),out=document.querySelector(\"#resultCanvas\"),ctx=out.getContext(\"2d\");\nfunction grayAt(data,w,h,x,y){x=Math.max(0,Math.min(w-1,x));y=Math.max(0,Math.min(h-1,y));const i=(y*w+x)*4;return .299*data[i]+.587*data[i+1]+.114*data[i+2]}\nfunction makeSource(w,h,mode){sc.fillStyle=\"#f5f1e7\";sc.fillRect(0,0,w,h);if(mode===\"wave\"){sc.fillStyle=\"#a8cdd0\";sc.fillRect(0,h*.38,w,h*.62);for(let j=0;j<5;j++){sc.beginPath();const base=h*(.48+j*.11);sc.moveTo(0,base);for(let x=0;x<=w;x+=4)sc.lineTo(x,base+Math.sin(x*.025+j)*h*.026);sc.lineTo(w,h);sc.lineTo(0,h);sc.closePath();sc.fillStyle=[\"#87bac1\",\"#6a9fa9\",\"#4b818e\",\"#356779\",\"#254d60\"][j];sc.fill()}for(let j=0;j<7;j++){const x=w*(.06+j*.14),y=h*(.55+(j%3)*.12);sc.strokeStyle=\"#e7eee0\";sc.lineWidth=2;sc.beginPath();sc.moveTo(x,y);sc.quadraticCurveTo(x+13,y-4,x+25,y);sc.stroke()}}else if(mode===\"hill\"){sc.fillStyle=\"#cfe0da\";sc.fillRect(0,0,w,h*.62);sc.fillStyle=\"#7d9585\";sc.beginPath();sc.moveTo(0,h*.68);sc.lineTo(w*.28,h*.3);sc.lineTo(w*.5,h*.64);sc.lineTo(w*.72,h*.34);sc.lineTo(w,h*.68);sc.lineTo(w,h);sc.lineTo(0,h);sc.fill();sc.fillStyle=\"#365b5c\";sc.beginPath();sc.moveTo(0,h*.83);sc.quadraticCurveTo(w*.4,h*.59,w*.64,h*.82);sc.quadraticCurveTo(w*.84,h*.98,w,h*.75);sc.lineTo(w,h);sc.lineTo(0,h);sc.fill()}else{sc.fillStyle=\"#eadcc2\";sc.fillRect(0,0,w,h);for(let i=0;i<9;i++){const a=i*Math.PI/4.5;sc.save();sc.translate(w*.5,h*.48);sc.rotate(a);sc.fillStyle=i%2?\"#c85f4e\":\"#e6aa5b\";sc.beginPath();sc.ellipse(0,-h*.2,w*.12,h*.23,0,0,Math.PI*2);sc.fill();sc.restore()}sc.fillStyle=\"#62513d\";sc.beginPath();sc.arc(w*.5,h*.48,Math.min(w,h)*.1,0,Math.PI*2);sc.fill();sc.fillStyle=\"#68835d\";sc.fillRect(w*.48,h*.68,w*.04,h*.32)}}\nfunction draw(){const box=src.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,box.width),h=Math.max(1,box.height);for(const c of [src,map,out]){c.width=Math.round(w*d);c.height=Math.round(h*d)}sc.setTransform(d,0,0,d,0,0);mc.setTransform(1,0,0,1,0,0);ctx.setTransform(d,0,0,d,0,0);makeSource(w,h,document.querySelector(\"#source\").value);const pix=sc.getImageData(0,0,src.width,src.height).data,range=document.querySelector(\"#range\").value.split(\",\").map(Number),pMin=range[0],pMax=range[1],reference=Number(document.querySelector(\"#reference\").value),length=Number(document.querySelector(\"#length\").value),lineWidth=Number(document.querySelector(\"#width\").value),colorMode=document.querySelector(\"#color\").value;const mapData=mc.createImageData(map.width,map.height);for(let y=0;y<map.height;y++)for(let x=0;x<map.width;x++){const k=(y*map.width+x)*4,gx=grayAt(pix,src.width,src.height,x+1,y)-grayAt(pix,src.width,src.height,x-1,y),gy=grayAt(pix,src.width,src.height,x,y+1)-grayAt(pix,src.width,src.height,x,y-1),strength=Math.min(Math.hypot(gx,gy)/reference,1),p=pMin+(pMax-pMin)*strength,v=Math.round(p*255);mapData.data[k]=v;mapData.data[k+1]=Math.round(v*.92);mapData.data[k+2]=Math.round(v*.82);mapData.data[k+3]=255}mc.putImageData(mapData,0,0);ctx.fillStyle=\"#f5f1e7\";ctx.fillRect(0,0,w,h);let seed=Math.floor(Number(document.querySelector(\"#seed\").value)||1);seed=(seed-1)%2147483646+1;function random(){seed=seed*16807%2147483647;return(seed-1)/2147483646}const count=Number(document.querySelector(\"#count\").value);let kept=0;\nfor(let i=0;i<count;i++){const x=random()*w,y=random()*h,ix=Math.floor(x*d),iy=Math.floor(y*d),k=(iy*src.width+ix)*4,r=pix[k],g=pix[k+1],b=pix[k+2],gray=.299*r+.587*g+.114*b,gx=grayAt(pix,src.width,src.height,ix+1,iy)-grayAt(pix,src.width,src.height,ix-1,iy),gy=grayAt(pix,src.width,src.height,ix,iy+1)-grayAt(pix,src.width,src.height,ix,iy-1),m=Math.hypot(gx,gy),strength=Math.min(m/reference,1),probability=pMin+(pMax-pMin)*strength,angle=m<4?0:Math.atan2(gy,gx)+Math.PI/2;if(random()<probability){kept++;let color;if(colorMode===\"sample\")color=\"rgb(\"+r+\",\"+g+\",\"+b+\")\";else if(colorMode===\"gray\"){const v=Math.round(gray);color=\"rgb(\"+v+\",\"+v+\",\"+v+\")\"}else color=\"#c65c45\";ctx.strokeStyle=color;ctx.lineWidth=lineWidth;ctx.lineCap=\"round\";ctx.beginPath();ctx.moveTo(x-Math.cos(angle)*length/2,y-Math.sin(angle)*length/2);ctx.lineTo(x+Math.cos(angle)*length/2,y+Math.sin(angle)*length/2);ctx.stroke()}}\nif(document.querySelector(\"#guides\").checked){const step=34;for(let y=18;y<h;y+=step)for(let x=18;x<w;x+=step){const ix=Math.floor(x*d),iy=Math.floor(y*d),gx=grayAt(pix,src.width,src.height,ix+1,iy)-grayAt(pix,src.width,src.height,ix-1,iy),gy=grayAt(pix,src.width,src.height,ix,iy+1)-grayAt(pix,src.width,src.height,ix,iy-1),m=Math.hypot(gx,gy);if(m<4)continue;const a=Math.atan2(gy,gx),n=8;sc.strokeStyle=\"rgba(35,48,52,.8)\";sc.lineWidth=1.3;sc.beginPath();sc.moveTo(x-Math.cos(a)*n/2,y-Math.sin(a)*n/2);sc.lineTo(x+Math.cos(a)*n/2,y+Math.sin(a)*n/2);sc.stroke();sc.beginPath();sc.moveTo(x+Math.cos(a)*n/2,y+Math.sin(a)*n/2);sc.lineTo(x+Math.cos(a)*n/2-Math.cos(a-.55)*3,y+Math.sin(a)*n/2-Math.sin(a-.55)*3);sc.stroke()}}\ndocument.querySelector(\"#guideLabel\").textContent=document.querySelector(\"#guides\").checked?\"（矢印は明るくなる方向）\":\"\";document.querySelector(\"#note\").textContent=\"候補 \"+count+\" 個 · 採用 \"+kept+\" 個 · 採用確率 \"+Math.round(pMin*100)+\"〜\"+Math.round(pMax*100)+\"% · 基準 \"+reference;}\nfor(const id of [\"seed\",\"count\",\"source\",\"range\",\"reference\",\"length\",\"width\",\"color\",\"guides\"]){const e=document.querySelector(\"#\"+id);e.addEventListener(\"change\",draw);e.addEventListener(\"input\",draw)}document.querySelector(\"#redraw\").addEventListener(\"click\",draw);document.querySelector(\"#newseed\").addEventListener(\"click\",()=>{const e=document.querySelector(\"#seed\");e.value=String((Number(e.value)||1)+1);draw()});window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type!==\"gal-experiment\")return;for(const c of e.data.controls||[]){const el=document.querySelector(c.selector);if(el){el.value=c.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "輪郭に筆跡が集まるか見る",
+      "action": "波と水面・候補1000・確率10〜90%・基準180・シード42で描きます。",
+      "observe": "波の境目は確率マップで明るく、結果の線も密になりますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "wave"
+        },
+        {
+          "selector": "#count",
+          "value": "1000"
+        },
+        {
+          "selector": "#range",
+          "value": "0.1,0.9"
+        },
+        {
+          "selector": "#reference",
+          "value": "180"
+        },
+        {
+          "selector": "#seed",
+          "value": "42"
+        }
+      ]
+    },
+    {
+      "title": "確率の幅を狭める",
+      "action": "採用確率の幅を0〜50%へ変え、他の条件を保ちます。",
+      "observe": "輪郭と平坦部で筆跡の数がどう変わり、絵全体の印象はどうなりますか？",
+      "demoState": [
+        {
+          "selector": "#range",
+          "value": "0,0.5"
+        }
+      ]
+    },
+    {
+      "title": "勾配基準を比べる",
+      "action": "勾配基準を90、180、360に順に切り替えます。",
+      "observe": "基準が小さいと、強さが早く上限に達して、高い確率の領域が広がりますか？",
+      "demoState": [
+        {
+          "selector": "#reference",
+          "value": "90"
+        }
+      ]
+    },
+    {
+      "title": "題材と候補数を組み合わせる",
+      "action": "丘と空に切り替え、候補数を2000、線幅を1pxにします。",
+      "observe": "山の輪郭や地面の境界に筆跡が集まり、空は比較的まばらに見えますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "hill"
+        },
+        {
+          "selector": "#count",
+          "value": "2000"
+        },
+        {
+          "selector": "#width",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "title": "色とシードを変える",
+      "action": "花に切り替え、色を白黒から画素の色へ、シードを42から43に変えます。",
+      "observe": "分布の傾向は保ちながら、抽選ごとの配置と色の印象はどう変化しますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "flower"
+        },
+        {
+          "selector": "#color",
+          "value": "sample"
+        },
+        {
+          "selector": "#seed",
+          "value": "43"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "アンリ＝エドモン・クロス",
+    "work": "《In the Park》",
+    "context": "National Gallery of Art所蔵の色彩リトグラフです。園内の人や木々、面の集まりが色の粒や線の密度で見えてきます。",
+    "relation": "画面の部分ごとに模様の密度が違う様子を観察し、デモでは勾配の強さで筆跡を採用する確率を変えてみます。作品がこのアルゴリズムで作られたという説明ではありません。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・CC0 1.0ライセンス情報",
+        "url": "https://commons.wikimedia.org/wiki/File:Henri_Edmond_Cross,_In_the_Park,_NGA_40207.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Henri_Edmond_Cross%2C_In_the_Park%2C_NGA_40207.jpg/1280px-Henri_Edmond_Cross%2C_In_the_Park%2C_NGA_40207.jpg",
+      "alt": "アンリ＝エドモン・クロスの色彩リトグラフ。公園の木々と人影が、色の面と細かな印刷の点で描かれている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Henri_Edmond_Cross,_In_the_Park,_NGA_40207.jpg",
+      "license": "CC0 1.0",
+      "credit": "Henri Edmond Cross, In the Park, color lithograph. National Gallery of Art, Rosenwald Collection; Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "水面の波の縁",
+      "description": "池や川では波の縁で水面の明るさや反射が急に変わり、穏やかな水面は比較的なめらかです。",
+      "relation": "写真を筆跡で描き直すとき、波の縁の勾配が強い箇所に筆跡を多く置き、平坦な水面は少なくすると、波の形を残しながら面に余白ができます。",
+      "visual": {
+        "src": "./assets/day-22-everyday-ripples.svg",
+        "alt": "波の縁に筆跡が密集し、静かな水面には少数の印を置く自作の模式図。",
+        "caption": "身近な例：池の波紋。明るさが変わる波の縁には印を増やし、静かな面は少なめに描きます。"
+      }
+    }
+  },
+  "extension": {
+    "title": "採用確率を別の特徴にも結びつける",
+    "keywords": [
+      "確率マスク",
+      "勾配マップ",
+      "適応的サンプリング"
+    ],
+    "next": "次回は勾配の強さだけでなく、画像の明るさや色も確率へ組み合わせ、どの特徴を優先すると筆跡の分布が変わるか比べます。"
+  }
+}
