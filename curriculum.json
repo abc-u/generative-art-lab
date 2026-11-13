@@ -189,6 +189,14 @@
       "description": "勾配の強さを線の長さに写し、輪郭では短く平坦な面では長く描く。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 22,
+      "title": "Gradient Strength to Stroke Density",
+      "topic": "画像勾配の強さを筆跡の密度に変える",
+      "description": "勾配が強い輪郭ほど筆跡の採用確率を高くし、描き込み密度を変える。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
