@@ -1,0 +1,202 @@
+{
+  "day": 23,
+  "status": "published",
+  "title": "Combined Probability Masks",
+  "subtitle": "暗さと輪郭の強さ、両方を使って筆跡を選ぶ。",
+  "topic": "明るさと勾配を組み合わせた確率マスク",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は複合確率マスクを使い、暗さと輪郭の強さの両方から筆跡の採用率を決めます。候補位置を画像全体から一様に選び、その画素の明るさから p暗 = 1 − gray/255 を計算します。次に左右・上下の輝度差から勾配の強さ m を求め、s = min(m/180, 1) として0〜1に収めます。最後に p = p暗 × s とし、乱数 r が p より小さいとき筆跡を描きます。肝は、暗いだけ・輪郭が強いだけでは採用率を上げず、両方の値が大きい場所を優先することです。確率を掛けると、片方が0なら最終確率も0になります。",
+  "applications": "写真の暗部と輪郭を同時に強調する、木や花の境界と影に描き込みを集める、複数の画像特徴から粒子や筆跡の分布を設計する用途に使えます。",
+  "prerequisites": "Day 19の輝度による採用確率、Day 20の輪郭に沿う向き、Day 22の勾配強さによる採用率を使います。",
+  "connection": "Day 19は暗さで点を選び、Day 22は勾配の強さで筆跡を選びました。今日は二つの確率を掛け合わせ、暗くて輪郭変化も強い場所を優先します。",
+  "ruleSummary": "暗さの採用確率と勾配の強さを掛け、両方が高い候補を残す。",
+  "goalTitle": "暗さと輪郭、どちらも見ると何が変わる？",
+  "ruleCode": "最終確率 = 暗さの確率 × 勾配の強さ",
+  "intuition": {
+    "title": "りんごを鉛筆でスケッチする",
+    "story": "窓辺のりんごを描くとき、影の中でも輪郭の変化が少ない面はあっさり描き、暗さと形の境目が重なる所を丁寧に描き込むとします。候補を置く場所は全体から均等に選び、暗さと輪郭の両方をくじの当たりやすさに使います。",
+    "visual": "画素の暗さを確率にする ＋ 周りとの明るさの差を測る → 二つを掛けて採否を決める",
+    "diagram": "p暗 = 1−gray/255 ／ s = min(m/180,1) ／ p = p暗×s"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-23-combined-probability.svg",
+    "alt": "暗さの確率と勾配強度を掛け合わせ、暗く平坦な場所は0、暗く輪郭が強い場所は高くする図。",
+    "caption": "二つの手がかりを掛けるため、どちらかが弱い場所では筆跡が少なくなります。"
+  },
+  "numbers": {
+    "title": "画素の暗さと輪郭を一つの確率へ",
+    "setup": "RGB=(40,100,160)の画素を考えます。周囲の輝度から gx=60、gy=−60 と計算でき、デモ初期値の勾配基準は180です。",
+    "steps": [
+      {
+        "label": "RGBを輝度へ",
+        "calculation": "gray=0.299×40+0.587×100+0.114×160=88.90。"
+      },
+      {
+        "label": "暗さの確率",
+        "calculation": "p暗=1−88.90÷255≈0.651。暗さだけなら約65.1%です。"
+      },
+      {
+        "label": "勾配の強さ",
+        "calculation": "m=√(60²+(−60)²)≈84.85、s=min(84.85÷180,1)≈0.471。"
+      },
+      {
+        "label": "二つを掛け合わせる",
+        "calculation": "p=p暗×s≈0.651×0.471≈0.307。両方を満たす場所なので約30.7%で採用します。"
+      },
+      {
+        "label": "抽選して向きを決める",
+        "calculation": "乱数0.22なら0.22<0.307で描画、0.52なら棄却です。筆は勾配に直角の45°、初期設定の長さ16pxで描きます。"
+      }
+    ],
+    "note": "掛け算では、暗さの確率が高くても平坦で s≈0 なら筆跡はほぼ残りません。反対に明るい輪郭は暗さの確率が低いため、暗くて輪郭も強い場所より採用されにくくなります。"
+  },
+  "code": "const gray = luminance(sampleRGB(x, y));\nconst pDark = 1 - gray / 255;\nconst gx = grayAt(x + 1, y) - grayAt(x - 1, y);\nconst gy = grayAt(x, y + 1) - grayAt(x, y - 1);\nconst strength = Math.min(Math.hypot(gx, gy) / 180, 1);\nconst probability = pDark * strength;\nconst angle = Math.atan2(gy, gx) + Math.PI / 2;\nif (random() < probability) {\n  drawStroke(x, y, 16, angle);\n}",
+  "codeNote": "暗さからpDark、明暗差からstrengthを計算し、掛けたprobabilityで候補を抽選します。線の角度は勾配に直角、長さは初期値16pxです。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "demo": {
+    "title": "暗さ・輪郭・組み合わせを比較する",
+    "caption": "初期設定はりんごと影、候補1000個、暗さ×勾配、勾配基準180、線長16px、線幅3、シード42です。確率マップを見ながら、暗さだけ・勾配だけ・平均・掛け算を比較できます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f3f0e7;color:#29383d;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px 9px;border:1px solid #c8c1b5;border-radius:7px;background:#fff;color:inherit;font:inherit}.check{display:flex;align-items:center;gap:8px}.check input{width:22px;height:22px}.views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}.panel{min-width:0}.panel strong{display:block;margin-bottom:4px;font-size:13px}canvas{width:100%;display:block;aspect-ratio:1.48;border:1px solid #cfc8bb;background:#fff}.note{min-height:1.6em;margin:7px 0;color:#52666a;font-size:13px}@media(max-width:760px){.views{grid-template-columns:1fr}canvas{aspect-ratio:1.55}}@media(max-width:480px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}</style></head><body><div class=\"controls\"><label>シード<input id=\"seed\" type=\"number\" value=\"42\"></label><label>候補数<select id=\"count\"><option>400</option><option selected>1000</option><option>2000</option><option>3000</option></select></label><label>元画像<select id=\"source\"><option value=\"apple\">りんごと影</option><option value=\"wave\">波と水面</option><option value=\"hill\">丘と空</option></select></label><label>確率の組み合わせ<select id=\"model\"><option value=\"both\" selected>暗さ × 勾配</option><option value=\"dark\">暗さだけ</option><option value=\"edge\">勾配だけ</option><option value=\"average\">暗さと勾配の平均</option></select></label><label>勾配基準<select id=\"reference\"><option>90</option><option selected>180</option><option>360</option></select></label><label>線の長さ<select id=\"length\"><option>10</option><option selected>16</option><option>24</option></select></label><label>線幅<select id=\"width\"><option>1</option><option selected>3</option><option>5</option></select></label><label>色<select id=\"color\"><option value=\"sample\" selected>画素の色</option><option value=\"gray\">白黒</option><option value=\"warm\">朱色</option></select></label><label class=\"check\"><input id=\"guides\" type=\"checkbox\">勾配の向きを表示</label><button id=\"redraw\" type=\"button\">描き直す</button><button id=\"newseed\" type=\"button\">別のシード</button></div><div class=\"views\"><div class=\"panel\"><strong>元画像 <span id=\"guideLabel\"></span></strong><canvas id=\"sourceCanvas\" role=\"img\" aria-label=\"サンプリング元の画像と勾配の向き\"></canvas></div><div class=\"panel\"><strong>採用確率マップ</strong><canvas id=\"mapCanvas\" role=\"img\" aria-label=\"暗さと勾配を組み合わせた筆跡の採用確率\"></canvas></div><div class=\"panel\"><strong>抽選で残った筆跡</strong><canvas id=\"resultCanvas\" role=\"img\" aria-label=\"暗く輪郭変化の強い場所ほど筆跡を多くした結果\"></canvas></div></div><p id=\"note\" class=\"note\" aria-live=\"polite\"></p><script>\nconst src=document.querySelector(\"#sourceCanvas\"),sc=src.getContext(\"2d\"),map=document.querySelector(\"#mapCanvas\"),mc=map.getContext(\"2d\"),out=document.querySelector(\"#resultCanvas\"),ctx=out.getContext(\"2d\");\nfunction grayAt(data,w,h,x,y){x=Math.max(0,Math.min(w-1,x));y=Math.max(0,Math.min(h-1,y));const i=(y*w+x)*4;return .299*data[i]+.587*data[i+1]+.114*data[i+2]}\nfunction makeSource(w,h,mode){sc.fillStyle=\"#f5f0e6\";sc.fillRect(0,0,w,h);if(mode===\"apple\"){sc.fillStyle=\"#e8dfcd\";sc.fillRect(0,0,w,h*.78);sc.fillStyle=\"#8c7760\";sc.beginPath();sc.ellipse(w*.5,h*.79,w*.23,h*.055,0,0,Math.PI*2);sc.fill();sc.fillStyle=\"#bd6b51\";sc.beginPath();sc.moveTo(w*.5,h*.24);sc.bezierCurveTo(w*.22,h*.12,w*.21,h*.47,w*.31,h*.66);sc.bezierCurveTo(w*.4,h*.83,w*.59,h*.8,w*.7,h*.65);sc.bezierCurveTo(w*.84,h*.45,w*.77,h*.14,w*.53,h*.24);sc.closePath();const g=sc.createLinearGradient(w*.3,0,w*.72,0);g.addColorStop(0,\"#cf8060\");g.addColorStop(.6,\"#a95642\");g.addColorStop(1,\"#432f31\");sc.fillStyle=g;sc.fill();sc.strokeStyle=\"#514338\";sc.lineWidth=5;sc.beginPath();sc.moveTo(w*.5,h*.25);sc.quadraticCurveTo(w*.49,h*.17,w*.54,h*.11);sc.stroke();sc.fillStyle=\"#71866a\";sc.beginPath();sc.ellipse(w*.57,h*.13,w*.07,h*.03,-.35,0,Math.PI*2);sc.fill()}else if(mode===\"wave\"){sc.fillStyle=\"#a6cbd0\";sc.fillRect(0,0,w,h);for(let j=0;j<7;j++){const y=h*(.25+j*.105);sc.strokeStyle=[\"#e7eee6\",\"#78aeb9\",\"#447f90\",\"#dce9df\"][j%4];sc.lineWidth=2+j%3;sc.beginPath();sc.moveTo(0,y);for(let x=0;x<=w;x+=4)sc.lineTo(x,y+Math.sin(x*.025+j)*h*.025);sc.stroke()}}else{sc.fillStyle=\"#d6e3dc\";sc.fillRect(0,0,w,h*.62);sc.fillStyle=\"#7c9382\";sc.beginPath();sc.moveTo(0,h*.69);sc.lineTo(w*.28,h*.29);sc.lineTo(w*.51,h*.66);sc.lineTo(w*.73,h*.35);sc.lineTo(w,h*.7);sc.lineTo(w,h);sc.lineTo(0,h);sc.fill();sc.fillStyle=\"#384f4f\";sc.beginPath();sc.moveTo(0,h*.83);sc.quadraticCurveTo(w*.35,h*.6,w*.66,h*.82);sc.quadraticCurveTo(w*.86,h*.98,w,h*.74);sc.lineTo(w,h);sc.lineTo(0,h);sc.fill()}}\nfunction probability(gray,m,model,ref){const pDark=1-gray/255,strength=Math.min(m/ref,1);if(model===\"dark\")return pDark;if(model===\"edge\")return strength;if(model===\"average\")return(pDark+strength)/2;return pDark*strength}\nfunction draw(){const box=src.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,box.width),h=Math.max(1,box.height);for(const c of [src,map,out]){c.width=Math.round(w*d);c.height=Math.round(h*d)}sc.setTransform(d,0,0,d,0,0);mc.setTransform(1,0,0,1,0,0);ctx.setTransform(d,0,0,d,0,0);makeSource(w,h,document.querySelector(\"#source\").value);const pix=sc.getImageData(0,0,src.width,src.height).data,model=document.querySelector(\"#model\").value,reference=Number(document.querySelector(\"#reference\").value),length=Number(document.querySelector(\"#length\").value),lineWidth=Number(document.querySelector(\"#width\").value),colorMode=document.querySelector(\"#color\").value;\nconst mapData=mc.createImageData(map.width,map.height);for(let y=0;y<map.height;y++)for(let x=0;x<map.width;x++){const k=(y*map.width+x)*4,gx=grayAt(pix,src.width,src.height,x+1,y)-grayAt(pix,src.width,src.height,x-1,y),gy=grayAt(pix,src.width,src.height,x,y+1)-grayAt(pix,src.width,src.height,x,y-1),gray=grayAt(pix,src.width,src.height,x,y),p=probability(gray,Math.hypot(gx,gy),model,reference),v=Math.round(p*255);mapData.data[k]=Math.round(239-p*115);mapData.data[k+1]=Math.round(238-p*120);mapData.data[k+2]=Math.round(226-p*133);mapData.data[k+3]=255}mc.putImageData(mapData,0,0);\nctx.fillStyle=\"#f5f0e6\";ctx.fillRect(0,0,w,h);let seed=Math.floor(Number(document.querySelector(\"#seed\").value)||1);seed=(seed-1)%2147483646+1;function random(){seed=seed*16807%2147483647;return(seed-1)/2147483646}const count=Number(document.querySelector(\"#count\").value);let kept=0;\nfor(let i=0;i<count;i++){const x=random()*w,y=random()*h,ix=Math.floor(x*d),iy=Math.floor(y*d),k=(iy*src.width+ix)*4,r=pix[k],g=pix[k+1],b=pix[k+2],gray=.299*r+.587*g+.114*b,gx=grayAt(pix,src.width,src.height,ix+1,iy)-grayAt(pix,src.width,src.height,ix-1,iy),gy=grayAt(pix,src.width,src.height,ix,iy+1)-grayAt(pix,src.width,src.height,ix,iy-1),m=Math.hypot(gx,gy),p=probability(gray,m,model,reference),angle=m<4?0:Math.atan2(gy,gx)+Math.PI/2;if(random()<p){kept++;let color;if(colorMode===\"sample\")color=\"rgb(\"+r+\",\"+g+\",\"+b+\")\";else if(colorMode===\"gray\"){const v=Math.round(gray);color=\"rgb(\"+v+\",\"+v+\",\"+v+\")\"}else color=\"#c85a43\";ctx.strokeStyle=color;ctx.lineWidth=lineWidth;ctx.lineCap=\"round\";ctx.beginPath();ctx.moveTo(x-Math.cos(angle)*length/2,y-Math.sin(angle)*length/2);ctx.lineTo(x+Math.cos(angle)*length/2,y+Math.sin(angle)*length/2);ctx.stroke()}}\nif(document.querySelector(\"#guides\").checked){for(let y=18;y<h;y+=34)for(let x=18;x<w;x+=34){const ix=Math.floor(x*d),iy=Math.floor(y*d),gx=grayAt(pix,src.width,src.height,ix+1,iy)-grayAt(pix,src.width,src.height,ix-1,iy),gy=grayAt(pix,src.width,src.height,ix,iy+1)-grayAt(pix,src.width,src.height,ix,iy-1),m=Math.hypot(gx,gy);if(m<4)continue;const a=Math.atan2(gy,gx),n=8;sc.strokeStyle=\"rgba(35,48,52,.8)\";sc.lineWidth=1.3;sc.beginPath();sc.moveTo(x-Math.cos(a)*n/2,y-Math.sin(a)*n/2);sc.lineTo(x+Math.cos(a)*n/2,y+Math.sin(a)*n/2);sc.stroke();sc.beginPath();sc.moveTo(x+Math.cos(a)*n/2,y+Math.sin(a)*n/2);sc.lineTo(x+Math.cos(a)*n/2-Math.cos(a-.55)*3,y+Math.sin(a)*n/2-Math.sin(a-.55)*3);sc.stroke()}}\ndocument.querySelector(\"#guideLabel\").textContent=document.querySelector(\"#guides\").checked?\"（矢印は明るくなる方向）\":\"\";document.querySelector(\"#note\").textContent=\"候補 \"+count+\" 個 · 採用 \"+kept+\" 個 · 組み合わせ \"+document.querySelector(\"#model\").selectedOptions[0].text+\" · 勾配基準 \"+reference;}\nfor(const id of [\"seed\",\"count\",\"source\",\"model\",\"reference\",\"length\",\"width\",\"color\",\"guides\"]){const e=document.querySelector(\"#\"+id);e.addEventListener(\"change\",draw);e.addEventListener(\"input\",draw)}document.querySelector(\"#redraw\").addEventListener(\"click\",draw);document.querySelector(\"#newseed\").addEventListener(\"click\",()=>{const e=document.querySelector(\"#seed\");e.value=String((Number(e.value)||1)+1);draw()});window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type!==\"gal-experiment\")return;for(const c of e.data.controls||[]){const el=document.querySelector(c.selector);if(el){el.value=c.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "掛け算の結果を観察する",
+      "action": "りんごと影・候補1000・暗さ×勾配・基準180・シード42で描きます。",
+      "observe": "影と輪郭が重なる箇所は確率マップが強く、平坦な箇所は弱くなっていますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "apple"
+        },
+        {
+          "selector": "#count",
+          "value": "1000"
+        },
+        {
+          "selector": "#model",
+          "value": "both"
+        },
+        {
+          "selector": "#reference",
+          "value": "180"
+        },
+        {
+          "selector": "#seed",
+          "value": "42"
+        }
+      ]
+    },
+    {
+      "title": "暗さだけで選ぶ",
+      "action": "組み合わせを「暗さだけ」にし、他の値を保ちます。",
+      "observe": "輪郭の強さを使わないと、暗い面の中の筆跡の分布はどう変わりますか？",
+      "demoState": [
+        {
+          "selector": "#model",
+          "value": "dark"
+        }
+      ]
+    },
+    {
+      "title": "勾配だけで選ぶ",
+      "action": "組み合わせを「勾配だけ」に切り替えます。",
+      "observe": "明るい輪郭も濃い輪郭も採用され、暗さだけの結果と差が出ますか？",
+      "demoState": [
+        {
+          "selector": "#model",
+          "value": "edge"
+        }
+      ]
+    },
+    {
+      "title": "平均と掛け算を比べる",
+      "action": "「暗さと勾配の平均」と「暗さ×勾配」を切り替え、丘と空も試します。",
+      "observe": "平均はどちらか一方が高ければ残りますが、掛け算は両方が高い所に寄りますか？",
+      "demoState": [
+        {
+          "selector": "#model",
+          "value": "average"
+        },
+        {
+          "selector": "#source",
+          "value": "hill"
+        }
+      ]
+    },
+    {
+      "title": "候補数と色を調整する",
+      "action": "波と水面に切り替え、候補数2000・線幅1・白黒にします。",
+      "observe": "線の本数を増やしたとき、暗い波の境界や水面の形がどこまで読みやすくなりますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "wave"
+        },
+        {
+          "selector": "#count",
+          "value": "2000"
+        },
+        {
+          "selector": "#width",
+          "value": "1"
+        },
+        {
+          "selector": "#color",
+          "value": "gray"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "レンブラント・ファン・レイン",
+    "work": "《Self-Portrait in a Cap and Scarf with the Face Dark》",
+    "context": "1633年のエッチングです。帽子とスカーフを着けた自画像で、顔の明るい部分と暗い部分、輪郭を細い線の集まりで観察できます。",
+    "relation": "作品の線の重なりと明暗の配置を見比べ、今回のデモでは暗さと勾配を掛けた確率で筆跡の分布を作ります。この作品が同じ計算手法で作られたという意味ではありません。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・CC0 1.0ライセンス情報",
+        "url": "https://commons.wikimedia.org/wiki/File:Rembrandt_van_Rijn,_Self-Portrait_in_a_Cap_and_Scarf_with_the_Face_Dark,_1633,_NGA_33496.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Rembrandt_van_Rijn%2C_Self-Portrait_in_a_Cap_and_Scarf_with_the_Face_Dark%2C_1633%2C_NGA_33496.jpg/960px-Rembrandt_van_Rijn%2C_Self-Portrait_in_a_Cap_and_Scarf_with_the_Face_Dark%2C_1633%2C_NGA_33496.jpg",
+      "alt": "レンブラントのエッチング自画像。帽子とスカーフを着けた顔の一部が暗く、細い線で陰影と輪郭が描かれている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rembrandt_van_Rijn,_Self-Portrait_in_a_Cap_and_Scarf_with_the_Face_Dark,_1633,_NGA_33496.jpg",
+      "license": "CC0 1.0",
+      "credit": "Rembrandt van Rijn, Self-Portrait in a Cap and Scarf with the Face Dark, 1633, etching. National Gallery of Art; Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "窓辺のりんごのスケッチ",
+      "description": "りんごを窓辺に置くと、暗い影の側と外形の境界が重なる場所では線を描き込みやすくなります。",
+      "relation": "暗さだけなら影全体に描き込みが増え、輪郭だけなら明るい境界にも線が増えます。二つを掛けると、暗さと境界の両方が強い箇所へ筆跡が集まります。",
+      "visual": {
+        "src": "./assets/day-23-everyday-apple.svg",
+        "alt": "窓辺のりんごの影と外形の境界に鉛筆の線が集まる自作模式図。",
+        "caption": "身近な例：窓辺のりんごを鉛筆でスケッチ。暗さと輪郭が重なるところを描き込みます。"
+      }
+    }
+  },
+  "extension": {
+    "title": "二つの確率の組み合わせを広げる",
+    "keywords": [
+      "確率マスクの積",
+      "特徴量の重み付け",
+      "適応的ストローク"
+    ],
+    "next": "次回は掛け算以外の確率の組み合わせ方も比べ、残したい場所の条件を画面全体の分布へ調整する方法を学びます。"
+  }
+}
