@@ -197,6 +197,14 @@
       "description": "勾配が強い輪郭ほど筆跡の採用確率を高くし、描き込み密度を変える。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 23,
+      "title": "Combined Probability Masks",
+      "topic": "明るさと勾配を組み合わせた確率マスク",
+      "description": "画素の暗さと勾配強度の確率を掛け合わせ、両方が高い場所の筆跡を増やす。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
