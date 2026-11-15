@@ -205,6 +205,14 @@
       "description": "画素の暗さと勾配強度の確率を掛け合わせ、両方が高い場所の筆跡を増やす。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 24,
+      "title": "Weighted Probability Blend",
+      "topic": "確率の重み付き平均",
+      "description": "暗さと勾配の確率を重み付き平均にし、どちらを優先するか連続調整する。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
