@@ -1,0 +1,195 @@
+{
+  "day": 24,
+  "status": "published",
+  "title": "Weighted Probability Blend",
+  "subtitle": "重みを動かし、暗さと輪郭のどちらを筆跡へ強く反映するか調整する。",
+  "topic": "確率の重み付き平均",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は重み付き平均で二つの確率を混ぜ、筆跡を置く場所を調整します。画素の暗さから p暗=1−gray/255、周囲の明暗差から s=min(m/180,1) を求めます。重み α を0〜1で選び、p=α×p暗+(1−α)×s とします。乱数 r が p より小さい候補だけを採用します。肝は、αを上げると暗さを重視し、下げると輪郭の強さを重視することです。掛け算とは違い、片方の値が低くてももう一方の重みに応じて採用確率が残ります。",
+  "applications": "写真の点描や筆跡で、暗部を強調するか輪郭を強調するか調整できます。模様の密度を少しずつ切り替え、表現の焦点を変えるときにも使えます。",
+  "prerequisites": "Day 19の暗さによる採用確率、Day 22の勾配強度による確率、Day 23の二つの特徴の組み合わせを使います。",
+  "connection": "Day 23では暗さの確率と勾配強度を掛け、両方が高い候補を優先しました。今日は重み付き平均に変え、暗さと輪郭のどちらを優先するか連続調整します。",
+  "ruleSummary": "暗さの確率と輪郭の強さを重み付き平均にし、重みで筆跡の分布を調整する。",
+  "goalTitle": "暗さと輪郭のどちらを強調する？",
+  "ruleCode": "p = α × p暗 + (1 − α) × 輪郭の強さ",
+  "intuition": {
+    "title": "2つのつまみを混ぜる",
+    "story": "絵の具を混ぜるように、暗さを重視するつまみと輪郭を重視するつまみを動かします。暗さ側を100%にすると暗い画素が残りやすく、0%にすると輪郭の強い画素が残りやすくなります。中間では両方の情報が採用率に少しずつ入ります。",
+    "visual": "暗さの確率 p暗 と勾配の強さ s を、重み α で平均する",
+    "diagram": "α=0% → 輪郭だけ ／ α=65% → 両方 ／ α=100% → 暗さだけ"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-24-weighted-probability.svg",
+    "alt": "重みαを動かし、暗さ確率と勾配強度のどちらを抽選に強く反映するか示す図。",
+    "caption": "重み付き平均は、二つの値を0〜1の範囲のまま滑らかに混ぜます。"
+  },
+  "numbers": {
+    "title": "α=65%で採用確率を計算する",
+    "setup": "Day 23と同じ画素RGB=(40,100,160)、輝度差gx=60、gy=−60を使います。初期値は勾配基準180、暗さの重みα=65%です。",
+    "steps": [
+      {
+        "label": "輝度から暗さの確率",
+        "calculation": "gray=0.299×40+0.587×100+0.114×160=88.90。p暗=1−88.90÷255≈0.651。"
+      },
+      {
+        "label": "勾配の強さ",
+        "calculation": "m=√(60²+(−60)²)≈84.85。s=min(84.85÷180,1)≈0.471。"
+      },
+      {
+        "label": "重みを小数に直す",
+        "calculation": "α=65÷100=0.65。もう一方の重みは1−0.65=0.35です。"
+      },
+      {
+        "label": "二つを平均する",
+        "calculation": "p=0.65×0.651+0.35×0.471≈0.423+0.165=0.588。採用確率は約58.8%。"
+      },
+      {
+        "label": "乱数で採否を決める",
+        "calculation": "乱数0.42なら0.42<0.588で採用、0.71なら棄却です。採用線の向きは勾配に直角、長さは初期値16pxです。"
+      }
+    ],
+    "note": "α=0ならp=s、α=1ならp=p暗です。中間の重み付き平均は、どちらか片方が低くてももう一方の値を反映できます。Day 23の掛け算は両方が高い場所に強く絞る方法でした。"
+  },
+  "code": "const pDark = 1 - gray / 255;\nconst strength = Math.min(magnitude / 180, 1);\nconst alpha = 0.65; // 暗さを65%重視\nconst probability = alpha * pDark + (1 - alpha) * strength;\nconst angle = Math.atan2(gy, gx) + Math.PI / 2;\nif (random() < probability) {\n  drawStroke(x, y, 16, angle);\n}",
+  "codeNote": "alphaを0〜1で指定します。初期値0.65では暗さ65%、輪郭35%の割合で採用確率を決めます。乱数が確率より小さい候補のみ線を描きます。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "demo": {
+    "title": "暗さと輪郭の重みを動かす",
+    "caption": "窓辺の植物、候補1000個、暗さの重み65%、勾配基準180、線長16px、線幅3、シード42が初期値です。重みスライダーを動かし、確率マップと筆跡の変化を比べます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f3f0e7;color:#29383d;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px 9px;border:1px solid #c8c1b5;border-radius:7px;background:#fff;color:inherit;font:inherit}input[type=range]{padding:0;accent-color:#3d7d83}.alpha{grid-column:span 2}.alphaLine{display:flex;align-items:center;gap:10px}.alphaLine input{flex:1}.alphaLine output{min-width:48px;text-align:right;font-weight:700}.check{display:flex;align-items:center;gap:8px}.check input{width:22px;height:22px}.views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}.panel{min-width:0}.panel strong{display:block;margin-bottom:4px;font-size:13px}canvas{width:100%;display:block;aspect-ratio:1.48;border:1px solid #cfc8bb;background:#fff}.note{min-height:1.6em;margin:7px 0;color:#52666a;font-size:13px}@media(max-width:760px){.views{grid-template-columns:1fr}canvas{aspect-ratio:1.55}}@media(max-width:480px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.alpha{grid-column:span 2}}</style></head><body><div class=\"controls\"><label>シード<input id=\"seed\" type=\"number\" value=\"42\"></label><label>候補数<select id=\"count\"><option>400</option><option selected>1000</option><option>2000</option><option>3000</option></select></label><label>元画像<select id=\"source\"><option value=\"plant\" selected>窓辺の植物</option><option value=\"apple\">りんごと影</option><option value=\"wave\">波と水面</option></select></label><label>勾配基準<select id=\"reference\"><option>90</option><option selected>180</option><option>360</option></select></label><label class=\"alpha\">暗さを重視する重み α<div class=\"alphaLine\"><span>輪郭</span><input id=\"alpha\" type=\"range\" min=\"0\" max=\"100\" step=\"5\" value=\"65\"><span>暗さ</span><output id=\"alphaText\" for=\"alpha\">65%</output></div></label><label>線の長さ<select id=\"length\"><option>10</option><option selected>16</option><option>24</option></select></label><label>線幅<select id=\"width\"><option>1</option><option selected>3</option><option>5</option></select></label><label>色<select id=\"color\"><option value=\"sample\" selected>画素の色</option><option value=\"gray\">白黒</option><option value=\"warm\">朱色</option></select></label><label class=\"check\"><input id=\"guides\" type=\"checkbox\">勾配の向きを表示</label><button id=\"redraw\" type=\"button\">描き直す</button><button id=\"newseed\" type=\"button\">別のシード</button></div><div class=\"views\"><div class=\"panel\"><strong>元画像 <span id=\"guideLabel\"></span></strong><canvas id=\"sourceCanvas\" role=\"img\" aria-label=\"サンプリング元の植物画像と勾配の向き\"></canvas></div><div class=\"panel\"><strong>採用確率マップ</strong><canvas id=\"mapCanvas\" role=\"img\" aria-label=\"暗さと勾配の重み付き平均で作る確率マップ\"></canvas></div><div class=\"panel\"><strong>確率抽選で残った筆跡</strong><canvas id=\"resultCanvas\" role=\"img\" aria-label=\"暗さと輪郭の重みを調整して描いた筆跡の結果\"></canvas></div></div><p id=\"note\" class=\"note\" aria-live=\"polite\"></p><script>\nconst src=document.querySelector(\"#sourceCanvas\"),sc=src.getContext(\"2d\"),map=document.querySelector(\"#mapCanvas\"),mc=map.getContext(\"2d\"),out=document.querySelector(\"#resultCanvas\"),ctx=out.getContext(\"2d\");\nfunction grayAt(data,w,h,x,y){x=Math.max(0,Math.min(w-1,x));y=Math.max(0,Math.min(h-1,y));const i=(y*w+x)*4;return .299*data[i]+.587*data[i+1]+.114*data[i+2]}\nfunction makeSource(w,h,mode){sc.fillStyle=\"#f4f0e6\";sc.fillRect(0,0,w,h);if(mode===\"plant\"){sc.fillStyle=\"#bad6ce\";sc.fillRect(0,0,w*.34,h);sc.strokeStyle=\"#f4efe3\";sc.lineWidth=10;sc.beginPath();sc.moveTo(w*.17,0);sc.lineTo(w*.17,h);sc.moveTo(0,h*.47);sc.lineTo(w*.34,h*.47);sc.stroke();sc.strokeStyle=\"#536b50\";sc.lineWidth=6;sc.beginPath();sc.moveTo(w*.58,h*.88);sc.lineTo(w*.53,h*.2);sc.stroke();for(let i=0;i<6;i++){const x=w*(.45+(i%2)*.13),y=h*(.25+Math.floor(i/2)*.15),a=i%2?-.45:-2.7;sc.save();sc.translate(x,y);sc.rotate(a);sc.fillStyle=i%3?\"#6c8d69\":\"#405e4b\";sc.beginPath();sc.ellipse(0,0,w*.12,h*.045,0,0,Math.PI*2);sc.fill();sc.restore()}sc.fillStyle=\"#bd7559\";sc.beginPath();sc.moveTo(w*.44,h*.75);sc.lineTo(w*.7,h*.75);sc.lineTo(w*.66,h*.98);sc.lineTo(w*.48,h*.98);sc.closePath();sc.fill()}else if(mode===\"apple\"){sc.fillStyle=\"#e9dfce\";sc.fillRect(0,0,w,h*.8);sc.fillStyle=\"#7b6651\";sc.beginPath();sc.ellipse(w*.5,h*.8,w*.23,h*.05,0,0,Math.PI*2);sc.fill();sc.beginPath();sc.moveTo(w*.5,h*.22);sc.bezierCurveTo(w*.23,h*.12,w*.2,h*.48,w*.31,h*.68);sc.bezierCurveTo(w*.4,h*.83,w*.6,h*.82,w*.71,h*.66);sc.bezierCurveTo(w*.82,h*.46,w*.77,h*.14,w*.53,h*.22);sc.closePath();const g=sc.createLinearGradient(w*.27,0,w*.75,0);g.addColorStop(0,\"#d48965\");g.addColorStop(.58,\"#a95740\");g.addColorStop(1,\"#483135\");sc.fillStyle=g;sc.fill();sc.strokeStyle=\"#554537\";sc.lineWidth=5;sc.beginPath();sc.moveTo(w*.5,h*.24);sc.lineTo(w*.53,h*.11);sc.stroke()}else{sc.fillStyle=\"#9fc6cc\";sc.fillRect(0,0,w,h);for(let i=0;i<8;i++){const y=h*(.15+i*.1);sc.strokeStyle=[\"#e5ede3\",\"#69a4ae\",\"#3f7787\",\"#d4e5dc\"][i%4];sc.lineWidth=2+i%3;sc.beginPath();sc.moveTo(0,y);for(let x=0;x<=w;x+=4)sc.lineTo(x,y+Math.sin(x*.025+i)*h*.022);sc.stroke()}}}\nfunction probability(gray,m,alpha,ref){const dark=1-gray/255,strength=Math.min(m/ref,1);return alpha*dark+(1-alpha)*strength}\nfunction draw(){const box=src.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,box.width),h=Math.max(1,box.height);for(const c of [src,map,out]){c.width=Math.round(w*d);c.height=Math.round(h*d)}sc.setTransform(d,0,0,d,0,0);mc.setTransform(1,0,0,1,0,0);ctx.setTransform(d,0,0,d,0,0);makeSource(w,h,document.querySelector(\"#source\").value);const pix=sc.getImageData(0,0,src.width,src.height).data,alpha=Number(document.querySelector(\"#alpha\").value)/100,reference=Number(document.querySelector(\"#reference\").value),length=Number(document.querySelector(\"#length\").value),lineWidth=Number(document.querySelector(\"#width\").value),colorMode=document.querySelector(\"#color\").value;\nconst mapData=mc.createImageData(map.width,map.height);for(let y=0;y<map.height;y++)for(let x=0;x<map.width;x++){const k=(y*map.width+x)*4,gx=grayAt(pix,src.width,src.height,x+1,y)-grayAt(pix,src.width,src.height,x-1,y),gy=grayAt(pix,src.width,src.height,x,y+1)-grayAt(pix,src.width,src.height,x,y-1),gray=grayAt(pix,src.width,src.height,x,y),p=probability(gray,Math.hypot(gx,gy),alpha,reference),v=Math.round(255*p);mapData.data[k]=Math.round(246-p*112);mapData.data[k+1]=Math.round(241-p*132);mapData.data[k+2]=Math.round(229-p*145);mapData.data[k+3]=255}mc.putImageData(mapData,0,0);\nctx.fillStyle=\"#f4f0e6\";ctx.fillRect(0,0,w,h);let seed=Math.floor(Number(document.querySelector(\"#seed\").value)||1);seed=(seed-1)%2147483646+1;function random(){seed=seed*16807%2147483647;return(seed-1)/2147483646}const count=Number(document.querySelector(\"#count\").value);let kept=0;\nfor(let i=0;i<count;i++){const x=random()*w,y=random()*h,ix=Math.floor(x*d),iy=Math.floor(y*d),k=(iy*src.width+ix)*4,r=pix[k],g=pix[k+1],b=pix[k+2],gray=.299*r+.587*g+.114*b,gx=grayAt(pix,src.width,src.height,ix+1,iy)-grayAt(pix,src.width,src.height,ix-1,iy),gy=grayAt(pix,src.width,src.height,ix,iy+1)-grayAt(pix,src.width,src.height,ix,iy-1),m=Math.hypot(gx,gy),pDark=1-gray/255,strength=Math.min(m/reference,1),p=alpha*pDark+(1-alpha)*strength,angle=m<4?0:Math.atan2(gy,gx)+Math.PI/2;if(random()<p){kept++;let color;if(colorMode===\"sample\")color=\"rgb(\"+r+\",\"+g+\",\"+b+\")\";else if(colorMode===\"gray\"){const v=Math.round(gray);color=\"rgb(\"+v+\",\"+v+\",\"+v+\")\"}else color=\"#c35d44\";ctx.strokeStyle=color;ctx.lineWidth=lineWidth;ctx.lineCap=\"round\";ctx.beginPath();ctx.moveTo(x-Math.cos(angle)*length/2,y-Math.sin(angle)*length/2);ctx.lineTo(x+Math.cos(angle)*length/2,y+Math.sin(angle)*length/2);ctx.stroke()}}\nif(document.querySelector(\"#guides\").checked){for(let y=18;y<h;y+=34)for(let x=18;x<w;x+=34){const ix=Math.floor(x*d),iy=Math.floor(y*d),gx=grayAt(pix,src.width,src.height,ix+1,iy)-grayAt(pix,src.width,src.height,ix-1,iy),gy=grayAt(pix,src.width,src.height,ix,iy+1)-grayAt(pix,src.width,src.height,ix,iy-1),m=Math.hypot(gx,gy);if(m<4)continue;const a=Math.atan2(gy,gx),n=8;sc.strokeStyle=\"rgba(35,48,52,.8)\";sc.lineWidth=1.3;sc.beginPath();sc.moveTo(x-Math.cos(a)*n/2,y-Math.sin(a)*n/2);sc.lineTo(x+Math.cos(a)*n/2,y+Math.sin(a)*n/2);sc.stroke()}}\ndocument.querySelector(\"#alphaText\").textContent=Math.round(alpha*100)+\"%\";document.querySelector(\"#guideLabel\").textContent=document.querySelector(\"#guides\").checked?\"（矢印は明るくなる方向）\":\"\";document.querySelector(\"#note\").textContent=\"候補 \"+count+\" 個 · 採用 \"+kept+\" 個 · 暗さの重み α=\"+Math.round(alpha*100)+\"% · 勾配基準 \"+reference;}\nfor(const id of [\"seed\",\"count\",\"source\",\"model\",\"reference\",\"alpha\",\"length\",\"width\",\"color\",\"guides\"]){const e=document.querySelector(\"#\"+id);e.addEventListener(\"change\",draw);e.addEventListener(\"input\",draw)}document.querySelector(\"#redraw\").addEventListener(\"click\",draw);document.querySelector(\"#newseed\").addEventListener(\"click\",()=>{const e=document.querySelector(\"#seed\");e.value=String((Number(e.value)||1)+1);draw()});window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type!==\"gal-experiment\")return;for(const c of e.data.controls||[]){const el=document.querySelector(c.selector);if(el){el.value=c.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "初期の重みで確かめる",
+      "action": "窓辺の植物・候補1000・重み65%・基準180・シード42にします。",
+      "observe": "暗い葉と葉の輪郭の両方に、採用確率が反映されていますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "plant"
+        },
+        {
+          "selector": "#count",
+          "value": "1000"
+        },
+        {
+          "selector": "#alpha",
+          "value": "65"
+        },
+        {
+          "selector": "#reference",
+          "value": "180"
+        },
+        {
+          "selector": "#seed",
+          "value": "42"
+        }
+      ]
+    },
+    {
+      "title": "輪郭を優先する",
+      "action": "暗さの重みαを0%にします。",
+      "observe": "影の濃さではなく、明暗が急に変わる葉の縁に筆跡が集まりますか？",
+      "demoState": [
+        {
+          "selector": "#alpha",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "title": "暗さを優先する",
+      "action": "αを100%にします。",
+      "observe": "輪郭の強さを使わず、暗い葉や影がより残りやすくなりますか？",
+      "demoState": [
+        {
+          "selector": "#alpha",
+          "value": "100"
+        }
+      ]
+    },
+    {
+      "title": "中間の重みを探す",
+      "action": "αを25%、50%、75%に動かし、りんごと影も試します。",
+      "observe": "どの重みで影の面と形の境界が見やすくなりますか？",
+      "demoState": [
+        {
+          "selector": "#alpha",
+          "value": "50"
+        },
+        {
+          "selector": "#source",
+          "value": "apple"
+        }
+      ]
+    },
+    {
+      "title": "候補数と題材を変える",
+      "action": "波と水面に切り替え、候補数を2000、線幅を1pxにします。",
+      "observe": "候補数を増やすと、重みの差がどのように模様全体へ現れますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "wave"
+        },
+        {
+          "selector": "#count",
+          "value": "2000"
+        },
+        {
+          "selector": "#width",
+          "value": "1"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "マリー＝ヴィクトワール・ルモワーヌ",
+    "work": "《The Interior of an Atelier of a Woman Painter》",
+    "context": "1789年の油彩画です。画家のアトリエを描き、人物や室内に明るい面・影・輪郭が共存します。",
+    "relation": "室内の明暗や人物の輪郭を見比べ、暗さとエッジのどちらに注目するか変えます。デモの重みを調整し、作品がこの計算手法で描かれたとは主張せず、自分の描画ルールの見え方を実験します。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品画像・CC0 1.0ライセンス情報",
+        "url": "https://commons.wikimedia.org/wiki/File:Marie-Victoire_Lemoine_-_The_Interior_of_an_Atelier_of_a_Woman_Painter_MET_57-103.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Marie-Victoire_Lemoine_-_The_Interior_of_an_Atelier_of_a_Woman_Painter_MET_57-103.jpg/960px-Marie-Victoire_Lemoine_-_The_Interior_of_an_Atelier_of_a_Woman_Painter_MET_57-103.jpg",
+      "alt": "マリー＝ヴィクトワール・ルモワーヌの室内画。女性画家のアトリエで、人物と明暗のある室内が油彩で描かれている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Marie-Victoire_Lemoine_-_The_Interior_of_an_Atelier_of_a_Woman_Painter_MET_57-103.jpg",
+      "license": "CC0 1.0",
+      "credit": "Marie-Victoire Lemoine, The Interior of an Atelier of a Woman Painter, 1789, oil on canvas. The Metropolitan Museum of Art; Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "窓辺の観葉植物",
+      "description": "窓辺の植物は、光を受ける葉・影になる葉・葉の外周で明るさの手がかりが異なります。",
+      "relation": "αを上げると暗い葉や影を拾いやすくし、下げると明暗差の強い葉の縁を拾いやすくします。中間にすると、影の濃さと葉の形を両方残す方向に調整できます。",
+      "visual": {
+        "src": "./assets/day-24-everyday-plant.svg",
+        "alt": "窓辺の鉢植えで、暗い葉と葉の外周を重みを変えて描き分ける自作の模式図。",
+        "caption": "身近な例：窓辺の観葉植物。暗さと輪郭の重みを変えると、どの葉の特徴を描き込むかが変わります。"
+      }
+    }
+  },
+  "extension": {
+    "title": "重みを動かして表現を設計する",
+    "keywords": [
+      "重み付き平均",
+      "特徴量ブレンド",
+      "確率マスク"
+    ],
+    "next": "次回は複数の重みを位置ごとに変え、画面の領域ごとに異なる特徴を優先して模様を配置する方法へ進みます。"
+  }
+}
