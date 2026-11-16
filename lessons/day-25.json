@@ -1,0 +1,213 @@
+{
+  "day": 25,
+  "status": "published",
+  "title": "Spatially Varying Probability Blend",
+  "subtitle": "画面の場所に合わせて、暗さと輪郭の重みを変える。",
+  "topic": "位置で変わる確率の重み",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は空間的な重み付き確率マスクを使います。候補位置(x,y)を画面全体から一様に選び、横位置を t=x/幅 として0〜1に直します。始点と終点の暗さの重みを α始、α終 とすると、α(x)=α始+(α終−α始)×t です。その地点の暗さ p暗=1−gray/255 と勾配の強さ s=min(m/180,1)を混ぜ、p=α(x)×p暗+(1−α(x))×s を計算します。乱数 r が p より小さいとき筆跡を描きます。肝は重みを場所の関数にして、画面の一方からもう一方へ表現の優先先を連続的に移すことです。",
+  "applications": "一枚の絵の左側では輪郭線、右側では影の面を強く描く表現を作れます。視線を誘導する図案や、特徴を領域ごとに切り替える画像処理にも使えます。",
+  "prerequisites": "Day 19の暗さの採用確率、Day 22の勾配による筆跡密度、Day 24の確率の重み付き平均を使います。",
+  "connection": "Day 24では画面全体で一つの重みαを使いました。今日はα自体を位置から計算し、画面の場所ごとに優先する特徴を変えます。",
+  "ruleSummary": "画面上の位置から重みを計算し、暗さと輪郭の確率を場所ごとに混ぜる。",
+  "goalTitle": "画面の場所で、描き方を切り替えるには？",
+  "ruleCode": "t=x/幅　｜　α(x)=α始+(α終−α始)×t　｜　p=α(x)×暗さ+(1−α(x))×輪郭",
+  "intuition": {
+    "title": "窓辺の机を左右で描き分ける",
+    "story": "窓辺の机を描くとき、左側ではノートやカップの縁を拾い、右側ではカップに落ちた影を濃く描きます。画面の左から右へ輪郭と暗さの重みを少しずつ動かすと、一枚の中で描き方を自然に変えられます。",
+    "visual": "位置を0〜1に直す → 重みαを計算 → 暗さと輪郭の確率を混ぜる → 抽選",
+    "diagram": "左 α=20% → 中ほど α=50% → 右 α=80%"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-25-spatial-blend.svg",
+    "alt": "左から右へ暗さの重みが20%から80%へ変化し、各地点で暗さと輪郭の確率を平均する図。",
+    "caption": "位置から重みを計算すると、特徴の優先度を画面全体で移せます。"
+  },
+  "numbers": {
+    "title": "左から4分の1の地点を計算する",
+    "setup": "始点α始=20%、終点α終=80%です。横位置xが画面幅Wの4分の1、暗さp暗=0.651、輪郭強度s=0.471の画素を考えます。",
+    "steps": [
+      {
+        "label": "位置を割合に直す",
+        "calculation": "t=x/W=0.25。左端が0、右端が1なので、左から4分の1の地点です。"
+      },
+      {
+        "label": "地点の暗さの重み",
+        "calculation": "α(x)=0.20+(0.80−0.20)×0.25=0.35。暗さ35%、輪郭65%です。"
+      },
+      {
+        "label": "特徴を混ぜる",
+        "calculation": "p=0.35×0.651+0.65×0.471=0.22785+0.30615=0.534。採用確率は53.4%です。"
+      },
+      {
+        "label": "乱数で採否を決める",
+        "calculation": "乱数r=0.42なら0.42<0.534なので筆跡を描き、r=0.71なら描きません。"
+      },
+      {
+        "label": "右端と比べる",
+        "calculation": "右端ではt=1、α=0.80。暗さの重みが増え、影を優先する割合が大きくなります。"
+      }
+    ],
+    "note": "α始・α終は0〜1の割合です。α=0なら輪郭だけ、α=1なら暗さだけです。横・縦・中心からの距離のどれで位置を測るかを変えると、重みが移る向きも変わります。"
+  },
+  "code": "const t = Math.max(0, Math.min(1, x / width));\nconst alpha = alphaStart + (alphaEnd - alphaStart) * t;\nconst pDark = 1 - gray / 255;\nconst strength = Math.min(magnitude / 180, 1);\nconst probability = alpha * pDark + (1 - alpha) * strength;\nif (random() < probability) {\n  drawStroke(x, y, 16, angle);\n}",
+  "codeNote": "tは場所を0〜1にした値です。α始20%、α終80%、x=幅の25%ならα=35%になります。乱数が、その場所で混ぜた確率より小さい候補だけ描きます。",
+  "codeHighlight": [
+    1,
+    2,
+    5,
+    6,
+    7
+  ],
+  "demo": {
+    "title": "場所で変わる重みを試す",
+    "caption": "初期値は窓辺のノートとマグ、左端α20%、右端α80%、候補1200個、勾配基準180、線長16px、線幅3px、シード42です。重みの方向や両端を変えて確率マップと筆跡を見比べます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>\n*{box-sizing:border-box}body{margin:0;padding:12px;background:#f3f0e7;color:#29383d;font:15px/1.5 system-ui}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #c8c1b5;border-radius:7px;background:#fff;color:inherit;font:inherit}.wide{grid-column:span 2}.line{display:flex;align-items:center;gap:7px}.line input{flex:1}.line output{min-width:40px;text-align:right}.views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}canvas{width:100%;aspect-ratio:1.5;border:1px solid #cfc8bb;display:block}.panel{min-width:0}.panel b{font-size:13px}@media(max-width:760px){.views{grid-template-columns:1fr}}@media(max-width:480px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.wide{grid-column:span 2}}\n</style></head><body><div class=\"controls\">\n<label>元の絵<select id=\"source\"><option value=\"desk\">窓辺のノートとマグ</option><option value=\"plant\">鉢植え</option><option value=\"hill\">丘と雲</option></select></label>\n<label>重みの方向<select id=\"field\"><option value=\"x\">左から右</option><option value=\"y\">上から下</option><option value=\"r\">中心から外</option></select></label>\n<label class=\"wide\">始点の暗さの重み α<div class=\"line\"><span>輪郭</span><input id=\"a0\" type=\"range\" min=\"0\" max=\"100\" step=\"5\" value=\"20\"><output id=\"o0\">20%</output></div></label>\n<label class=\"wide\">終点の暗さの重み α<div class=\"line\"><span>輪郭</span><input id=\"a1\" type=\"range\" min=\"0\" max=\"100\" step=\"5\" value=\"80\"><output id=\"o1\">80%</output></div></label>\n<label>勾配基準<select id=\"ref\"><option>90</option><option selected>180</option><option>360</option></select></label><label>候補数<select id=\"count\"><option>500</option><option selected>1200</option><option>2400</option><option>3600</option></select></label>\n<label>線の長さ<select id=\"len\"><option>8</option><option selected>16</option><option>24</option></select></label><label>線幅<select id=\"lw\"><option>1</option><option selected>3</option><option>5</option></select></label>\n<label>色<select id=\"color\"><option value=\"sample\">元の色</option><option value=\"gray\">白黒</option><option value=\"warm\">朱色</option></select></label><label>シード<input id=\"seed\" type=\"number\" value=\"42\"></label><label><span>向き表示</span><input id=\"guide\" type=\"checkbox\"></label><button id=\"draw\">描き直す</button><button id=\"next\">別のシード</button></div>\n<div class=\"views\"><div class=\"panel\"><b>元の絵</b><canvas id=\"src\" aria-label=\"窓辺の机などの模式図\"></canvas></div><div class=\"panel\"><b>位置別の確率マップ</b><canvas id=\"map\" aria-label=\"筆跡の採用確率を色で示す\"></canvas></div><div class=\"panel\"><b>抽選後の筆跡</b><canvas id=\"out\" aria-label=\"位置ごとの重みで描いた線の結果\"></canvas></div></div><p id=\"info\" aria-live=\"polite\"></p>\n<script>\nconst src=document.querySelector(\"#src\"),sc=src.getContext(\"2d\"),map=document.querySelector(\"#map\"),mc=map.getContext(\"2d\"),out=document.querySelector(\"#out\"),ctx=out.getContext(\"2d\");\nfunction gray(a,w,h,x,y){x=Math.max(0,Math.min(w-1,x));y=Math.max(0,Math.min(h-1,y));let i=(y*w+x)*4;return .299*a[i]+.587*a[i+1]+.114*a[i+2]}\nfunction source(w,h,k){sc.fillStyle=\"#eee9dd\";sc.fillRect(0,0,w,h);if(k===\"desk\"){sc.fillStyle=\"#c7dddc\";sc.fillRect(0,0,w,h*.65);sc.fillStyle=\"#b99570\";sc.fillRect(0,h*.65,w,h*.35);sc.fillStyle=\"#8fb9bd\";sc.fillRect(w*.08,h*.1,w*.25,h*.43);sc.fillStyle=\"rgba(255,244,205,.55)\";sc.beginPath();sc.moveTo(w*.33,h*.1);sc.lineTo(w*.66,h*.65);sc.lineTo(w*.25,h*.65);sc.fill();sc.fillStyle=\"#f8f4e9\";sc.fillRect(w*.36,h*.54,w*.26,h*.11);sc.fillStyle=\"#755c48\";sc.fillRect(w*.72,h*.48,w*.14,h*.21);sc.fillStyle=\"#eee8dc\";sc.beginPath();sc.ellipse(w*.79,h*.48,w*.07,h*.02,0,0,6.3);sc.fill()}else if(k===\"plant\"){sc.fillStyle=\"#c7dddc\";sc.fillRect(0,0,w*.35,h);sc.strokeStyle=\"#fff\";sc.lineWidth=6;sc.beginPath();sc.moveTo(w*.18,0);sc.lineTo(w*.18,h);sc.moveTo(0,h*.5);sc.lineTo(w*.35,h*.5);sc.stroke();sc.strokeStyle=\"#456b50\";sc.lineWidth=4;sc.beginPath();sc.moveTo(w*.58,h*.88);sc.lineTo(w*.54,h*.18);sc.stroke();for(let i=0;i<7;i++){sc.fillStyle=i%2?\"#708f67\":\"#496b50\";sc.beginPath();sc.ellipse(w*(.48+i%2*.13),h*(.25+Math.floor(i/2)*.16),w*.09,h*.035,-.4,0,6.3);sc.fill()}sc.fillStyle=\"#ad7054\";sc.fillRect(w*.45,h*.75,w*.22,h*.2)}else{sc.fillStyle=\"#a9cdd0\";sc.fillRect(0,0,w,h*.65);sc.fillStyle=\"#e9d9b8\";sc.fillRect(0,h*.65,w,h*.35);for(let i=0;i<4;i++){sc.fillStyle=[\"#788c75\",\"#697e70\",\"#859276\",\"#637b71\"][i];sc.beginPath();sc.moveTo(0,h*(.65-i*.11));for(let x=0;x<=w;x+=4)sc.lineTo(x,h*(.65-i*.11)-Math.sin(x*.012+i)*h*.12);sc.lineTo(w,h);sc.lineTo(0,h);sc.fill()}}}\nfunction pos(x,y,w,h,f){return f===\"y\"?y/h:f===\"r\"?Math.min(1,Math.hypot(x-w/2,y-h/2)/Math.hypot(w/2,h/2)):x/w}\nfunction prob(g,m,a,ref){return a*(1-g/255)+(1-a)*Math.min(m/ref,1)}\nfunction draw(){let r=src.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=r.width||420,h=r.height||280;for(let c of [src,map,out]){c.width=Math.round(w*d);c.height=Math.round(h*d)}sc.setTransform(d,0,0,d,0,0);mc.setTransform(1,0,0,1,0,0);ctx.setTransform(d,0,0,d,0,0);source(w,h,document.querySelector(\"#source\").value);let a=sc.getImageData(0,0,src.width,src.height).data,f=document.querySelector(\"#field\").value,ref=+document.querySelector(\"#ref\").value,a0=+document.querySelector(\"#a0\").value/100,a1=+document.querySelector(\"#a1\").value/100;let im=mc.createImageData(map.width,map.height);for(let y=0;y<map.height;y++)for(let x=0;x<map.width;x++){let i=(y*map.width+x)*4,gx=gray(a,src.width,src.height,x+1,y)-gray(a,src.width,src.height,x-1,y),gy=gray(a,src.width,src.height,x,y+1)-gray(a,src.width,src.height,x,y-1),al=a0+(a1-a0)*pos(x,y,map.width,map.height,f),p=prob(gray(a,src.width,src.height,x,y),Math.hypot(gx,gy),al,ref);im.data[i]=247-p*110;im.data[i+1]=243-p*125;im.data[i+2]=232-p*140;im.data[i+3]=255}mc.putImageData(im,0,0);ctx.fillStyle=\"#f4f0e6\";ctx.fillRect(0,0,w,h);let sd=Math.floor(+document.querySelector(\"#seed\").value||1);sd=(sd-1)%2147483646+1;function rand(){sd=sd*16807%2147483647;return(sd-1)/2147483646}let n=+document.querySelector(\"#count\").value,len=+document.querySelector(\"#len\").value,lw=+document.querySelector(\"#lw\").value,cm=document.querySelector(\"#color\").value,kept=0;for(let j=0;j<n;j++){let x=rand()*w,y=rand()*h,ix=Math.floor(x*d),iy=Math.floor(y*d),i=(iy*src.width+ix)*4,R=a[i],G=a[i+1],B=a[i+2],g=.299*R+.587*G+.114*B,gx=gray(a,src.width,src.height,ix+1,iy)-gray(a,src.width,src.height,ix-1,iy),gy=gray(a,src.width,src.height,ix,iy+1)-gray(a,src.width,src.height,ix,iy-1),m=Math.hypot(gx,gy),al=a0+(a1-a0)*pos(x,y,w,h,f),p=prob(g,m,al,ref),ang=m<4?0:Math.atan2(gy,gx)+Math.PI/2;if(rand()<p){kept++;ctx.strokeStyle=cm===\"warm\"?\"#bd5d45\":cm===\"gray\"?\"rgb(\"+g+\",\"+g+\",\"+g+\")\":\"rgb(\"+R+\",\"+G+\",\"+B+\")\";ctx.lineWidth=lw;ctx.lineCap=\"round\";ctx.beginPath();ctx.moveTo(x-Math.cos(ang)*len/2,y-Math.sin(ang)*len/2);ctx.lineTo(x+Math.cos(ang)*len/2,y+Math.sin(ang)*len/2);ctx.stroke()}}if(document.querySelector(\"#guide\").checked){sc.strokeStyle=\"#28383dcc\";for(let y=20;y<h;y+=35)for(let x=20;x<w;x+=35){let ix=x*d,iy=y*d,gx=gray(a,src.width,src.height,ix+1,iy)-gray(a,src.width,src.height,ix-1,iy),gy=gray(a,src.width,src.height,ix,iy+1)-gray(a,src.width,src.height,ix,iy-1),ang=Math.atan2(gy,gx),q=8;sc.beginPath();sc.moveTo(x-Math.cos(ang)*q/2,y-Math.sin(ang)*q/2);sc.lineTo(x+Math.cos(ang)*q/2,y+Math.sin(ang)*q/2);sc.stroke()}}document.querySelector(\"#o0\").textContent=Math.round(a0*100)+\"%\";document.querySelector(\"#o1\").textContent=Math.round(a1*100)+\"%\";document.querySelector(\"#info\").textContent=\"候補 \"+n+\" · 採用 \"+kept+\" · α \"+Math.round(a0*100)+\"% → \"+Math.round(a1*100)+\"%\"}\nfor(let id of [\"source\",\"field\",\"a0\",\"a1\",\"ref\",\"count\",\"len\",\"lw\",\"color\",\"seed\",\"guide\"]){let e=document.querySelector(\"#\"+id);e.addEventListener(\"input\",draw);e.addEventListener(\"change\",draw)}document.querySelector(\"#draw\").addEventListener(\"click\",draw);document.querySelector(\"#next\").addEventListener(\"click\",()=>{let e=document.querySelector(\"#seed\");e.value=String((+e.value||1)+1);draw()});window.addEventListener(\"resize\",draw);window.addEventListener(\"message\",e=>{if(e.data?.type===\"gal-experiment\")for(let c of e.data.controls||[]){let el=document.querySelector(c.selector);if(el){el.value=c.value;el.dispatchEvent(new Event(\"change\"))}}});requestAnimationFrame(draw);\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "左右で重みを変える",
+      "action": "始点α20%、終点α80%、方向「左から右」、シード42で描きます。",
+      "observe": "左は輪郭、右は影を拾う比率が高くなっていますか？",
+      "demoState": [
+        {
+          "selector": "#a0",
+          "value": "20"
+        },
+        {
+          "selector": "#a1",
+          "value": "80"
+        },
+        {
+          "selector": "#field",
+          "value": "x"
+        },
+        {
+          "selector": "#seed",
+          "value": "42"
+        }
+      ]
+    },
+    {
+      "title": "向きを回す",
+      "action": "方向を「上から下」に変え、始点20%、終点80%は保ちます。",
+      "observe": "重みが変わる境目は横向きから縦向きに移りましたか？",
+      "demoState": [
+        {
+          "selector": "#field",
+          "value": "y"
+        },
+        {
+          "selector": "#a0",
+          "value": "20"
+        },
+        {
+          "selector": "#a1",
+          "value": "80"
+        }
+      ]
+    },
+    {
+      "title": "中央と外側を分ける",
+      "action": "方向を「中心から外」、始点20%、終点80%にします。",
+      "observe": "中央と四隅で、暗さと輪郭のどちらが強く反映されていますか？",
+      "demoState": [
+        {
+          "selector": "#field",
+          "value": "r"
+        },
+        {
+          "selector": "#a0",
+          "value": "20"
+        },
+        {
+          "selector": "#a1",
+          "value": "80"
+        }
+      ]
+    },
+    {
+      "title": "逆向きと極端な値",
+      "action": "始点80%、終点20%に反転し、次に両方を0%と100%でも試します。",
+      "observe": "反転で流れは逆になりますか？両端が同じなら場所の変化は消えますか？",
+      "demoState": [
+        {
+          "selector": "#field",
+          "value": "x"
+        },
+        {
+          "selector": "#a0",
+          "value": "80"
+        },
+        {
+          "selector": "#a1",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "title": "絵と筆跡を変える",
+      "action": "鉢植えか丘を選び、候補2400個、線長24px、朱色にします。",
+      "observe": "絵や色が変わると、重みの変化はどこで読み取りやすくなりますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "plant"
+        },
+        {
+          "selector": "#count",
+          "value": "2400"
+        },
+        {
+          "selector": "#len",
+          "value": "24"
+        },
+        {
+          "selector": "#color",
+          "value": "warm"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "フィンセント・ファン・ゴッホ",
+    "work": "《La Mousmé》",
+    "context": "1888年に描かれた油彩の肖像画です。中央の人物と模様のある衣服・背景では、色や明暗、筆触の密度が異なって見えます。",
+    "relation": "人物と背景のどちらに描き込みを集めるかを考えながら鑑賞し、デモでは位置ごとの重みが筆跡分布をどう変えるか比べます。この作品が本アルゴリズムで描かれたという意味ではありません。",
+    "references": [
+      {
+        "source": "Wikimedia Commons（National Gallery of Art画像）",
+        "label": "作品情報・CC0 1.0ライセンス表示",
+        "url": "https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh,_La_Mousmé,_1888,_NGA_46626.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Vincent_van_Gogh%2C_La_Mousm%C3%A9%2C_1888%2C_NGA_46626.jpg/960px-Vincent_van_Gogh%2C_La_Mousm%C3%A9%2C_1888%2C_NGA_46626.jpg",
+      "alt": "ファン・ゴッホの肖像画《La Mousmé》。人物が模様のある服を着て座り、背景にも細かな色の模様が広がる。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh,_La_Mousmé,_1888,_NGA_46626.jpg",
+      "license": "CC0 1.0",
+      "credit": "Vincent van Gogh, La Mousmé, 1888, oil on canvas. National Gallery of Art, Washington; image via Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "窓辺の机とマグカップ",
+      "description": "窓から差す光で、ノートやカップの輪郭と、机に落ちる影が場所ごとに違って見えます。",
+      "relation": "光の近くでは輪郭を重視し、影の側では暗さを重視するよう位置でαを変えると、一枚の絵の中で描き方を移せます。図は窓辺の机を描いたオリジナルの模式図です。",
+      "visual": {
+        "src": "./assets/day-25-window-desk.svg",
+        "alt": "窓から光が差す机にノートとマグカップがあり、輪郭重視から影重視へ切り替える場面。",
+        "caption": "身近な例：窓辺の机。ノートとカップの縁、机に落ちる影を別々の重みで描けます。"
+      }
+    }
+  },
+  "extension": {
+    "title": "位置から描画ルールを設計する",
+    "keywords": [
+      "空間的重み",
+      "確率マスク",
+      "特徴量ブレンド"
+    ],
+    "next": "次回は重みを画面の方向だけでなく、画像の明るさや利用者の操作から作り、場所ごとのルールを設計します。"
+  }
+}
