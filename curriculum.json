@@ -213,6 +213,14 @@
       "description": "暗さと勾配の確率を重み付き平均にし、どちらを優先するか連続調整する。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 25,
+      "title": "Spatially Varying Probability Blend",
+      "topic": "位置で変わる確率の重み",
+      "description": "画面の位置から暗さと輪郭の重みを変え、場所ごとに異なる筆跡の密度を作る。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
