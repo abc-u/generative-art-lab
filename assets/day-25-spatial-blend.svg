@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 330" role="img" aria-labelledby="t d">
+<title id="t">画面の位置で変わる確率の重み</title>
+<desc id="d">左の輪郭重視から右の暗さ重視へ、暗さの重みが20パーセントから80パーセントへ連続的に変わる。どの位置でも暗さと勾配を重み付き平均し、確率で筆跡を採用する。</desc>
+<rect width="900" height="330" rx="24" fill="#f5f1e8"/>
+<text x="42" y="52" font-family="sans-serif" font-size="24" font-weight="700" fill="#29383d">位置ごとに「どちらを重視するか」を変える</text>
+<defs><linearGradient id="g"><stop offset="0" stop-color="#d6a15e"/><stop offset="1" stop-color="#557b86"/></linearGradient></defs>
+<rect x="60" y="88" width="780" height="68" rx="16" fill="url(#g)"/>
+<text x="72" y="127" font-family="sans-serif" font-size="18" font-weight="700" fill="#17262b">左 α=20% 輪郭重視</text>
+<text x="600" y="127" font-family="sans-serif" font-size="18" font-weight="700" fill="#fff">暗さ重視 α=80% 右</text>
+<text x="61" y="190" font-family="sans-serif" font-size="16" fill="#29383d">α(x) = α左 + (α右 − α左) × x/W</text>
+<rect x="60" y="210" width="780" height="72" rx="14" fill="#fff" stroke="#d5cec1"/>
+<text x="82" y="242" font-family="sans-serif" font-size="17" fill="#29383d">各地点で p = α(x)×暗さ + (1−α(x))×勾配の強さ</text>
+<text x="82" y="268" font-family="sans-serif" font-size="15" fill="#52666a">乱数 r が p より小さいとき、候補の筆跡を描く</text>
+</svg>
