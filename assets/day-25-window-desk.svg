@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 430" role="img" aria-labelledby="t d">
+<title id="t">窓辺の机の上にあるノートとマグカップ</title>
+<desc id="d">左側の窓から光が差し、机の上のノートとマグカップに明るい部分と影ができている。左から右へ、輪郭重視から暗さ重視へ描画の重みを変える例。</desc>
+<rect width="900" height="430" rx="24" fill="#f5f1e8"/>
+<rect x="0" y="0" width="900" height="270" rx="24" fill="#d7e7e4"/>
+<rect x="58" y="42" width="225" height="187" rx="8" fill="#b5d7d7" stroke="#fff" stroke-width="12"/>
+<path d="M170 42v187M58 136h225" stroke="#fff" stroke-width="8"/>
+<path d="M283 62L553 270H253z" fill="#fff2c9" opacity=".45"/>
+<rect x="0" y="265" width="900" height="165" fill="#bd9670"/>
+<path d="M0 284h900M0 344h900M0 404h900" stroke="#a97e5b" stroke-width="3" opacity=".65"/>
+<rect x="332" y="211" width="250" height="26" rx="8" fill="#f8f6ef" transform="rotate(-7 332 211)"/>
+<path d="M347 224l190-23M354 236l190-23" stroke="#bbc4bd" stroke-width="3"/>
+<ellipse cx="688" cy="335" rx="97" ry="21" fill="#735942" opacity=".28"/>
+<path d="M632 251h115l-12 74q-45 28-91 0z" fill="#f1ede0" stroke="#7e6652" stroke-width="5"/>
+<path d="M747 269q67-8 43 45q-11 18-49 8" fill="none" stroke="#7e6652" stroke-width="8"/>
+<ellipse cx="689" cy="252" rx="57" ry="11" fill="#7b5947"/>
+<text x="334" y="178" font-family="sans-serif" font-size="20" fill="#29383d">ノート</text>
+<text x="646" y="225" font-family="sans-serif" font-size="20" fill="#29383d">マグ</text>
+<path d="M310 89h300" stroke="#c28c4b" stroke-width="5" stroke-dasharray="10 8"/>
+<text x="305" y="74" font-family="sans-serif" font-size="17" fill="#29383d">輪郭を拾う</text>
+<text x="610" y="74" font-family="sans-serif" font-size="17" fill="#29383d">影を拾う</text>
+<text x="42" y="395" font-family="sans-serif" font-size="16" fill="#fff">窓からの光で、同じ机にも位置ごとに異なる明暗が生まれる</text>
+</svg>
