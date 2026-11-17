@@ -1,0 +1,179 @@
+{
+  "day": 26,
+  "status": "published",
+  "title": "Painted Probability Mask",
+  "subtitle": "指やマウスで重みを塗り、筆跡を集める場所を決める。",
+  "topic": "手描きの確率マスク",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は手描きマスクで確率の重みを決めます。まず指やマウスでマスク画像を塗り、各画素の明るさ maskGray を0〜255で保存します。α=maskGray/255 とし、暗さの確率 p暗=1−gray/255、勾配の強さ s=min(m/180,1)を混ぜて p=α×p暗+(1−α)×s を計算します。候補位置は画像全体から一様に選び、乱数 r が p より小さいとき筆跡を描きます。肝は、αの地図を自分で描くことです。マスクが黒い場所では輪郭を、白い場所では暗さを優先し、灰色では両方を使います。",
+  "applications": "写真やスケッチの一部分だけを濃く描き、別の場所は輪郭線で表すなど、描き込みの焦点を手で設計できます。点描や粒子の配置、視線を集めたい範囲を指定する表現にも使えます。",
+  "prerequisites": "Day 19の暗さによる採用確率、Day 22の勾配強度、Day 24の確率の重み付き平均、Day 25の場所による重みを使います。",
+  "connection": "Day 25では位置から連続的な重みを自動計算しました。今日はその重みの地図を指やマウスで直接描き、作り手が優先したい場所を指定します。",
+  "ruleSummary": "手描きマスクの明るさを暗さの重みにし、暗さと輪郭の確率を混ぜる。",
+  "goalTitle": "筆跡を集めたい場所を自分で決めるには？",
+  "ruleCode": "α=マスクの明るさ÷255　｜　p=α×暗さ+(1−α)×輪郭",
+  "intuition": {
+    "title": "写真に付箋で注目点を示す",
+    "story": "机の写真で、左側はノートの輪郭をなぞり、右側のカップの影は濃く見せたいとします。付箋や色鉛筆で「ここは輪郭」「ここは暗さ」と地図を描く感覚で、マスクの濃さを塗ります。黒は輪郭、白は暗さ、灰色はその中間です。",
+    "visual": "マスクを塗る → 濃さを0〜1へ → その場所の確率を混ぜる → くじで描く",
+    "diagram": "黒 α=0 輪郭 ／ 灰 α≈0.5 両方 ／ 白 α=1 暗さ"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-26-painted-mask.svg",
+    "alt": "黒いマスクでは輪郭、白いマスクでは暗さを優先し、灰色では両方を混ぜて筆跡を抽選する図。",
+    "caption": "マスクの濃さが場所ごとの重みになります。"
+  },
+  "numbers": {
+    "title": "灰色のマスクから採用率を求める",
+    "setup": "マスク値が191、暗さの確率 p暗=0.651、輪郭強度 s=0.471 の画素を例にします。勾配基準は180です。",
+    "steps": [
+      {
+        "label": "マスク値を重みに変える",
+        "calculation": "α=191÷255≈0.749。暗さを約75%、輪郭を約25%使います。"
+      },
+      {
+        "label": "確率を混ぜる",
+        "calculation": "p=0.749×0.651+0.251×0.471≈0.4876+0.1182=0.6058。約60.6%です。"
+      },
+      {
+        "label": "乱数で抽選する",
+        "calculation": "乱数r=0.42なら0.42<0.606なので採用。r=0.71なら採用しません。"
+      },
+      {
+        "label": "黒いマスクと比べる",
+        "calculation": "黒はα=0なのでp=s=0.471。暗さを使わず、輪郭の強さだけで抽選します。"
+      },
+      {
+        "label": "白いマスクと比べる",
+        "calculation": "白はα=1なのでp=p暗=0.651。輪郭を使わず、暗い画素だけを目安にします。"
+      }
+    ],
+    "note": "塗ったマスク値を255で割ると0〜1の重みになります。デモの筆の重み75%は、マスク値を約191にして、暗さを約75%・輪郭を約25%使います。"
+  },
+  "code": "const alpha = maskGray / 255;\nconst pDark = 1 - gray / 255;\nconst strength = Math.min(magnitude / 180, 1);\nconst probability = alpha * pDark + (1 - alpha) * strength;\nif (random() < probability) {\n  drawStroke(x, y, 16, angle);\n}",
+  "codeNote": "maskGrayは手描き画像の画素値です。黒0ならα=0、白255ならα=1。乱数が混ぜた採用確率より小さい候補にだけ線を描きます。",
+  "codeHighlight": [
+    1,
+    4,
+    5
+  ],
+  "demo": {
+    "title": "マスクを塗って筆跡を誘導する",
+    "caption": "初期値は窓辺の机、マスク全体は灰色（α≈0.5）、筆の重み75%、候補1200個、勾配基準180、線長16px、太さ3px、シード42です。マスクを指やマウスで塗り、黒・白・灰色の場所で確率と筆跡を比べます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e7;color:#29383d;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #c8c1b5;border-radius:7px;background:#fff;color:inherit;font:inherit}input[type=range]{padding:0;accent-color:#3d7d83}.wide{grid-column:span 2}.row{display:flex;align-items:center;gap:7px}.row input{flex:1}.actions{display:flex;gap:6px;flex-wrap:wrap}.paint{touch-action:none;cursor:crosshair}.views{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.panel{min-width:0}.panel b{font-size:13px}canvas{width:100%;aspect-ratio:1.5;display:block;border:1px solid #cfc8bb;background:#fff}.note{min-height:1.5em;font-size:13px;color:#52666a}@media(max-width:650px){.views{grid-template-columns:1fr}}@media(max-width:450px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.wide{grid-column:span 2}}</style></head><body><div class=\"controls\"><label>元の絵<select id=\"source\"><option value=\"desk\">窓辺の机</option><option value=\"plant\">鉢植え</option><option value=\"hill\">丘と雲</option></select></label><label>筆の大きさ<select id=\"radius\"><option>18</option><option selected>36</option><option>64</option></select></label><label class=\"wide\">筆の暗さの重み α<div class=\"row\"><span>輪郭 0%</span><input id=\"brush\" type=\"range\" min=\"0\" max=\"100\" step=\"5\" value=\"75\"><output id=\"brushOut\">75%</output><span>暗さ 100%</span></div></label><div class=\"wide actions\"><button id=\"all0\">全体を輪郭重視</button><button id=\"all50\">全体を半分ずつ</button><button id=\"all100\">全体を暗さ重視</button></div><label>候補数<select id=\"count\"><option>500</option><option selected>1200</option><option>2400</option></select></label><label>勾配基準<select id=\"ref\"><option>90</option><option selected>180</option><option>360</option></select></label><label>線の長さ<select id=\"length\"><option>8</option><option selected>16</option><option>24</option></select></label><label>線の太さ<select id=\"width\"><option>1</option><option selected>3</option><option>5</option></select></label><label>色<select id=\"color\"><option value=\"sample\">元の色</option><option value=\"gray\">白黒</option><option value=\"warm\">朱色</option></select></label><label>シード<input id=\"seed\" type=\"number\" value=\"42\"></label><label><span>勾配の向き</span><input id=\"guides\" type=\"checkbox\"></label><button id=\"redraw\">描き直す</button><button id=\"newseed\">別のシード</button></div><p>マスクを指やマウスでなぞり、場所ごとの重みを塗ってください。塗った値は描き直しても残ります。</p><div class=\"views\"><div class=\"panel\"><b>元の絵</b><canvas id=\"src\" aria-label=\"選択した元の絵\"></canvas></div><div class=\"panel\"><b>重みマスク（指・マウスで塗る）</b><canvas id=\"mask\" class=\"paint\" aria-label=\"暗さと輪郭の重みを手描きで設定するマスク\"></canvas></div><div class=\"panel\"><b>採用確率マップ</b><canvas id=\"map\" aria-label=\"暗さと輪郭を混ぜた筆跡確率\"></canvas></div><div class=\"panel\"><b>抽選で残った筆跡</b><canvas id=\"out\" aria-label=\"マスクで指定した重みを使った筆跡\"></canvas></div></div><p id=\"info\" class=\"note\" aria-live=\"polite\"></p><script>\n+const W=480,H=320,src=document.querySelector(\"#src\"),sc=src.getContext(\"2d\"),mask=document.querySelector(\"#mask\"),mctx=mask.getContext(\"2d\"),map=document.querySelector(\"#map\"),mc=map.getContext(\"2d\"),out=document.querySelector(\"#out\"),ctx=out.getContext(\"2d\");for(let c of [src,mask,map,out]){c.width=W;c.height=H}\n+function gray(a,x,y){x=Math.max(0,Math.min(W-1,x));y=Math.max(0,Math.min(H-1,y));let i=(y*W+x)*4;return .299*a[i]+.587*a[i+1]+.114*a[i+2]}\n+function source(k){sc.fillStyle=\"#eee9dd\";sc.fillRect(0,0,W,H);if(k===\"desk\"){sc.fillStyle=\"#c8dedc\";sc.fillRect(0,0,W,210);sc.fillStyle=\"#b89570\";sc.fillRect(0,210,W,110);sc.fillStyle=\"#8fb9bd\";sc.fillRect(38,28,125,140);sc.fillStyle=\"rgba(255,242,196,.58)\";sc.beginPath();sc.moveTo(163,40);sc.lineTo(328,210);sc.lineTo(125,210);sc.fill();sc.fillStyle=\"#faf6eb\";sc.fillRect(174,174,128,35);sc.fillStyle=\"#78604b\";sc.fillRect(345,154,68,70);sc.fillStyle=\"#eee8dc\";sc.beginPath();sc.ellipse(379,154,34,8,0,0,6.3);sc.fill()}else if(k===\"plant\"){sc.fillStyle=\"#c8dedc\";sc.fillRect(0,0,165,H);sc.strokeStyle=\"#fff\";sc.lineWidth=6;sc.beginPath();sc.moveTo(82,0);sc.lineTo(82,H);sc.moveTo(0,155);sc.lineTo(165,155);sc.stroke();sc.strokeStyle=\"#506e53\";sc.lineWidth=5;sc.beginPath();sc.moveTo(290,280);sc.lineTo(280,75);sc.stroke();for(let i=0;i<8;i++){sc.fillStyle=i%2?\"#708f67\":\"#496b50\";sc.beginPath();sc.ellipse(210+(i%3)*52,80+Math.floor(i/3)*57,42,17,-.5,0,6.3);sc.fill()}sc.fillStyle=\"#ad7054\";sc.fillRect(238,240,92,64)}else{sc.fillStyle=\"#a9cdd0\";sc.fillRect(0,0,W,205);sc.fillStyle=\"#e9d9b8\";sc.fillRect(0,205,W,115);for(let i=0;i<4;i++){sc.fillStyle=[\"#788c75\",\"#697e70\",\"#859276\",\"#637b71\"][i];sc.beginPath();sc.moveTo(0,210-i*35);for(let x=0;x<=W;x+=5)sc.lineTo(x,210-i*35-Math.sin(x*.012+i)*40);sc.lineTo(W,H);sc.lineTo(0,H);sc.fill()}}}\n+function prob(g,m,a){return a*(1-g/255)+(1-a)*Math.min(m/(+document.querySelector(\"#ref\").value),1)}\n+function paintAll(v){mctx.fillStyle=\"rgb(\"+Math.round(v*2.55)+\",\"+Math.round(v*2.55)+\",\"+Math.round(v*2.55)+\")\";mctx.fillRect(0,0,W,H);draw()}\n+let painting=false;function dab(e){let r=mask.getBoundingClientRect(),x=(e.clientX-r.left)*W/r.width,y=(e.clientY-r.top)*H/r.height;mctx.strokeStyle=\"rgb(\"+Math.round(+document.querySelector(\"#brush\").value*2.55)+\",\"+Math.round(+document.querySelector(\"#brush\").value*2.55)+\",\"+Math.round(+document.querySelector(\"#brush\").value*2.55)+\")\";mctx.lineWidth=+document.querySelector(\"#radius\").value;mctx.lineCap=\"round\";mctx.beginPath();mctx.moveTo(x,y);mctx.lineTo(x+.01,y+.01);mctx.stroke();draw()}mask.addEventListener(\"pointerdown\",e=>{painting=true;mask.setPointerCapture(e.pointerId);dab(e)});mask.addEventListener(\"pointermove\",e=>{if(painting)dab(e)});mask.addEventListener(\"pointerup\",()=>painting=false);mask.addEventListener(\"pointercancel\",()=>painting=false);\n+function draw(){source(document.querySelector(\"#source\").value);let a=sc.getImageData(0,0,W,H).data,mi=mctx.getImageData(0,0,W,H).data,im=mc.createImageData(W,H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){let i=(y*W+x)*4,gx=gray(a,x+1,y)-gray(a,x-1,y),gy=gray(a,x,y+1)-gray(a,x,y-1),alpha=mi[i]/255,p=prob(gray(a,x,y),Math.hypot(gx,gy),alpha),v=Math.round(255*p);im.data[i]=247-v*.45;im.data[i+1]=243-v*.51;im.data[i+2]=232-v*.55;im.data[i+3]=255}mc.putImageData(im,0,0);ctx.fillStyle=\"#f4f0e6\";ctx.fillRect(0,0,W,H);let seed=Math.floor(+document.querySelector(\"#seed\").value||1);seed=(seed-1)%2147483646+1;function rand(){seed=seed*16807%2147483647;return(seed-1)/2147483646}let n=+document.querySelector(\"#count\").value,len=+document.querySelector(\"#length\").value,lw=+document.querySelector(\"#width\").value,mode=document.querySelector(\"#color\").value,kept=0;for(let j=0;j<n;j++){let x=rand()*W,y=rand()*H,ix=Math.floor(x),iy=Math.floor(y),i=(iy*W+ix)*4,R=a[i],G=a[i+1],B=a[i+2],g=.299*R+.587*G+.114*B,gx=gray(a,ix+1,iy)-gray(a,ix-1,iy),gy=gray(a,ix,iy+1)-gray(a,ix,iy-1),m=Math.hypot(gx,gy),alpha=mi[i]/255,p=prob(g,m,alpha),ang=m<4?0:Math.atan2(gy,gx)+Math.PI/2;if(rand()<p){kept++;ctx.strokeStyle=mode===\"warm\"?\"#bd5d45\":mode===\"gray\"?\"rgb(\"+g+\",\"+g+\",\"+g+\")\":\"rgb(\"+R+\",\"+G+\",\"+B+\")\";ctx.lineWidth=lw;ctx.lineCap=\"round\";ctx.beginPath();ctx.moveTo(x-Math.cos(ang)*len/2,y-Math.sin(ang)*len/2);ctx.lineTo(x+Math.cos(ang)*len/2,y+Math.sin(ang)*len/2);ctx.stroke()}}document.querySelector(\"#brushOut\").textContent=document.querySelector(\"#brush\").value+\"%\";document.querySelector(\"#info\").textContent=\"候補 \"+n+\" 個・採用 \"+kept+\" 個。マスクが黒い場所は輪郭、白い場所は暗さを優先します。\"}\n+for(let id of [\"source\",\"brush\",\"radius\",\"count\",\"ref\",\"length\",\"width\",\"color\",\"seed\",\"guides\"]){let e=document.querySelector(\"#\"+id);e.addEventListener(\"input\",draw);e.addEventListener(\"change\",draw)}document.querySelector(\"#all0\").onclick=()=>paintAll(0);document.querySelector(\"#all50\").onclick=()=>paintAll(50);document.querySelector(\"#all100\").onclick=()=>paintAll(100);document.querySelector(\"#redraw\").onclick=draw;document.querySelector(\"#newseed\").onclick=()=>{let e=document.querySelector(\"#seed\");e.value=String((+e.value||1)+1);draw()};window.addEventListener(\"message\",e=>{if(e.data?.type===\"gal-experiment\")for(let c of e.data.controls||[]){let el=document.querySelector(c.selector);if(el){el.value=c.value;el.dispatchEvent(new Event(\"change\"))}}});mctx.fillStyle=\"rgb(128,128,128)\";mctx.fillRect(0,0,W,H);draw();\n+</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "初期マスクを観察する",
+      "action": "灰色の初期マスクのまま候補1200個で描きます。",
+      "observe": "暗さと輪郭を半分ずつ混ぜると、どちらの特徴が残っていますか？",
+      "demoState": [
+        {
+          "selector": "#count",
+          "value": "1200"
+        }
+      ]
+    },
+    {
+      "title": "輪郭の領域を塗る",
+      "action": "筆の重みを0%にして、マスクの左側を指かマウスで塗ります。",
+      "observe": "塗った所は、暗さより明暗の境目に筆跡が集まりますか？",
+      "demoState": [
+        {
+          "selector": "#brush",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "title": "影を優先する領域を塗る",
+      "action": "筆の重みを100%にし、カップの影にしたい右側を塗ります。",
+      "observe": "白く塗った所では、輪郭より暗い部分が残りやすくなりますか？",
+      "demoState": [
+        {
+          "selector": "#brush",
+          "value": "100"
+        }
+      ]
+    },
+    {
+      "title": "ぼかしたい境目を作る",
+      "action": "重みを50%に戻し、黒と白の境目を灰色の筆でなぞります。",
+      "observe": "重みを一気に切り替える境界より、筆跡が自然につながりますか？",
+      "demoState": [
+        {
+          "selector": "#brush",
+          "value": "50"
+        }
+      ]
+    },
+    {
+      "title": "題材と筆跡を改造する",
+      "action": "鉢植えを選び、候補2400個、線長24px、朱色、シード43で描きます。",
+      "observe": "マスクをどこに塗ると、葉の形と暗い鉢の両方が見やすくなりますか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "plant"
+        },
+        {
+          "selector": "#count",
+          "value": "2400"
+        },
+        {
+          "selector": "#length",
+          "value": "24"
+        },
+        {
+          "selector": "#color",
+          "value": "warm"
+        },
+        {
+          "selector": "#seed",
+          "value": "43"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "クロード・モネ",
+    "work": "《アルジャントゥイユ》",
+    "context": "1872年ごろの油彩風景画です。川辺の景色には、水面や建物、木々など明るさと輪郭の異なる場所が描かれています。",
+    "relation": "風景のどこへ視線や描き込みを集めるか考えながら見ます。デモではマスクを塗った場所を強調できますが、この作品が同じアルゴリズムで描かれたという意味ではありません。",
+    "references": [
+      {
+        "source": "Wikimedia Commons（National Gallery of Art画像）",
+        "label": "作品情報・CC0 1.0ライセンス表示",
+        "url": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Argenteuil,_c._1872,_NGA_52186.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Claude_Monet_-_Argenteuil%2C_c._1872%2C_NGA_52186.jpg/960px-Claude_Monet_-_Argenteuil%2C_c._1872%2C_NGA_52186.jpg",
+      "alt": "クロード・モネの風景画《アルジャントゥイユ》。川辺の家や木々、空が水面に映り、明るい部分と影の部分が色の筆触で描かれている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Argenteuil,_c._1872,_NGA_52186.jpg",
+      "license": "CC0 1.0",
+      "credit": "Claude Monet, Argenteuil, c. 1872, oil on canvas. National Gallery of Art, Washington; image via Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "机の写真に注目点を描き込む",
+      "description": "写真やスケッチに付箋や色鉛筆で印をつけ、見る場所を強調することがあります。",
+      "relation": "どこを輪郭で見せ、どこを影として濃く見せるかをマスクとして塗り分ける例です。図は机上の写真と注目印を描いたオリジナルの模式図です。",
+      "visual": {
+        "src": "./assets/day-26-everyday-mask.svg",
+        "alt": "机の風景写真に、輪郭を見たい部分を示す青い付箋と、影を濃くする赤い印を重ねた図。",
+        "caption": "身近な例：写真に付箋や色鉛筆で注目場所を示すように、描画の重点をマスクへ塗ります。"
+      }
+    }
+  },
+  "extension": {
+    "title": "自分の手で分布を設計する",
+    "keywords": [
+      "手描きマスク",
+      "重み付き確率",
+      "画像特徴"
+    ],
+    "next": "次回は、手描きマスクをほかの画像特徴と組み合わせ、複数の条件から筆跡の採用率を設計します。"
+  }
+}
