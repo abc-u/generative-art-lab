@@ -229,6 +229,14 @@
       "description": "塗ったマスクの明るさで暗さと輪郭の重みを指定し、筆跡の分布を手で設計する。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 27,
+      "title": "Masked Probability Gate",
+      "topic": "確率マスクで描画範囲を制御",
+      "description": "暗さと輪郭の確率に手描きマスクの許可率を掛け、描く場所を通す・弱める・止める。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
