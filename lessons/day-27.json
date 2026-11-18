@@ -1,0 +1,176 @@
+{
+  "day": 27,
+  "status": "published",
+  "title": "Masked Probability Gate",
+  "subtitle": "マスクを確率の通り道にして、描く範囲を選ぶ。",
+  "topic": "確率マスクで描画範囲を制御",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は確率マスクのゲートを使います。まず候補位置(x,y)の明るさから暗さ p暗=1−gray/255、勾配から輪郭の強さ s=min(m/180,1)を求め、p特徴=α×p暗+(1−α)×s で混ぜます。次に手描きマスクの明るさを mask=maskGray/255 に直し、最終確率 p=mask×p特徴 とします。候補位置は画像全体から一様に選び、乱数 r が p より小さいときだけ筆跡を描きます。肝は、マスクを特徴の重みとして混ぜるのでなく、特徴から求めた確率を通す・弱める・止める「許可率」として掛けることです。",
+  "applications": "写真の一部だけを粒子や筆跡で描き、マスク外には何も置かない構図を作れます。ステンシル風の模様、文字や図形の輪郭内への描画、部分的な質感の追加にも応用できます。",
+  "prerequisites": "Day 23の確率マスクの掛け算、Day 24の暗さと輪郭の重み付き平均、Day 26の手描きマスクを組み合わせます。",
+  "connection": "Day 26ではマスクの濃さを暗さと輪郭の「配分」に使いました。今日はその二つを先に混ぜ、マスクを最後に掛けて描画範囲を制限します。黒は止め、白は通し、灰色は確率を弱めます。",
+  "ruleSummary": "暗さと輪郭で確率を作り、手描きマスクの許可率を掛ける。",
+  "goalTitle": "描く場所をマスクで選ぶには？",
+  "ruleCode": "p特徴=α×暗さ+(1−α)×輪郭　｜　p=マスク×p特徴",
+  "intuition": {
+    "title": "マスキングテープで塗る場所を区切る",
+    "story": "壁の一部を塗装するとき、マスキングテープを貼った場所には塗料がつかず、露出した面だけ色がつきます。画像でも先に暗さや輪郭から筆跡の出やすさを計算し、最後にマスクを通すと、描く場所を残したり、薄めたり、止めたりできます。",
+    "visual": "暗さ＋輪郭 → 基本の確率 → マスクが通す → 乱数で筆跡を採用",
+    "diagram": "黒 mask=0 描かない ／ 灰 mask≈0.5 確率を半分 ／ 白 mask=1 そのまま"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-27-mask-gate.svg",
+    "alt": "黒いマスクでは描画確率を0にし、灰色では特徴から計算した確率を弱め、白ではそのまま通す図。",
+    "caption": "マスクは特徴の配分ではなく、最終確率の通りやすさを決めます。"
+  },
+  "numbers": {
+    "title": "灰色のマスクで筆跡確率を弱める",
+    "setup": "RGB=(40,100,160)の画素で、Day24と同じ暗さp暗=0.651、輪郭強度s=0.471、暗さの重みα=0.65を使います。マスク画素は灰色128、勾配基準180です。",
+    "steps": [
+      {
+        "label": "マスクを許可率にする",
+        "calculation": "mask=128÷255≈0.502。候補の確率を約50.2%だけ通します。"
+      },
+      {
+        "label": "特徴を先に混ぜる",
+        "calculation": "p特徴=0.65×0.651+0.35×0.471≈0.588。暗さと輪郭から基本確率を作ります。"
+      },
+      {
+        "label": "マスクで確率を弱める",
+        "calculation": "p=0.502×0.588≈0.295。最終採用確率は約29.5%です。"
+      },
+      {
+        "label": "乱数で抽選する",
+        "calculation": "乱数r=0.20なら0.20<0.295で採用、r=0.42なら採用しません。"
+      },
+      {
+        "label": "マスクの端の値と比較",
+        "calculation": "黒0ならp=0。白1ならp=0.588のままです。灰色はその間の値にします。"
+      }
+    ],
+    "note": "Day26の式はマスクを暗さの重みに使い、暗さと輪郭の配分を変えました。今回は二つをαで混ぜた後、マスクを掛けて描画範囲を制限します。"
+  },
+  "code": "const mask = maskGray / 255;\nconst pDark = 1 - gray / 255;\nconst strength = Math.min(magnitude / 180, 1);\nconst pFeature = alpha * pDark + (1 - alpha) * strength;\nconst probability = mask * pFeature;\nif (random() < probability) {\n  drawStroke(x, y, 16, angle);\n}",
+  "codeNote": "先に暗さと輪郭の基本確率を作り、次にマスクを掛けます。mask=0は描画禁止、mask=1はそのまま、mask≈0.5は確率を半分ほどにします。",
+  "codeHighlight": [
+    1,
+    4,
+    5,
+    6
+  ],
+  "demo": {
+    "title": "マスクで筆跡の範囲を決める",
+    "caption": "初期値は海辺、マスク全体が灰色128（許可率約50%）、暗さの重み65%、候補1200個、勾配基準180、線長16px、線幅3px、シード42です。白く塗って通し、黒く塗って止め、灰色で弱めます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e7;color:#29383d;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #c8c1b5;border-radius:7px;background:#fff;color:inherit;font:inherit}input[type=range]{padding:0;accent-color:#3d7d83}.wide{grid-column:span 2}.row{display:flex;align-items:center;gap:7px}.row input{flex:1}.buttons{display:flex;gap:6px;flex-wrap:wrap}.paint{touch-action:none;cursor:crosshair}.views{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.panel{min-width:0}.panel b{font-size:13px}canvas{width:100%;aspect-ratio:1.5;display:block;border:1px solid #cfc8bb;background:#fff}.note{min-height:1.5em;font-size:13px;color:#52666a}@media(max-width:650px){.views{grid-template-columns:1fr}}@media(max-width:450px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.wide{grid-column:span 2}}</style></head><body>\n<div class=\"controls\"><label>元の絵<select id=\"source\"><option value=\"seaside\">海辺</option><option value=\"plant\">鉢植え</option><option value=\"desk\">机の上</option></select></label><label>マスクを塗る値<select id=\"maskVal\"><option value=\"0\">黒：止める</option><option value=\"50\" selected>灰：半分通す</option><option value=\"100\">白：通す</option></select></label>\n<label class=\"wide\">暗さを重視する割合 α<div class=\"row\"><span>輪郭</span><input id=\"blend\" type=\"range\" min=\"0\" max=\"100\" step=\"5\" value=\"65\"><output id=\"blendText\">65%</output><span>暗さ</span></div></label>\n<label>筆の半径<select id=\"radius\"><option>14</option><option selected>32</option><option>58</option></select></label><label>候補数<select id=\"count\"><option>600</option><option selected>1200</option><option>2400</option></select></label><label>勾配基準<select id=\"ref\"><option>90</option><option selected>180</option><option>360</option></select></label><label>線の長さ<select id=\"length\"><option>8</option><option selected>16</option><option>24</option></select></label><label>線の太さ<select id=\"width\"><option>1</option><option selected>3</option><option>5</option></select></label><label>色<select id=\"color\"><option value=\"sample\">元の色</option><option value=\"gray\">白黒</option><option value=\"warm\">朱色</option></select></label><label>シード<input id=\"seed\" type=\"number\" value=\"42\"></label>\n<div class=\"wide buttons\"><button id=\"all0\">全体を止める</button><button id=\"all50\">全体を半分</button><button id=\"all100\">全体を通す</button><button id=\"redraw\">描き直す</button><button id=\"newseed\">別のシード</button></div></div>\n<p>マスクを指やマウスで塗ります。黒は描画を止め、白は特徴から計算した確率をそのまま通し、灰色は確率を弱めます。</p>\n<div class=\"views\"><div class=\"panel\"><b>元の絵</b><canvas id=\"src\" aria-label=\"海辺や植物などの模式図\"></canvas></div><div class=\"panel\"><b>許可マスク（指・マウスで塗る）</b><canvas id=\"mask\" class=\"paint\" aria-label=\"描画する場所を許可するマスク\"></canvas></div><div class=\"panel\"><b>暗さと輪郭を合わせた確率</b><canvas id=\"map\" aria-label=\"特徴とマスクで計算した最終確率\"></canvas></div><div class=\"panel\"><b>抽選で残った筆跡</b><canvas id=\"out\" aria-label=\"マスク範囲に描かれた筆跡\"></canvas></div></div><p id=\"info\" class=\"note\" aria-live=\"polite\"></p>\n<script>\nconst W=480,H=320,src=document.querySelector(\"#src\"),sc=src.getContext(\"2d\"),mask=document.querySelector(\"#mask\"),mx=mask.getContext(\"2d\"),map=document.querySelector(\"#map\"),mc=map.getContext(\"2d\"),out=document.querySelector(\"#out\"),ctx=out.getContext(\"2d\");for(let c of [src,mask,map,out]){c.width=W;c.height=H}\nfunction gray(a,x,y){x=Math.max(0,Math.min(W-1,x));y=Math.max(0,Math.min(H-1,y));let i=(y*W+x)*4;return .299*a[i]+.587*a[i+1]+.114*a[i+2]}\nfunction make(k){sc.fillStyle=\"#eee9dd\";sc.fillRect(0,0,W,H);if(k===\"seaside\"){sc.fillStyle=\"#a9cbd0\";sc.fillRect(0,0,W,195);sc.fillStyle=\"#e7d4b0\";sc.fillRect(0,195,W,125);for(let y=205;y<290;y+=19){sc.strokeStyle=y%3?\"#658d93\":\"#f5eee0\";sc.lineWidth=3;sc.beginPath();sc.moveTo(0,y);sc.bezierCurveTo(110,y-13,280,y+12,480,y-7);sc.stroke()}sc.fillStyle=\"#d5b77c\";sc.fillRect(110,122,65,73);sc.fillStyle=\"#6b7a67\";sc.beginPath();sc.moveTo(90,122);sc.lineTo(142,75);sc.lineTo(197,122);sc.fill()}else if(k===\"plant\"){sc.fillStyle=\"#c8dedc\";sc.fillRect(0,0,165,H);sc.strokeStyle=\"#fff\";sc.lineWidth=6;sc.beginPath();sc.moveTo(82,0);sc.lineTo(82,H);sc.moveTo(0,155);sc.lineTo(165,155);sc.stroke();sc.strokeStyle=\"#506e53\";sc.lineWidth=5;sc.beginPath();sc.moveTo(290,280);sc.lineTo(280,75);sc.stroke();for(let i=0;i<8;i++){sc.fillStyle=i%2?\"#708f67\":\"#496b50\";sc.beginPath();sc.ellipse(210+(i%3)*52,80+Math.floor(i/3)*57,42,17,-.5,0,6.3);sc.fill()}sc.fillStyle=\"#ad7054\";sc.fillRect(238,240,92,64)}else{sc.fillStyle=\"#d5e5e2\";sc.fillRect(0,0,W,208);sc.fillStyle=\"#b99570\";sc.fillRect(0,208,W,112);sc.fillStyle=\"#92b9bd\";sc.fillRect(26,28,130,144);sc.fillStyle=\"#eee8dc\";sc.fillRect(175,178,140,32);sc.fillStyle=\"#765d49\";sc.fillRect(355,156,64,73);sc.fillStyle=\"#fbf7ea\";sc.beginPath();sc.ellipse(387,157,32,8,0,0,6.3);sc.fill()}}\nfunction feature(g,m,a,ref){return a*(1-g/255)+(1-a)*Math.min(m/ref,1)}\nfunction draw(){make(document.querySelector(\"#source\").value);let a=sc.getImageData(0,0,W,H).data,ma=mx.getImageData(0,0,W,H).data,blend=+document.querySelector(\"#blend\").value/100,ref=+document.querySelector(\"#ref\").value,im=mc.createImageData(W,H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){let i=(y*W+x)*4,gx=gray(a,x+1,y)-gray(a,x-1,y),gy=gray(a,x,y+1)-gray(a,x,y-1),p=(ma[i]/255)*feature(gray(a,x,y),Math.hypot(gx,gy),blend,ref),v=Math.round(255*p);im.data[i]=247-v*.45;im.data[i+1]=243-v*.51;im.data[i+2]=232-v*.55;im.data[i+3]=255}mc.putImageData(im,0,0);ctx.fillStyle=\"#f4f0e6\";ctx.fillRect(0,0,W,H);let seed=Math.floor(+document.querySelector(\"#seed\").value||1);seed=(seed-1)%2147483646+1;function rand(){seed=seed*16807%2147483647;return(seed-1)/2147483646}let n=+document.querySelector(\"#count\").value,len=+document.querySelector(\"#length\").value,lw=+document.querySelector(\"#width\").value,mode=document.querySelector(\"#color\").value,kept=0;for(let j=0;j<n;j++){let x=rand()*W,y=rand()*H,ix=Math.floor(x),iy=Math.floor(y),i=(iy*W+ix)*4,R=a[i],G=a[i+1],B=a[i+2],g=.299*R+.587*G+.114*B,gx=gray(a,ix+1,iy)-gray(a,ix-1,iy),gy=gray(a,ix,iy+1)-gray(a,ix,iy-1),m=Math.hypot(gx,gy),alpha=ma[i]/255,p=alpha*feature(g,m,blend,ref),ang=m<4?0:Math.atan2(gy,gx)+Math.PI/2;if(rand()<p){kept++;ctx.strokeStyle=mode===\"warm\"?\"#bd5d45\":mode===\"gray\"?\"rgb(\"+g+\",\"+g+\",\"+g+\")\":\"rgb(\"+R+\",\"+G+\",\"+B+\")\";ctx.lineWidth=lw;ctx.lineCap=\"round\";ctx.beginPath();ctx.moveTo(x-Math.cos(ang)*len/2,y-Math.sin(ang)*len/2);ctx.lineTo(x+Math.cos(ang)*len/2,y+Math.sin(ang)*len/2);ctx.stroke()}}document.querySelector(\"#blendText\").textContent=Math.round(blend*100)+\"%\";document.querySelector(\"#info\").textContent=\"候補 \"+n+\" 個・採用 \"+kept+\" 個。マスク黒=0は抽選確率0、白=1は特徴の確率をそのまま使います。\"}\nlet painting=false;function dab(e){let r=mask.getBoundingClientRect(),x=(e.clientX-r.left)*W/r.width,y=(e.clientY-r.top)*H/r.height,v=+document.querySelector(\"#maskVal\").value,g=Math.round(v*2.55);mx.strokeStyle=\"rgb(\"+g+\",\"+g+\",\"+g+\")\";mx.lineWidth=+document.querySelector(\"#radius\").value;mx.lineCap=\"round\";mx.beginPath();mx.moveTo(x,y);mx.lineTo(x+.01,y+.01);mx.stroke();draw()}mask.addEventListener(\"pointerdown\",e=>{painting=true;mask.setPointerCapture(e.pointerId);dab(e)});mask.addEventListener(\"pointermove\",e=>{if(painting)dab(e)});mask.addEventListener(\"pointerup\",()=>painting=false);mask.addEventListener(\"pointercancel\",()=>painting=false);\nfor(let id of [\"source\",\"maskVal\",\"blend\",\"radius\",\"count\",\"ref\",\"length\",\"width\",\"color\",\"seed\"]){let e=document.querySelector(\"#\"+id);e.addEventListener(\"input\",draw);e.addEventListener(\"change\",draw)}document.querySelector(\"#all0\").onclick=()=>{mx.fillStyle=\"#000\";mx.fillRect(0,0,W,H);draw()};document.querySelector(\"#all50\").onclick=()=>{mx.fillStyle=\"rgb(128,128,128)\";mx.fillRect(0,0,W,H);draw()};document.querySelector(\"#all100\").onclick=()=>{mx.fillStyle=\"#fff\";mx.fillRect(0,0,W,H);draw()};document.querySelector(\"#redraw\").onclick=draw;document.querySelector(\"#newseed\").onclick=()=>{let e=document.querySelector(\"#seed\");e.value=String((+e.value||1)+1);draw()};window.addEventListener(\"message\",e=>{if(e.data?.type===\"gal-experiment\")for(let c of e.data.controls||[]){let el=document.querySelector(c.selector);if(el){el.value=c.value;el.dispatchEvent(new Event(\"change\"))}}});mx.fillStyle=\"rgb(128,128,128)\";mx.fillRect(0,0,W,H);draw();\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "灰色マスクを観察する",
+      "action": "初期値のまま候補1200個で描きます。",
+      "observe": "画面全体に出る筆跡が、マスクなしより少なくなっていますか？",
+      "demoState": [
+        {
+          "selector": "#count",
+          "value": "1200"
+        }
+      ]
+    },
+    {
+      "title": "白い範囲を通す",
+      "action": "「白：通す」を選び、海と空の間を白くなぞります。",
+      "observe": "白く塗った線の中で、輪郭や暗さの確率がそのまま使われていますか？",
+      "demoState": [
+        {
+          "selector": "#maskVal",
+          "value": "100"
+        }
+      ]
+    },
+    {
+      "title": "黒い範囲で止める",
+      "action": "「黒：止める」を選び、描画を消したい一帯をなぞります。",
+      "observe": "黒く塗った場所の採用確率マップは0になり、筆跡も消えますか？",
+      "demoState": [
+        {
+          "selector": "#maskVal",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "title": "灰色で濃さを調整する",
+      "action": "「灰：半分」を選び、白い範囲の一部を上から塗り直します。",
+      "observe": "灰色にした場所の筆跡は、白い場所より少なくなりますか？",
+      "demoState": [
+        {
+          "selector": "#maskVal",
+          "value": "50"
+        }
+      ]
+    },
+    {
+      "title": "特徴と題材を変える",
+      "action": "鉢植えに切り替え、暗さの重み0%、候補2400個、線長24pxにします。",
+      "observe": "輪郭だけで作る基本確率を、どんな形のマスクで通すと葉が読みやすいですか？",
+      "demoState": [
+        {
+          "selector": "#source",
+          "value": "plant"
+        },
+        {
+          "selector": "#blend",
+          "value": "0"
+        },
+        {
+          "selector": "#count",
+          "value": "2400"
+        },
+        {
+          "selector": "#length",
+          "value": "24"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "ジョルジュ・スーラ",
+    "work": "《ポール＝アン＝ベッサンの海景、ノルマンディー》",
+    "context": "1888年制作の油彩画です。海岸や水面、空を小さな色の筆触で描き分け、離れて見ると景色としてまとまって見えます。作品の明るい水面や輪郭を観察してください。",
+    "relation": "細かな筆触をどこに残し、どこを静かにするかを考えながら鑑賞します。デモではマスクを塗った場所だけ筆跡を通せますが、この作品が同じアルゴリズムで描かれたという意味ではありません。",
+    "references": [
+      {
+        "source": "Wikimedia Commons（National Gallery of Art画像）",
+        "label": "作品情報・CC0 1.0ライセンス表示",
+        "url": "https://commons.wikimedia.org/wiki/File:Georges_Seurat,_Seascape_at_Port-en-Bessin,_Normandy,_1888,_NGA_53139.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Georges_Seurat%2C_Seascape_at_Port-en-Bessin%2C_Normandy%2C_1888%2C_NGA_53139.jpg/960px-Georges_Seurat%2C_Seascape_at_Port-en-Bessin%2C_1888%2C_NGA_53139.jpg",
+      "alt": "ジョルジュ・スーラの《ポール＝アン＝ベッサンの海景、ノルマンディー》。岸の建物、海、空が小さな色の筆触で描かれている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Georges_Seurat,_Seascape_at_Port-en-Bessin,_Normandy,_1888,_NGA_53139.jpg",
+      "license": "CC0 1.0",
+      "credit": "Georges Seurat, Seascape at Port-en-Bessin, Normandy, 1888, oil on canvas. National Gallery of Art, Washington; image via Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "壁を塗るときのマスキングテープ",
+      "description": "壁の一部をテープで覆ってから塗装すると、塗料は露出した範囲だけにつき、テープの下には色が入りません。",
+      "relation": "テープを貼った範囲はマスク値0で描画を止め、露出面は1で通すと考えられます。図は塗装の場面を描いたオリジナルの模式図です。",
+      "visual": {
+        "src": "./assets/day-27-painter-tape.svg",
+        "alt": "壁の中央だけ塗装し、左右の境界を黄色いマスキングテープで覆って塗料を止める図。",
+        "caption": "身近な例：壁を塗る前のマスキング。テープの下には塗料がつかず、露出部分だけ色が通ります。"
+      }
+    }
+  },
+  "extension": {
+    "title": "確率の流れを組み立てる",
+    "keywords": [
+      "確率マスク",
+      "条件の合成",
+      "描画ゲート"
+    ],
+    "next": "次回はマスクの形を自動生成し、距離や図形の内外から描画範囲を作る方法へ進みます。"
+  }
+}
