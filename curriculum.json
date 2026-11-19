@@ -237,6 +237,14 @@
       "description": "暗さと輪郭の確率に手描きマスクの許可率を掛け、描く場所を通す・弱める・止める。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 28,
+      "title": "Geometric Probability Mask",
+      "topic": "距離から図形マスクを作る",
+      "description": "楕円の中心からの距離で内側・境界・外側を判定し、ぼかし幅を調整できる幾何マスクを作る。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
