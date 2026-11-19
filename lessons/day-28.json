@@ -101,7 +101,7 @@
   "artist": {
     "name": "フォンス・ヘインスブルック",
     "work": "《Abstract landscape in Reds》",
-    "context": "1990年制作の赤を基調とした抽象風景画です。画面を占める色面や形の境界を観察し、形の内外を幾何学的な規則で決めると構図をどう変えられるか考えます。",
+    "context": "赤を基調とした抽象風景画です。画面を占める色面や形の境界を観察し、形の内外を幾何学的な規則で決めると構図をどう変えられるか考えます。",
     "relation": "この作品がデモと同じアルゴリズムで描かれたという意味ではありません。作品の色面と境界を鑑賞し、デモでは楕円マスクの半径やぼかし幅で筆跡が残る領域を試します。",
     "references": [
       {
@@ -111,11 +111,11 @@
       }
     ],
     "image": {
-      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Abstract_landscape_in_Reds_-_large_painting_on_canvas_in_acryl_paint%2C_made_in_1990_by_Dutch_artist_Fons_Heijnsbroek_-_CC0.jpg/960px-Abstract_landscape_in_Reds_-_large_painting_on_canvas_in_acryl_paint%2C_made_in_1990_by_Dutch_artist_Fons_Heijnsbroek_-_CC0.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/%27Abstract_landscape_in_Reds%27_-_large_painting_on_canvas_in_acryl_paint%2C_made_in_1990_by_Dutch_artist_Fons_Heijnsbroek_-_CC0.jpg/960px-%27Abstract_landscape_in_Reds%27_-_large_painting_on_canvas_in_acryl_paint%2C_made_in_1990_by_Dutch_artist_Fons_Heijnsbroek_-_CC0.jpg",
       "alt": "フォンス・ヘインスブルックの赤を基調にした抽象風景画。赤い色面と筆の跡が画面いっぱいに広がっている。",
       "sourceUrl": "https://commons.wikimedia.org/wiki/File:%27Abstract_landscape_in_Reds%27_-_large_painting_on_canvas_in_acryl_paint%2C_made_in_1990_by_Dutch_artist_Fons_Heijnsbroek_-_CC0.jpg",
       "license": "CC0 1.0",
-      "credit": "Fons Heijnsbroek, “Abstract landscape in Reds” (1990), acrylic on canvas. Image via Wikimedia Commons, CC0 1.0."
+      "credit": "Fons Heijnsbroek, “Abstract landscape in Reds,” acrylic on canvas. Image via Wikimedia Commons, CC0 1.0."
     },
     "realWorldExample": {
       "title": "型紙で楕円の内側に塗る",
