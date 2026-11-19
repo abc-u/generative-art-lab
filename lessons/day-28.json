@@ -52,7 +52,7 @@
     ],
     "note": "qは楕円の半径を1としたときの相対距離です。softness=0.2は境界の外側に半径の20%ぶん、許可率が下がる帯を作ります。これは筆跡の大きさを変える操作ではありません。"
   },
-  "code": "const q = Math.sqrt(((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2);\\nconst mask = softness === 0\\n  ? (q <= 1 ? 1 : 0)\\n  : Math.max(0, Math.min(1, (1 + softness - q) / softness));\\nconst pFeature = alpha * pDark + (1 - alpha) * strength;\\nconst probability = mask * pFeature;\\nif (random() < probability) drawStroke(x, y, length, angle);",
+  "code": "const q = Math.sqrt(((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2);\nconst mask = softness === 0\n  ? (q <= 1 ? 1 : 0)\n  : Math.max(0, Math.min(1, (1 + softness - q) / softness));\nconst pFeature = alpha * pDark + (1 - alpha) * strength;\nconst probability = mask * pFeature;\nif (random() < probability) drawStroke(x, y, length, angle);",
   "codeNote": "qは楕円中心からの距離を横半径rx・縦半径ryで割った値です。q≤1が内側、softnessは境界の外側に作るぼかし帯です。最後にmaskを基本確率へ掛けるので、マスクは筆跡のサイズを変えず採用率だけを変えます。",
   "codeHighlight": [
     1,
