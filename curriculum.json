@@ -245,6 +245,14 @@
       "description": "楕円の中心からの距離で内側・境界・外側を判定し、ぼかし幅を調整できる幾何マスクを作る。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 29,
+      "title": "Composing Distance Shapes",
+      "topic": "距離場で図形を組み合わせる",
+      "description": "円ごとの符号付き距離をmin/maxで合成し、合体・重なり・型抜きのマスクを作る。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }

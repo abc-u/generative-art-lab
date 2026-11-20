@@ -1,0 +1,144 @@
+{
+  "day": 29,
+  "status": "published",
+  "title": "Composing Distance Shapes",
+  "subtitle": "二つの図形の距離を比べ、合体・重なり・型抜きのマスクを作る。",
+  "topic": "距離場で図形を組み合わせる",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は二つの円の「符号付き距離」を使い、図形を合体・重なり・型抜きするアルゴリズムを学びます。各円について、中心からの距離から半径を引きます。内側はマイナス、境界は0、外側はプラスです。二つを合体するなら小さい方（min）、両方に重なる部分だけなら大きい方（max）、AからBをくり抜くならmax(dA,−dB)を選びます。最後に距離をマスク値へ変え、Day28と同じように基本確率へ掛けます。肝は、図形を描いて重ねるのでなく、距離の符号とmin/maxの選び方で「どの領域を残すか」を決めることです。",
+  "applications": "重なる円から雲や泡のような領域を作る、文字や図形を型抜きする、複数の部分を一つの描画マスクへまとめる、といった表現に使えます。ゲームの当たり判定や、図形編集ソフトの合体・型抜きにもつながる考え方です。",
+  "prerequisites": "Day28の距離からマスクを作る方法と、Day27の最終確率へマスクを掛ける考え方を使います。",
+  "connection": "Day28では一つの楕円の距離でマスクを作りました。今日は二つの円の距離をmin/maxで比べ、合体・重なりだけ・型抜きを選びます。できた距離は前回と同じ確率ゲートへ渡します。",
+  "ruleSummary": "二つの符号付き距離をmin/maxで合成し、形の組み合わせを決める。",
+  "goalTitle": "二つの円を合体・型抜きするには？",
+  "ruleCode": "合体=min(dA,dB)　｜　重なり=max(dA,dB)　｜　A−B=max(dA,−dB)",
+  "intuition": {
+    "title": "二枚の丸いシールと型抜き",
+    "story": "紙に丸いシールを二枚貼る場面を想像します。二つの丸を一つの領域として扱うのが合体、両方が重なるところだけ使うのが重なり、Aの丸からBの丸を抜くのが型抜きです。コンピューターは丸の中心からの距離を測り、二つの距離の小さい方・大きい方を選んで境界を決めます。",
+    "visual": "円A・円B → 各点の距離 dA,dB → min / max で合成 → マスク → 筆跡確率",
+    "diagram": "d<0：円の内側 ／ d=0：境界 ／ d>0：外側"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-29-distance-composition.svg",
+    "alt": "二つの円の符号付き距離をminで合体、maxで重なり、max(dA,−dB)でAからBを型抜きする三つの図。",
+    "caption": "各点の二つの距離から、残す領域のルールを選びます。"
+  },
+  "numbers": {
+    "title": "二つの円からAだけの領域を残す",
+    "setup": "円Aの中心を(120,120)、半径60px、円Bの中心を(200,120)、半径70pxとします。候補点は(145,120)、境界のぼかし幅は40pxです。",
+    "steps": [
+      {
+        "label": "円Aまでの距離",
+        "calculation": "点からAの中心まで25px。dA=25−60=−35pxなので、点はAの内側です。"
+      },
+      {
+        "label": "円Bまでの距離",
+        "calculation": "点からBの中心まで55px。dB=55−70=−15pxなので、点はBの内側にもあります。"
+      },
+      {
+        "label": "合体と重なり",
+        "calculation": "合体はmin(−35,−15)=−35、重なりはmax(−35,−15)=−15。どちらも内側なのでmask=1です。"
+      },
+      {
+        "label": "AからBをくり抜く",
+        "calculation": "max(dA,−dB)=max(−35,15)=15px。Bの領域を抜いた結果、点はA−Bの外側になります。"
+      },
+      {
+        "label": "ぼかし境界と抽選",
+        "calculation": "幅40pxならmask=(40−15)÷40=0.625。基本確率0.588のときp=0.625×0.588≈0.368。乱数0.35なら筆跡を採用します。"
+      }
+    ],
+    "note": "符号付き距離は内側がマイナス、境界が0、外側がプラスです。ぼかし幅を0にするとd≤0だけを通し、40pxにすると境界の外側40pxで許可率が0まで下がります。"
+  },
+  "code": "const dA = Math.hypot(x - ax, y - ay) - radiusA;\nconst dB = Math.hypot(x - bx, y - by) - radiusB;\nconst shapeDistance = mode === \"union\" ? Math.min(dA, dB)\n  : mode === \"intersection\" ? Math.max(dA, dB)\n  : Math.max(dA, -dB);\nconst mask = softness === 0 ? (shapeDistance <= 0 ? 1 : 0)\n  : Math.max(0, Math.min(1, (softness - shapeDistance) / softness));\nconst probability = mask * pFeature;\nif (random() < probability) drawStroke(x, y, length, angle);",
+  "codeNote": "dA・dBは各円の内外を表す符号付き距離です。minはどちらかの円に入る領域、maxは両方に入る領域、max(dA,−dB)はAからBを抜いた領域です。ぼかしマスクを基本確率へ掛けてから乱数で採用します。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    8,
+    9
+  ],
+  "demo": {
+    "title": "距離の組み合わせを切り替える",
+    "caption": "初期値は海辺、円Aは中心(120,120)・半径60px、円Bは中心(200,120)・半径70px、ぼかし40px、暗さの重み65%、候補1200個、シード42です。マスク図をドラッグして中心を移動し、合体・重なり・AからBをくり抜く違いを比べます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e7;color:#29383d;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #c8c1b5;border-radius:7px;background:#fff;color:inherit;font:inherit}input[type=range]{padding:0;accent-color:#3d7d83}.row{display:flex;align-items:center;gap:7px}.row input{flex:1}.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.views{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.panel{min-width:0}.panel b{font-size:13px}canvas{width:100%;aspect-ratio:3/2;display:block;border:1px solid #cfc8bb;background:#fff}.move{touch-action:none;cursor:crosshair}.note{min-height:1.5em;font-size:13px;color:#52666a}@media(max-width:650px){.views{grid-template-columns:1fr}}@media(max-width:430px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}</style></head><body>\n<div class=\"controls\">\n<label>元の絵<select id=\"scene\"><option value=\"sea\">海辺</option><option value=\"flower\">花</option><option value=\"city\">街並み</option></select></label>\n<label>組み合わせ<select id=\"mode\"><option value=\"union\">合体 A ∪ B</option><option value=\"intersection\">重なり A ∩ B</option><option value=\"difference\">AからBをくり抜く A − B</option></select></label>\n<label>円Aの半径 <span class=\"row\"><input id=\"ra\" type=\"range\" min=\"25\" max=\"110\" value=\"60\"><output id=\"raOut\">60px</output></span></label>\n<label>円Bの半径 <span class=\"row\"><input id=\"rb\" type=\"range\" min=\"25\" max=\"110\" value=\"70\"><output id=\"rbOut\">70px</output></span></label>\n<label>境界のぼかし <span class=\"row\"><input id=\"soft\" type=\"range\" min=\"0\" max=\"50\" value=\"40\"><output id=\"softOut\">40px</output></span></label>\n<label>暗さを優先 <span class=\"row\"><input id=\"alpha\" type=\"range\" min=\"0\" max=\"100\" value=\"65\"><output id=\"alphaOut\">65%</output></span></label>\n<label>候補の数 <span class=\"row\"><input id=\"count\" type=\"range\" min=\"300\" max=\"3600\" step=\"100\" value=\"1200\"><output id=\"countOut\">1200</output></span></label>\n<label>筆跡の長さ <span class=\"row\"><input id=\"length\" type=\"range\" min=\"4\" max=\"28\" value=\"12\"><output id=\"lengthOut\">12px</output></span></label>\n<label>筆跡の太さ <span class=\"row\"><input id=\"thick\" type=\"range\" min=\"1\" max=\"7\" value=\"2\"><output id=\"thickOut\">2px</output></span></label>\n<label>シード値 <span class=\"row\"><input id=\"seed\" type=\"number\" min=\"1\" max=\"9999\" value=\"42\"></span></label>\n</div><div class=\"buttons\"><button id=\"render\">この条件で描く</button><button id=\"newSeed\">シードを変える</button><button id=\"save\">完成画像をPNG保存</button></div>\n<p class=\"note\" id=\"note\" aria-live=\"polite\">マスク図の円をドラッグして位置を変えられます。</p>\n<div class=\"views\">\n<div class=\"panel\"><b>1. 元の絵</b><canvas id=\"source\" width=\"360\" height=\"240\"></canvas></div>\n<div class=\"panel\"><b>2. 距離を合成したマスク</b><canvas id=\"gate\" class=\"move\" width=\"360\" height=\"240\" aria-label=\"二つの円の合成マスク。円をドラッグして中心を移動\"></canvas></div>\n<div class=\"panel\"><b>3. 最終確率</b><canvas id=\"prob\" width=\"360\" height=\"240\"></canvas></div>\n<div class=\"panel\"><b>4. 採用した筆跡</b><canvas id=\"result\" width=\"360\" height=\"240\"></canvas></div>\n</div><script>\nconst W=360,H=240,byId=id=>document.getElementById(id);\nconst canvases=[\"source\",\"gate\",\"prob\",\"result\"].map(byId),ctx=canvases.map(c=>c.getContext(\"2d\"));\nlet ax=120,ay=120,bx=200,by=120,pixels,dragTarget=null;\nconst clamp=(v,a,b)=>Math.max(a,Math.min(b,v));\nfunction randFactory(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}\nfunction scene(){const c=ctx[0],g=c.createLinearGradient(0,0,0,H),v=byId(\"scene\").value;\nif(v===\"sea\"){g.addColorStop(0,\"#d6e1df\");g.addColorStop(.48,\"#8eaaa6\");g.addColorStop(.49,\"#435f65\");g.addColorStop(1,\"#d4b98e\")}\nif(v===\"flower\"){g.addColorStop(0,\"#e9d8bd\");g.addColorStop(1,\"#526e4e\")}\nif(v===\"city\"){g.addColorStop(0,\"#bfced1\");g.addColorStop(1,\"#b3a58c\")}\nc.fillStyle=g;c.fillRect(0,0,W,H);\nif(v===\"sea\"){c.fillStyle=\"#65756c\";c.fillRect(32,90,45,52);c.fillRect(80,72,28,70);c.fillStyle=\"#eee0c5\";for(let i=0;i<9;i++)c.fillRect(39+i%3*12,99+Math.floor(i/3)*13,5,6)}\nif(v===\"flower\"){c.fillStyle=\"#d7a35c\";for(let i=0;i<8;i++){const a=i*Math.PI/4;c.beginPath();c.ellipse(180+Math.cos(a)*28,118+Math.sin(a)*28,14,26,a,0,Math.PI*2);c.fill()}c.fillStyle=\"#754d3b\";c.beginPath();c.arc(180,118,15,0,Math.PI*2);c.fill();c.strokeStyle=\"#344f3b\";c.lineWidth=5;c.beginPath();c.moveTo(180,145);c.lineTo(180,225);c.stroke()}\nif(v===\"city\"){c.fillStyle=\"#746c61\";for(let i=0;i<5;i++){let x=25+i*62,h=65+(i%3)*22;c.fillRect(x,H-h,48,h);c.fillStyle=\"#ecd6aa\";for(let y=H-h+10;y<H-8;y+=18)c.fillRect(x+9,y,8,9);c.fillStyle=\"#746c61\"}}\nif(v===\"sea\"||v===\"city\"){c.strokeStyle=v===\"sea\"?\"#edf0df\":\"#596970\";c.lineWidth=2;for(let y=156;y<225;y+=13){c.beginPath();c.moveTo(4,y);c.lineTo(350,y+(y%3)*2);c.stroke()}}\npixels=c.getImageData(0,0,W,H).data;\n}\nfunction sample(x,y){const i=(Math.floor(y)*W+Math.floor(x))*4;return .299*pixels[i]+.587*pixels[i+1]+.114*pixels[i+2]}\nfunction grad(x,y){const gx=(sample(clamp(x+2,0,W-1),y)-sample(clamp(x-2,0,W-1),y))/4,gy=(sample(x,clamp(y+2,0,H-1))-sample(x,clamp(y-2,0,H-1)))/4;return[Math.hypot(gx,gy),Math.atan2(gy,gx)+Math.PI/2]}\nfunction vals(){return{ra:+byId(\"ra\").value,rb:+byId(\"rb\").value,soft:+byId(\"soft\").value,alpha:+byId(\"alpha\").value/100,count:+byId(\"count\").value,len:+byId(\"length\").value,thick:+byId(\"thick\").value,seed:+byId(\"seed\").value||42,mode:byId(\"mode\").value}}\nfunction field(x,y,v){const dA=Math.hypot(x-ax,y-ay)-v.ra,dB=Math.hypot(x-bx,y-by)-v.rb;return v.mode===\"union\"?Math.min(dA,dB):v.mode===\"intersection\"?Math.max(dA,dB):Math.max(dA,-dB)}\nfunction maskAt(x,y,v){const d=field(x,y,v);return v.soft===0?(d<=0?1:0):clamp((v.soft-d)/v.soft,0,1)}\nfunction pAt(x,y,v){const pDark=1-sample(x,y)/255,[m]=grad(x,y),strength=Math.min(m/180,1),pFeature=v.alpha*pDark+(1-v.alpha)*strength;return maskAt(x,y,v)*pFeature}\nfunction drawGate(v){const c=ctx[1],im=c.createImageData(W,H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const m=Math.round(maskAt(x,y,v)*255),i=(y*W+x)*4;im.data[i]=m;im.data[i+1]=m;im.data[i+2]=m;im.data[i+3]=255}c.putImageData(im,0,0);c.lineWidth=2;c.strokeStyle=\"#d05c43\";c.beginPath();c.arc(ax,ay,v.ra,0,Math.PI*2);c.stroke();c.strokeStyle=\"#417786\";c.beginPath();c.arc(bx,by,v.rb,0,Math.PI*2);c.stroke();c.fillStyle=\"#d05c43\";c.beginPath();c.arc(ax,ay,4,0,Math.PI*2);c.fill();c.fillStyle=\"#417786\";c.beginPath();c.arc(bx,by,4,0,Math.PI*2);c.fill()}\nfunction drawProb(v){const c=ctx[2],im=c.createImageData(W,H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const n=Math.round(pAt(x,y,v)*255),i=(y*W+x)*4;im.data[i]=n;im.data[i+1]=n;im.data[i+2]=n;im.data[i+3]=255}c.putImageData(im,0,0)}\nfunction drawResult(v){const c=ctx[3];c.drawImage(canvases[0],0,0);c.save();c.lineCap=\"round\";const rnd=randFactory(v.seed);let accepted=0;for(let i=0;i<v.count;i++){const x=rnd()*W,y=rnd()*H,p=pAt(x,y,v);if(rnd()<p){const[mag,a]=grad(x,y),len=v.len*(.5+Math.min(mag/90,1));c.strokeStyle=byId(\"scene\").value===\"flower\"?\"#fff0c9\":\"#f8ead0\";c.lineWidth=v.thick*(.7+rnd()*.6);c.beginPath();c.moveTo(x-Math.cos(a)*len/2,y-Math.sin(a)*len/2);c.lineTo(x+Math.cos(a)*len/2,y+Math.sin(a)*len/2);c.stroke();accepted++}}c.restore();byId(\"note\").textContent=\"候補\"+v.count+\"個のうち\"+accepted+\"本を採用。円A・Bをドラッグして配置を変えられます。\"}\nfunction updateLabels(){for(const[id,suf]of[[\"ra\",\"px\"],[\"rb\",\"px\"],[\"soft\",\"px\"],[\"alpha\",\"%\"],[\"count\",\"\"],[\"length\",\"px\"],[\"thick\",\"px\"]])byId(id+\"Out\").value=byId(id).value+suf}\nfunction render(){updateLabels();scene();const v=vals();drawGate(v);drawProb(v);drawResult(v)}\ncanvases[1].addEventListener(\"pointerdown\",e=>{const r=canvases[1].getBoundingClientRect(),x=(e.clientX-r.left)*W/r.width,y=(e.clientY-r.top)*H/r.height;dragTarget=Math.hypot(x-ax,y-ay)<Math.hypot(x-bx,y-by)?\"A\":\"B\";canvases[1].setPointerCapture(e.pointerId);move(e)});\ncanvases[1].addEventListener(\"pointermove\",e=>{if(dragTarget)move(e)});canvases[1].addEventListener(\"pointerup\",()=>dragTarget=null);canvases[1].addEventListener(\"pointercancel\",()=>dragTarget=null);\nfunction move(e){const r=canvases[1].getBoundingClientRect(),x=clamp((e.clientX-r.left)*W/r.width,0,W),y=clamp((e.clientY-r.top)*H/r.height,0,H);if(dragTarget===\"A\"){ax=x;ay=y}else{bx=x;by=y}const v=vals();drawGate(v);drawProb(v);drawResult(v)}\ndocument.querySelectorAll(\"input,select\").forEach(el=>el.addEventListener(\"input\",render));\nbyId(\"render\").addEventListener(\"click\",render);byId(\"newSeed\").addEventListener(\"click\",()=>{byId(\"seed\").value=(+byId(\"seed\").value+137)%9999+1;render()});\nbyId(\"save\").addEventListener(\"click\",()=>{const a=document.createElement(\"a\");a.download=\"distance-shape-composition.png\";a.href=canvases[3].toDataURL(\"image/png\");a.click()});\nrender();\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "合体の範囲を読む",
+      "action": "組み合わせを「合体」にし、円Aと円Bの中心を近づけたり離したりします。",
+      "observe": "どちらか片方の円に入っていれば白くなり、二つの円の領域がひと続きになることを確認します。"
+    },
+    {
+      "title": "重なりだけを残す",
+      "action": "同じ円の配置のまま「重なり」に切り替え、半径A・Bも動かします。",
+      "observe": "二つの円に同時に入る部分だけが残り、円の交差が小さくなるとマスクも狭くなると気づきます。"
+    },
+    {
+      "title": "AからBを型抜き",
+      "action": "「AからBをくり抜く」を選び、円Bを円Aの内側へ動かします。",
+      "observe": "Bの中が黒く抜け、AのうちBと重ならない領域だけが描画範囲として残ることを見ます。"
+    },
+    {
+      "title": "境界を柔らかくする",
+      "action": "ぼかし幅を0px、20px、50pxの順に変えて同じシードで比較します。",
+      "observe": "輪郭の外側に灰色の帯が広がり、最終確率と採用筆跡が境界からなめらかに消えます。"
+    },
+    {
+      "title": "画像の特徴と組み合わせる",
+      "action": "海辺・花・街並みを選び、暗さの重みも0%・50%・100%にして試します。",
+      "observe": "同じ合成形状でも画像の暗さや輪郭の位置で筆跡の密度が変わり、形マスクと基本確率が別の役割だと確認します。"
+    },
+    {
+      "title": "自分の形を作る",
+      "action": "円A・Bの半径と位置、演算、ぼかし幅、シードを選び、結果をPNG保存します。",
+      "observe": "合体・重なり・型抜きのどの規則で形を残したか、作品の見た目と合わせて説明します。"
+    }
+  ],
+  "artist": {
+    "name": "ワシリー・カンディンスキー",
+    "work": "《Heavy Circles》",
+    "context": "1927年の油彩画です。複数の円形や色面が画面の中で重なり合う構成を観察し、重なりを一つの形として扱うと見え方がどう変わるか考えます。",
+    "relation": "この作品が距離場のmin/max演算で描かれたという意味ではありません。円が重なる構図を鑑賞し、デモでは同じように二つの円を合体・交差・型抜きしたときの領域の違いを試します。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品情報とCC0 1.0ライセンス表示",
+        "url": "https://commons.wikimedia.org/wiki/File:Heavy_Circles_by_Vasily_Kandinsky%2C_1927%2C_oil_on_canvas_-_Norton_Simon_Museum_-_Pasadena%2C_CA_-_DSC04139.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Heavy_Circles_by_Vasily_Kandinsky%2C_1927%2C_oil_on_canvas_-_Norton_Simon_Museum_-_Pasadena%2C_CA_-_DSC04139.jpg/960px-Heavy_Circles_by_Vasily_Kandinsky%2C_1927%2C_oil_on_canvas_-_Norton_Simon_Museum_-_Pasadena%2C_CA_-_DSC04139.jpg",
+      "alt": "ワシリー・カンディンスキーの《Heavy Circles》。油彩の画面に円形と色面が重なり、異なる大きさの円が配置されている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Heavy_Circles_by_Vasily_Kandinsky%2C_1927%2C_oil_on_canvas_-_Norton_Simon_Museum_-_Pasadena%2C_CA_-_DSC04139.jpg",
+      "license": "CC0 1.0",
+      "credit": "Wassily Kandinsky, “Heavy Circles” (1927), oil on canvas; photographed by Daderot at the Norton Simon Museum. Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "丸い型紙を重ねた塗り分け",
+      "description": "丸い穴を二つ開けた紙の型紙を重ねると、二つ分を塗る、重なった穴だけ塗る、片方の穴からもう片方を抜く、といった模様を作れます。",
+      "relation": "二つの穴の内側を合体・重なり・型抜きとして示す自作図です。実物の型紙と数学の距離演算が同一の技法だという意味ではありません。",
+      "visual": {
+        "src": "./assets/day-29-stencil-composition.svg",
+        "alt": "二つの丸穴が開いた型紙を重ね、合体した範囲・重なった範囲・片方から型抜きした範囲を三つの紙に塗り分けた自作図。",
+        "caption": "身近な例：丸い型紙を重ねた塗り分け。二つの穴を合体・交差・型抜きして模様を作ります。図は本レッスン用に作成。"
+      }
+    }
+  },
+  "extension": {
+    "title": "曲線へつなぐ距離場",
+    "keywords": [
+      "符号付き距離",
+      "距離場",
+      "集合演算",
+      "スムーズな合成"
+    ],
+    "next": "次は円だけでなく、線や曲線の距離場も組み合わせ、境界を保ったまま自由な模様を作ります。"
+  }
+}
