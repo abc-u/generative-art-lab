@@ -253,6 +253,14 @@
       "description": "円ごとの符号付き距離をmin/maxで合成し、合体・重なり・型抜きのマスクを作る。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 30,
+      "title": "Smooth Distance Blending",
+      "topic": "距離場をなめらかに合成",
+      "description": "二つの距離が近い場所をsmooth minで混ぜ、図形の間に滑らかな橋を作る。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
