@@ -1,0 +1,148 @@
+{
+  "day": 30,
+  "status": "published",
+  "title": "Smooth Distance Blending",
+  "subtitle": "距離の境界をやわらかくつなぎ、図形の間に自然な橋をかける。",
+  "topic": "距離場をなめらかに合成",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日はDay29のmin/maxによる図形合成を、smooth minでなめらかにつなぎます。まず二つの円の符号付き距離 dA・dB を求めます。minだけなら離れた図形は別々のまま、境界が急に切り替わります。smooth minでは、二つの距離の差がブレンド幅 k より小さい場所だけで両方を混ぜ、距離を少し内側へ押します。差がk以上なら普通のminと同じです。肝は、ぼかしを最後に足すのでなく、距離場を合成する段階で橋の形を作ることです。その距離をマスクに変えてから、基本確率へ掛けます。",
+  "applications": "離れた粒や円を雲・泡・細胞のようにつなぐ、液体の塊を作る、図形の境界に滑らかな首やくびれを作る用途に使えます。3Dソフトやゲームの形づくりでは、メタボールや有機的なモデルの考え方にもつながります。",
+  "prerequisites": "Day28の符号付き距離からマスクを作る方法と、Day29のmin/maxで円を合体・交差・型抜きする方法を使います。",
+  "connection": "Day29ではmin/maxで二つの距離を合成しました。今日は同じ距離の値を使い、境界付近だけをsmooth minで混ぜて図形どうしをなめらかにつなぎます。混ぜた距離は前回と同じマスクと描画確率へ渡します。",
+  "ruleSummary": "近い二つの距離だけsmooth minで混ぜ、境界に滑らかな橋を作る。",
+  "goalTitle": "二つの円を自然につなぐには？",
+  "ruleCode": "h=max(k−|a−b|,0)÷k　｜　smoothMin=min(a,b)−h²k÷4",
+  "intuition": {
+    "title": "粘土の玉を押しつけてつなぐ",
+    "story": "粘土の玉を二つ置いて押しつけると、接した場所がへこまず、ゆるやかな橋になって一つの塊に見えます。距離を普通にminで選ぶと、二つの形の境目が急に切り替わります。smooth minは距離が近いところだけ両方を少し混ぜ、境目を内側へ押して橋を作ります。",
+    "visual": "二つの距離 dA・dB → 差が小さい所を混ぜる → smooth union → マスク → 筆跡確率",
+    "diagram": "距離差≥k：minそのまま ／ 距離差<k：なめらかに合流"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-30-smooth-distance.svg",
+    "alt": "二円の間の距離を普通のminで選ぶとくびれが残り、smooth minでは境界を内側へ押して滑らかな橋を作る比較図。",
+    "caption": "smooth minは二つの距離が近い範囲でだけ形の間を埋めます。"
+  },
+  "numbers": {
+    "title": "円の間に橋が生まれるか確かめる",
+    "setup": "円Aの中心を(120,120)、円Bを(200,120)に置き、半径はどちらも60pxです。候補点は(160,170)、ブレンド幅k=40px、境界ぼかし幅は12pxです。",
+    "steps": [
+      {
+        "label": "二つの距離を測る",
+        "calculation": "点から両方の中心まで√(40²+50²)=√4100≈64.03px。半径60pxを引き、dA=dB≈4.03pxです。"
+      },
+      {
+        "label": "普通のminで合体",
+        "calculation": "min(4.03,4.03)=4.03。距離が正なので、点は円の外側に残り、円どうしの橋はありません。"
+      },
+      {
+        "label": "ブレンド率を出す",
+        "calculation": "距離差は|4.03−4.03|=0。h=max(40−0,0)÷40=1です。"
+      },
+      {
+        "label": "smooth minで距離を混ぜる",
+        "calculation": "4.03−1²×40÷4=−5.97px。距離が負に変わり、この点まで合成形が届きます。"
+      },
+      {
+        "label": "マスクと抽選を比べる",
+        "calculation": "ぼかし12pxなら通常minのmask=(12−4.03)÷12≈0.664、smooth minは内側なのでmask=1。基本確率0.588ならpは約0.390と0.588です。乱数0.5はsmooth min側だけ通ります。"
+      }
+    ],
+    "note": "kは二つの距離を混ぜる幅で、0なら通常のminと同じです。境界ぼかし12pxはできた距離を確率マスクへ変える幅です。kと境界ぼかしは別の役目を持ちます。"
+  },
+  "code": "function smoothMin(a, b, k) {\n  if (k <= 0) return Math.min(a, b);\n  const h = Math.max(k - Math.abs(a - b), 0) / k;\n  return Math.min(a, b) - h * h * k * 0.25;\n}\nconst dA = Math.hypot(x - ax, y - ay) - radiusA;\nconst dB = Math.hypot(x - bx, y - by) - radiusB;\nconst shapeDistance = smoothMin(dA, dB, blendWidth);\nconst mask = feather === 0 ? (shapeDistance <= 0 ? 1 : 0)\n  : Math.max(0, Math.min(1, (feather - shapeDistance) / feather));\nconst probability = mask * pFeature;\nif (random() < probability) drawStroke(x, y, length, angle);",
+  "codeNote": "smooth minは円A・Bの距離差がblendWidth未満の所だけを混ぜ、合成距離を内側へ押します。featherはその後に距離をマスクへ変える幅です。二つを別々に調整すると、形をつなぐ量と端の柔らかさを独立して試せます。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "demo": {
+    "title": "図形の橋と境界を別々に調整",
+    "caption": "初期値は海辺、円A/Bの中心(120,120)/(200,120)、半径60pxずつ、ブレンド幅40px、境界ぼかし12px、暗さの重み65%、候補1200個、シード42です。マスク図で円をドラッグして位置を変えられます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>*{box-sizing:border-box}body{margin:0;padding:12px;background:#f4f0e7;color:#29383d;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:8px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #c8c1b5;border-radius:7px;background:#fff;color:inherit;font:inherit}input[type=range]{padding:0;accent-color:#3d7d83}.row{display:flex;align-items:center;gap:7px}.row input{flex:1}.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.views{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.panel{min-width:0}.panel b{font-size:13px}canvas{width:100%;aspect-ratio:3/2;display:block;border:1px solid #cfc8bb;background:#fff}.move{touch-action:none;cursor:crosshair}.note{min-height:1.5em;font-size:13px;color:#52666a}@media(max-width:650px){.views{grid-template-columns:1fr}}@media(max-width:430px){body{padding:8px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}</style></head><body>\n<div class=\"controls\">\n<label>元の絵<select id=\"scene\"><option value=\"sea\">海辺</option><option value=\"flower\">花</option><option value=\"city\">街並み</option></select></label>\n<label>合成方法<select id=\"mode\"><option value=\"smooth\">smooth minで合体</option><option value=\"hard\">普通のminで合体</option><option value=\"intersection\">smooth maxで重なり</option><option value=\"difference\">smooth maxでAからBを抜く</option></select></label>\n<label>円Aの半径 <span class=\"row\"><input id=\"ra\" type=\"range\" min=\"25\" max=\"100\" value=\"60\"><output id=\"raOut\">60px</output></span></label>\n<label>円Bの半径 <span class=\"row\"><input id=\"rb\" type=\"range\" min=\"25\" max=\"100\" value=\"60\"><output id=\"rbOut\">60px</output></span></label>\n<label>距離を混ぜる幅 k <span class=\"row\"><input id=\"blend\" type=\"range\" min=\"0\" max=\"80\" value=\"40\"><output id=\"blendOut\">40px</output></span></label>\n<label>境界ぼかし幅 <span class=\"row\"><input id=\"feather\" type=\"range\" min=\"0\" max=\"40\" value=\"12\"><output id=\"featherOut\">12px</output></span></label>\n<label>暗さを優先 <span class=\"row\"><input id=\"alpha\" type=\"range\" min=\"0\" max=\"100\" value=\"65\"><output id=\"alphaOut\">65%</output></span></label>\n<label>候補の数 <span class=\"row\"><input id=\"count\" type=\"range\" min=\"300\" max=\"3600\" step=\"100\" value=\"1200\"><output id=\"countOut\">1200</output></span></label>\n<label>筆跡の長さ <span class=\"row\"><input id=\"length\" type=\"range\" min=\"4\" max=\"28\" value=\"12\"><output id=\"lengthOut\">12px</output></span></label>\n<label>筆跡の太さ <span class=\"row\"><input id=\"thick\" type=\"range\" min=\"1\" max=\"7\" value=\"2\"><output id=\"thickOut\">2px</output></span></label>\n<label>シード値 <span class=\"row\"><input id=\"seed\" type=\"number\" min=\"1\" max=\"9999\" value=\"42\"></span></label>\n</div><div class=\"buttons\"><button id=\"render\">この条件で描く</button><button id=\"newSeed\">シードを変える</button><button id=\"save\">完成画像をPNG保存</button></div>\n<p class=\"note\" id=\"note\" aria-live=\"polite\">マスク図の円をドラッグして配置を変えられます。</p>\n<div class=\"views\">\n<div class=\"panel\"><b>1. 元の絵</b><canvas id=\"source\" width=\"360\" height=\"240\"></canvas></div>\n<div class=\"panel\"><b>2. 距離を混ぜた形マスク</b><canvas id=\"gate\" class=\"move\" width=\"360\" height=\"240\" aria-label=\"二つの円のsmooth distance mask。円をドラッグして中心を移動\"></canvas></div>\n<div class=\"panel\"><b>3. 最終確率</b><canvas id=\"prob\" width=\"360\" height=\"240\"></canvas></div>\n<div class=\"panel\"><b>4. 採用した筆跡</b><canvas id=\"result\" width=\"360\" height=\"240\"></canvas></div>\n</div><script>\nconst W=360,H=240,byId=id=>document.getElementById(id),canvases=[\"source\",\"gate\",\"prob\",\"result\"].map(byId),ctx=canvases.map(c=>c.getContext(\"2d\"));\nlet ax=120,ay=120,bx=200,by=120,pixels,dragTarget=null;const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));\nfunction randFactory(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}\nfunction scene(){const c=ctx[0],g=c.createLinearGradient(0,0,0,H),v=byId(\"scene\").value;\nif(v===\"sea\"){g.addColorStop(0,\"#d6e1df\");g.addColorStop(.48,\"#8eaaa6\");g.addColorStop(.49,\"#435f65\");g.addColorStop(1,\"#d4b98e\")}\nif(v===\"flower\"){g.addColorStop(0,\"#e9d8bd\");g.addColorStop(1,\"#526e4e\")}\nif(v===\"city\"){g.addColorStop(0,\"#bfced1\");g.addColorStop(1,\"#b3a58c\")}\nc.fillStyle=g;c.fillRect(0,0,W,H);\nif(v===\"sea\"){c.fillStyle=\"#65756c\";c.fillRect(32,90,45,52);c.fillRect(80,72,28,70);c.fillStyle=\"#eee0c5\";for(let i=0;i<9;i++)c.fillRect(39+i%3*12,99+Math.floor(i/3)*13,5,6)}\nif(v===\"flower\"){c.fillStyle=\"#d7a35c\";for(let i=0;i<8;i++){const a=i*Math.PI/4;c.beginPath();c.ellipse(180+Math.cos(a)*28,118+Math.sin(a)*28,14,26,a,0,Math.PI*2);c.fill()}c.fillStyle=\"#754d3b\";c.beginPath();c.arc(180,118,15,0,Math.PI*2);c.fill();c.strokeStyle=\"#344f3b\";c.lineWidth=5;c.beginPath();c.moveTo(180,145);c.lineTo(180,225);c.stroke()}\nif(v===\"city\"){c.fillStyle=\"#746c61\";for(let i=0;i<5;i++){let x=25+i*62,h=65+(i%3)*22;c.fillRect(x,H-h,48,h);c.fillStyle=\"#ecd6aa\";for(let y=H-h+10;y<H-8;y+=18)c.fillRect(x+9,y,8,9);c.fillStyle=\"#746c61\"}}\nif(v===\"sea\"||v===\"city\"){c.strokeStyle=v===\"sea\"?\"#edf0df\":\"#596970\";c.lineWidth=2;for(let y=156;y<225;y+=13){c.beginPath();c.moveTo(4,y);c.lineTo(350,y+(y%3)*2);c.stroke()}}\npixels=c.getImageData(0,0,W,H).data;\n}\nfunction sample(x,y){const i=(Math.floor(y)*W+Math.floor(x))*4;return .299*pixels[i]+.587*pixels[i+1]+.114*pixels[i+2]}\nfunction grad(x,y){const gx=(sample(clamp(x+2,0,W-1),y)-sample(clamp(x-2,0,W-1),y))/4,gy=(sample(x,clamp(y+2,0,H-1))-sample(x,clamp(y-2,0,H-1)))/4;return[Math.hypot(gx,gy),Math.atan2(gy,gx)+Math.PI/2]}\nfunction vals(){return{ra:+byId(\"ra\").value,rb:+byId(\"rb\").value,blend:+byId(\"blend\").value,feather:+byId(\"feather\").value,alpha:+byId(\"alpha\").value/100,count:+byId(\"count\").value,len:+byId(\"length\").value,thick:+byId(\"thick\").value,seed:+byId(\"seed\").value||42,mode:byId(\"mode\").value}}\nfunction smoothMin(a,b,k){if(k<=0)return Math.min(a,b);const h=Math.max(k-Math.abs(a-b),0)/k;return Math.min(a,b)-h*h*k*.25}\nfunction smoothMax(a,b,k){return-smoothMin(-a,-b,k)}\nfunction field(x,y,v){const dA=Math.hypot(x-ax,y-ay)-v.ra,dB=Math.hypot(x-bx,y-by)-v.rb;if(v.mode===\"hard\")return Math.min(dA,dB);if(v.mode===\"intersection\")return smoothMax(dA,dB,v.blend);if(v.mode===\"difference\")return smoothMax(dA,-dB,v.blend);return smoothMin(dA,dB,v.blend)}\nfunction maskAt(x,y,v){const d=field(x,y,v);return v.feather===0?(d<=0?1:0):clamp((v.feather-d)/v.feather,0,1)}\nfunction pAt(x,y,v){const pDark=1-sample(x,y)/255,[m]=grad(x,y),strength=Math.min(m/180,1),pFeature=v.alpha*pDark+(1-v.alpha)*strength;return maskAt(x,y,v)*pFeature}\nfunction drawGate(v){const c=ctx[1],im=c.createImageData(W,H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const m=Math.round(maskAt(x,y,v)*255),i=(y*W+x)*4;im.data[i]=m;im.data[i+1]=m;im.data[i+2]=m;im.data[i+3]=255}c.putImageData(im,0,0);c.lineWidth=2;c.strokeStyle=\"#d05c43\";c.beginPath();c.arc(ax,ay,v.ra,0,Math.PI*2);c.stroke();c.strokeStyle=\"#417786\";c.beginPath();c.arc(bx,by,v.rb,0,Math.PI*2);c.stroke();c.fillStyle=\"#d05c43\";c.beginPath();c.arc(ax,ay,4,0,Math.PI*2);c.fill();c.fillStyle=\"#417786\";c.beginPath();c.arc(bx,by,4,0,Math.PI*2);c.fill()}\nfunction drawProb(v){const c=ctx[2],im=c.createImageData(W,H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const n=Math.round(pAt(x,y,v)*255),i=(y*W+x)*4;im.data[i]=n;im.data[i+1]=n;im.data[i+2]=n;im.data[i+3]=255}c.putImageData(im,0,0)}\nfunction drawResult(v){const c=ctx[3];c.drawImage(canvases[0],0,0);c.save();c.lineCap=\"round\";const rnd=randFactory(v.seed);let accepted=0;for(let i=0;i<v.count;i++){const x=rnd()*W,y=rnd()*H,p=pAt(x,y,v);if(rnd()<p){const[mag,a]=grad(x,y),len=v.len*(.5+Math.min(mag/90,1));c.strokeStyle=byId(\"scene\").value===\"flower\"?\"#fff0c9\":\"#f8ead0\";c.lineWidth=v.thick*(.7+rnd()*.6);c.beginPath();c.moveTo(x-Math.cos(a)*len/2,y-Math.sin(a)*len/2);c.lineTo(x+Math.cos(a)*len/2,y+Math.sin(a)*len/2);c.stroke();accepted++}}c.restore();byId(\"note\").textContent=\"候補\"+v.count+\"個のうち\"+accepted+\"本を採用。円A・Bをドラッグして配置を変えられます。\"}\nfunction updateLabels(){for(const[id,suf]of[[\"ra\",\"px\"],[\"rb\",\"px\"],[\"blend\",\"px\"],[\"feather\",\"px\"],[\"alpha\",\"%\"],[\"count\",\"\"],[\"length\",\"px\"],[\"thick\",\"px\"]])byId(id+\"Out\").value=byId(id).value+suf}\nfunction render(){updateLabels();scene();const v=vals();drawGate(v);drawProb(v);drawResult(v)}\ncanvases[1].addEventListener(\"pointerdown\",e=>{const r=canvases[1].getBoundingClientRect(),x=(e.clientX-r.left)*W/r.width,y=(e.clientY-r.top)*H/r.height;dragTarget=Math.hypot(x-ax,y-ay)<Math.hypot(x-bx,y-by)?\"A\":\"B\";canvases[1].setPointerCapture(e.pointerId);move(e)});\ncanvases[1].addEventListener(\"pointermove\",e=>{if(dragTarget)move(e)});canvases[1].addEventListener(\"pointerup\",()=>dragTarget=null);canvases[1].addEventListener(\"pointercancel\",()=>dragTarget=null);\nfunction move(e){const r=canvases[1].getBoundingClientRect(),x=clamp((e.clientX-r.left)*W/r.width,0,W),y=clamp((e.clientY-r.top)*H/r.height,0,H);if(dragTarget===\"A\"){ax=x;ay=y}else{bx=x;by=y}const v=vals();drawGate(v);drawProb(v);drawResult(v)}\ndocument.querySelectorAll(\"input,select\").forEach(el=>el.addEventListener(\"input\",render));\nbyId(\"render\").addEventListener(\"click\",render);byId(\"newSeed\").addEventListener(\"click\",()=>{byId(\"seed\").value=(+byId(\"seed\").value+137)%9999+1;render()});\nbyId(\"save\").addEventListener(\"click\",()=>{const a=document.createElement(\"a\");a.download=\"smooth-distance-blending.png\";a.href=canvases[3].toDataURL(\"image/png\");a.click()});\nrender();\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "普通のminで境目を見る",
+      "action": "合成方法を普通のminにし、二つの円の間に少し隙間ができる位置へドラッグします。",
+      "observe": "円の間の点はどちらの距離も正で、マスクが黒くなり、筆跡が途切れる位置を見ます。"
+    },
+    {
+      "title": "橋を広げる",
+      "action": "smooth minを選び、ブレンド幅kを0px、20px、40px、80pxと変えます。",
+      "observe": "kが大きいほど距離を混ぜる範囲が広がり、二つの円の間に太い橋ができるか比べます。"
+    },
+    {
+      "title": "端のぼかしと分ける",
+      "action": "ブレンド幅を固定し、境界ぼかしを0pxから20pxまで動かします。",
+      "observe": "円どうしをつなぐ量は変わらず、できあがった形の外周だけが柔らかくなることを見ます。"
+    },
+    {
+      "title": "別の演算でも試す",
+      "action": "smooth maxの重なりとAからBを抜く演算を選び、ブレンド幅を動かします。",
+      "observe": "外側の輪郭だけでなく、内側のくびれや型抜き部分もなめらかに変わります。"
+    },
+    {
+      "title": "画像特徴を変える",
+      "action": "元の絵と暗さの重みを切り替え、同じ形とシードで筆跡を比べます。",
+      "observe": "形マスクは同じまま、元絵の明暗・輪郭で候補の通りやすさが変わると確かめます。"
+    },
+    {
+      "title": "自分の塊を作る",
+      "action": "二つの円の位置・半径・ブレンド幅を決め、シードを変えて気に入った結果をPNG保存します。",
+      "observe": "二つの距離がどの範囲で混ざったか、くびれの見た目を使って説明します。"
+    }
+  ],
+  "artist": {
+    "name": "パウル・クレー",
+    "work": "《ペルシャのナイチンゲール》",
+    "context": "1917年に制作された抽象作品です。小さな色面や線が集まり、鳥や植物を思わせるまとまりを作っています。形どうしがどこでつながって見えるかを観察してください。",
+    "relation": "作品がsmooth minや距離場で作られたという意味ではありません。色面や線のつながり方を鑑賞し、デモでは二つの円の間に橋を作ると筆跡のまとまりがどう変わるか実験します。",
+    "references": [
+      {
+        "source": "Wikimedia Commons（National Gallery of Art Open Access）",
+        "label": "作品情報・CC0 1.0ライセンス表示",
+        "url": "https://commons.wikimedia.org/wiki/File:Paul_Klee,_Persische_Nachtigallen_(Persian_Nightingales),_1917,_NGA_71551.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Paul_Klee%2C_Persische_Nachtigallen_%28Persian_Nightingales%29%2C_1917%2C_NGA_71551.jpg/960px-Paul_Klee%2C_Persische_Nachtigallen_%28Persian_Nightingales%29%2C_1917%2C_NGA_71551.jpg",
+      "alt": "パウル・クレーの《ペルシャのナイチンゲール》。水彩や線で描かれた抽象的な色面と鳥や植物を思わせる形が集まる。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Paul_Klee,_Persische_Nachtigallen_(Persian_Nightingales),_1917,_NGA_71551.jpg",
+      "license": "CC0 1.0",
+      "credit": "Paul Klee, “Persian Nightingales” (1917), National Gallery of Art, Washington. Image via Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "粘土の玉を押して一つにする",
+      "description": "二つの粘土玉を押しつけると、接する場所にくびれのない橋ができて一つの塊になります。離れた玉は別々のままで、強く押すほど境界が広く混ざります。",
+      "relation": "自作図では二つの丸い粘土が押されて接点に滑らかな橋を作る様子を描きました。物理シミュレーションそのものではなく、形のつながりを考えるための身近なたとえです。",
+      "visual": {
+        "src": "./assets/day-30-clay-blend.svg",
+        "alt": "赤と青の二つの粘土玉が接して、間に紫色のなめらかな橋ができて一つの塊になる自作図。",
+        "caption": "身近な例：二つの粘土玉を押しつける。境界がつながって一つの形に見えます。図は本レッスン用に作成。"
+      }
+    }
+  },
+  "extension": {
+    "title": "曲線と距離場をつなぐ",
+    "keywords": [
+      "smooth min",
+      "距離場",
+      "有機的な形",
+      "メタボール"
+    ],
+    "next": "次は円以外の線や曲線にもsmooth minを使い、距離場から自由な輪郭を組み立てます。"
+  }
+}
