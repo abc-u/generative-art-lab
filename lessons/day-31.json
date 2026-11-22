@@ -1,0 +1,147 @@
+{
+  "day": 31,
+  "status": "published",
+  "title": "Capsule Distance Field",
+  "subtitle": "線分上の最近点を探し、半径を足して両端の丸い帯を作る。",
+  "topic": "線分までの距離からカプセル形を作る",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は「線分への最近点投影」でカプセル距離場を作ります。点Pから線分ABへ垂線を下ろすように投影位置tを計算し、tを0〜1にclampして線分上の最近点Qを決めます。PからQまでの距離から半径rを引けば、線の中央も丸い端も同じ式で内側・境界・外側に分けられます。肝は、無限直線ではなく有限の線分の端で投影を止めることです。その距離をsmooth minや確率マスクへつなぎます。",
+  "applications": "丸い端を持つ帯や経路のマスクを作る、線と円を距離場として合成して確率描画の範囲を決める、折れ線の各区間をつないだ有機的な輪郭を組み立てる、といった用途に使えます。",
+  "prerequisites": "Day28の符号付き距離からマスクを作る方法、Day29のmin/maxによる図形合成、Day30のsmooth minで境界をなめらかにつなぐ方法を使います。",
+  "connection": "Day30では円の中心からの距離をsmooth minで混ぜ、間に橋を作りました。今回は「線分上のいちばん近い点」を計算して、円より自由なカプセル形を作ります。その距離を前回のsmooth minへ渡せば、線分と円も同じルールでつながります。",
+  "ruleSummary": "今日のルール：線分ABへの最近点Qを求め、d = 距離(P,Q) − 半径r とする。d<0は内側、d=0は輪郭、d>0は外側。",
+  "goalTitle": "線分の距離から、端が丸い形を作る",
+  "ruleCode": "v = B − A\n t = clamp( dot(P − A, v) / dot(v, v), 0, 1 )\nQ = A + t × v\nd = |P − Q| − r",
+  "intuition": {
+    "title": "丸棒を紙に置いたと考える",
+    "story": "短い丸棒を机に置き、その棒の中心線から半径rだけ紙に色を広げた形を想像します。点Pの近くにある棒上の点Qを探すとき、垂線の足が棒の外へ出たら端Aか端Bで止めます。この「0〜1に止める」操作で、両端が自然に丸く閉じます。",
+    "visual": "点P → 線分ABへの投影位置t → 0〜1にclamp → 最近点Q → 距離から半径rを引く",
+    "diagram": "Pから線分へ投影 → tを端AとBの間に止める → d=距離(P,Q)−r → カプセル"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-31-capsule-projection.svg",
+    "alt": "点Pから線分ABへ垂直に投影した点Qを求め、線分の端では投影位置を0から1に止める図。太い帯が半径rのカプセル形になる。",
+    "caption": "肝は投影位置tを0〜1にclampすること。端の外に出た垂線はAまたはBへ戻り、丸い端まで距離で判定できます。"
+  },
+  "numbers": {
+    "title": "最近点を一つずつ計算する",
+    "setup": "デモの基準はA=(90,120)、B=(330,120)、半径r=28pxです。横幅520×高さ240pxのキャンバスで点Pを調べます。",
+    "steps": [
+      {
+        "label": "線分の向き",
+        "calculation": "v=B−A=(240,0)、|v|²=240²=57,600です。点P=(210,155)ならP−A=(120,35)です。"
+      },
+      {
+        "label": "線上の位置を出す",
+        "calculation": "t=((P−A)·v)/|v|²=(120×240+35×0)/57,600=0.5。0〜1内なのでそのまま使います。"
+      },
+      {
+        "label": "最近点Qを決める",
+        "calculation": "Q=A+t×v=(90,120)+0.5×(240,0)=(210,120)。"
+      },
+      {
+        "label": "半径を引く",
+        "calculation": "距離(P,Q)=35pxなのでd=35−28=+7px。点Pはカプセルの外です。"
+      },
+      {
+        "label": "内側と丸い端も確かめる",
+        "calculation": "P=(210,140)ならd=20−28=−8pxで内側。端の外P=(75,120)はt=−0.0625を0に止め、Q=A、d=15−28=−13pxです。"
+      }
+    ],
+    "note": "tを0〜1に止めるclampが要点です。これをせず無限に続く直線へ投影すると、線分の外側の点まで線の中央のように扱い、丸い端が作れません。"
+  },
+  "code": "function capsuleDistance(p,a,b,r) {\n  const abx=b.x-a.x, aby=b.y-a.y, apx=p.x-a.x, apy=p.y-a.y;\n  const len2=abx*abx+aby*aby;\n  const t=len2===0?0:Math.max(0,Math.min(1,(apx*abx+apy*aby)/len2));\n  const qx=a.x+t*abx, qy=a.y+t*aby;\n  return Math.hypot(p.x-qx,p.y-qy)-r;\n}\nconst dLine=capsuleDistance(P,A,B,r);\nconst dCircle=Math.hypot(P.x-C.x,P.y-C.y)-R;\nconst d=smoothMin(dLine,dCircle,k);\nconst mask=feather===0?(d<=0?1:0):Math.max(0,Math.min(1,(feather-d)/feather));\nif(random()<mask*pTone) drawStroke(P);",
+  "codeNote": "7行目までが線分距離の肝です。内積で線分上の位置tを求め、Math.max/minで0〜1へ止めます。t=0は端A、t=1は端Bです。8〜12行目ではDay30のsmoothMinと境界ぼかしを使います。r=28px、blendWidth k=24px、feather=12px、pTone=0.65はデモ初期値と同じです。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    10,
+    11,
+    12
+  ],
+  "demo": {
+    "title": "線分・丸い端・合成の距離を動かす",
+    "caption": "初期値：A=(90,120)、B=(330,120)、カプセル半径28px、円中心C=(370,120)・半径22px、smooth min幅24px、境界ぼかし12px、通過率65%、候補点1,200個、筆跡長11px、シード42。線分の端をドラッグし、太さ・合成幅・ぼかし・密度・配色を変えてください。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>\n*{box-sizing:border-box}body{margin:0;padding:14px;background:#f5f2ea;color:#20363b;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:14px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #b8c2bd;border-radius:8px;background:#fff;color:#20363b;font:inherit}input[type=range]{padding:0;accent-color:#176b72}output{font-variant-numeric:tabular-nums}.panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.panel{margin:0;padding:8px;border:1px solid #d5d8cf;border-radius:10px;background:#fff}.panel figcaption{min-height:2.6em;font-size:13px;font-weight:650}.panel canvas{display:block;width:100%;height:auto;aspect-ratio:13/6;border-radius:6px;touch-action:none}.note{margin:10px 0 0;font-size:13px}.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}.actions button{cursor:pointer;background:#20363b;color:#fff}.status{font-size:13px}@media(max-width:680px){body{padding:10px}.panels{grid-template-columns:1fr}.panel figcaption{min-height:0}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:390px){.controls{grid-template-columns:1fr}}\n</style></head><body>\n<div class=\"controls\">\n<label>配置<select id=\"scene\"><option value=\"horizontal\">水平</option><option value=\"diagonal\">斜め</option><option value=\"short\">短い線分</option></select></label>\n<label>合成<select id=\"combine\"><option value=\"yes\">カプセル＋円</option><option value=\"no\">カプセルだけ</option></select></label>\n<label>半径 r <output id=\"rOut\">28 px</output><input id=\"radius\" type=\"range\" min=\"10\" max=\"48\" step=\"2\" value=\"28\"></label>\n<label>smooth min幅 k <output id=\"kOut\">24 px</output><input id=\"blend\" type=\"range\" min=\"0\" max=\"64\" step=\"2\" value=\"24\"></label>\n<label>境界ぼかし <output id=\"fOut\">12 px</output><input id=\"feather\" type=\"range\" min=\"0\" max=\"32\" step=\"2\" value=\"12\"></label>\n<label>通過率 pTone <output id=\"pOut\">65%</output><input id=\"tone\" type=\"range\" min=\"10\" max=\"100\" step=\"5\" value=\"65\"></label>\n<label>候補点 <output id=\"nOut\">1,200</output><input id=\"count\" type=\"range\" min=\"400\" max=\"3000\" step=\"200\" value=\"1200\"></label>\n<label>筆跡の長さ <output id=\"lOut\">11 px</output><input id=\"length\" type=\"range\" min=\"3\" max=\"23\" step=\"2\" value=\"11\"></label>\n<label>配色<select id=\"palette\"><option value=\"sea\">海辺</option><option value=\"ember\">夕焼け</option></select></label>\n</div>\n<div class=\"panels\">\n<figure class=\"panel\"><figcaption>1. 距離の形（線端をドラッグ）</figcaption><canvas id=\"source\" width=\"1040\" height=\"480\" aria-label=\"カプセル線分と合成する円\"></canvas></figure>\n<figure class=\"panel\"><figcaption>2. 距離を確率マスクへ</figcaption><canvas id=\"mask\" width=\"1040\" height=\"480\" aria-label=\"距離から計算した確率マスク\"></canvas></figure>\n<figure class=\"panel\"><figcaption>3. 通過した候補点で描く</figcaption><canvas id=\"art\" width=\"1040\" height=\"480\" aria-label=\"マスク内に散らした筆跡\"></canvas></figure>\n</div><div class=\"actions\"><button id=\"newSeed\" type=\"button\">新しいシードで描き直す</button><span id=\"status\" class=\"status\" aria-live=\"polite\"></span></div><p class=\"note\">線分の両端をつまんで動かせます。各候補点で「線分までの距離−半径」を調べ、マスク×通過率の確率で筆跡を残します。シードを変えると形の条件を保ったまま模様が変わります。</p>\n<script>\n(()=>{const W=520,H=240,$=id=>document.getElementById(id),ids=[\"scene\",\"combine\",\"radius\",\"blend\",\"feather\",\"tone\",\"count\",\"length\",\"palette\"],controls=ids.map($);const canvases=[$(\"source\"),$(\"mask\"),$(\"art\")],ctx=canvases.map(c=>c.getContext(\"2d\"));ctx.forEach(c=>c.setTransform(2,0,0,2,0,0));const presets={horizontal:{a:{x:90,y:120},b:{x:330,y:120},c:{x:370,y:120},R:22},diagonal:{a:{x:95,y:190},b:{x:325,y:55},c:{x:365,y:155},R:22},short:{a:{x:90,y:120},b:{x:245,y:120},c:{x:350,y:120},R:22}};let g=JSON.parse(JSON.stringify(presets.horizontal)),seed=42,drag=null;function vals(){return{r:+$(\"radius\").value,k:+$(\"blend\").value,f:+$(\"feather\").value,p:+$(\"tone\").value/100,n:+$(\"count\").value,len:+$(\"length\").value,join:$(\"combine\").value===\"yes\",palette:$(\"palette\").value}}function dist(p,a,b,r){const vx=b.x-a.x,vy=b.y-a.y,wx=p.x-a.x,wy=p.y-a.y,l2=vx*vx+vy*vy,t=l2?Math.max(0,Math.min(1,(wx*vx+wy*vy)/l2)):0,qx=a.x+t*vx,qy=a.y+t*vy;return Math.hypot(p.x-qx,p.y-qy)-r}function sm(a,b,k){if(!k)return Math.min(a,b);const h=Math.max(k-Math.abs(a-b),0)/k;return Math.min(a,b)-h*h*k*.25}function D(x,y,v){const dl=dist({x,y},g.a,g.b,v.r);if(!v.join)return dl;return sm(dl,Math.hypot(x-g.c.x,y-g.c.y)-g.R,v.k)}function mask(d,f){return f===0?(d<=0?1:0):Math.max(0,Math.min(1,(f-d)/f))}function colors(){return $(\"palette\").value===\"sea\"?[[28,76,85],[51,132,132],[220,151,86]]:[[167,63,49],[231,133,69],[43,65,73]]}function paintSource(v){const c=ctx[0];c.fillStyle=\"#f4efe2\";c.fillRect(0,0,W,H);if(v.join){c.beginPath();c.arc(g.c.x,g.c.y,g.R,0,Math.PI*2);c.fillStyle=\"#e5aa62\";c.fill()}c.beginPath();c.moveTo(g.a.x,g.a.y);c.lineTo(g.b.x,g.b.y);c.lineCap=\"round\";c.lineWidth=v.r*2;c.strokeStyle=\"#267c7a\";c.stroke();c.beginPath();c.moveTo(g.a.x,g.a.y);c.lineTo(g.b.x,g.b.y);c.lineWidth=2;c.setLineDash([5,5]);c.strokeStyle=\"#fff\";c.stroke();c.setLineDash([]);for(const [p,t] of [[g.a,\"A\"],[g.b,\"B\"]]){c.beginPath();c.arc(p.x,p.y,7,0,Math.PI*2);c.fillStyle=\"#20363b\";c.fill();c.fillStyle=\"#20363b\";c.font=\"bold 13px system-ui\";c.fillText(t,p.x+9,p.y-8)}if(v.join){c.beginPath();c.arc(g.c.x,g.c.y,4,0,Math.PI*2);c.fillStyle=\"#8d4a38\";c.fill()}}function paintMask(v){const c=ctx[1],cs=colors();c.fillStyle=\"#f4efe2\";c.fillRect(0,0,W,H);for(let y=0;y<H;y+=4)for(let x=0;x<W;x+=4){const m=mask(D(x+2,y+2,v),v.f),ix=m>.66?0:m>.25?1:2,col=cs[ix],a=.18+.82*m;c.fillStyle=\"rgba(\"+col[0]+\",\"+col[1]+\",\"+col[2]+\",\"+a+\")\";c.fillRect(x,y,4,4)}}function rng(){let z=(seed+=0x6D2B79F5);z=Math.imul(z^z>>>15,z|1);z^=z+Math.imul(z^z>>>7,z|61);return((z^z>>>14)>>>0)/4294967296}function paintArt(v){const c=ctx[2],cs=colors();c.fillStyle=\"#f4efe2\";c.fillRect(0,0,W,H);let kept=0;for(let i=0;i<v.n;i++){const x=rng()*W,y=rng()*H;if(rng()>=mask(D(x,y,v),v.f)*v.p)continue;kept++;const col=cs[Math.floor(rng()*cs.length)],ang=Math.atan2(g.b.y-g.a.y,g.b.x-g.a.x)+(rng()-.5)*1.2,len=v.len*(.55+rng()*.9);c.beginPath();c.moveTo(x-Math.cos(ang)*len/2,y-Math.sin(ang)*len/2);c.lineTo(x+Math.cos(ang)*len/2,y+Math.sin(ang)*len/2);c.lineWidth=1.5+rng()*1.7;c.lineCap=\"round\";c.strokeStyle=\"rgb(\"+col.join(\",\")+\")\";c.stroke()}return kept}function render(){const v=vals();$(\"rOut\").textContent=v.r+\" px\";$(\"kOut\").textContent=v.k+\" px\";$(\"fOut\").textContent=v.f+\" px\";$(\"pOut\").textContent=Math.round(v.p*100)+\"%\";$(\"nOut\").textContent=v.n.toLocaleString(\"ja-JP\");$(\"lOut\").textContent=v.len+\" px\";paintSource(v);paintMask(v);const kept=paintArt(v);$(\"status\").textContent=\"seed \"+seed+\"：候補 \"+v.n.toLocaleString(\"ja-JP\")+\" 個のうち \"+kept+\" 本が通過\"}controls.forEach(x=>x.addEventListener(\"input\",render));$(\"scene\").addEventListener(\"change\",()=>{g=JSON.parse(JSON.stringify(presets[$(\"scene\").value]));render()});$(\"newSeed\").addEventListener(\"click\",()=>{seed=(seed*1664525+1013904223)>>>0;render()});function point(e){const r=canvases[0].getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}canvases[0].addEventListener(\"pointerdown\",e=>{const p=point(e);drag=Math.hypot(p.x-g.a.x,p.y-g.a.y)<Math.hypot(p.x-g.b.x,p.y-g.b.y)?\"a\":\"b\";canvases[0].setPointerCapture(e.pointerId);e.preventDefault()});canvases[0].addEventListener(\"pointermove\",e=>{if(!drag)return;const p=point(e);g[drag]={x:Math.max(12,Math.min(W-12,p.x)),y:Math.max(12,Math.min(H-12,p.y))};render()});canvases[0].addEventListener(\"pointerup\",()=>drag=null);canvases[0].addEventListener(\"pointercancel\",()=>drag=null);render()})();\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "投影点を見つける",
+      "action": "距離の形パネルでAまたはBを少しドラッグし、まず水平配置の線分と両端を見ます。",
+      "observe": "太い帯の中央線がABを通り、半径rの位置で幅が決まることを確かめます。"
+    },
+    {
+      "title": "線を太く・細くする",
+      "action": "半径rを28pxから12px、次に40pxへ動かします。ほかの条件はそのままにします。",
+      "observe": "線の中央は同じでも輪郭までの距離が変わり、カプセルの幅だけが太く細くなるか見ます。"
+    },
+    {
+      "title": "端でclampを確かめる",
+      "action": "AとBを離し、線分の端より外側の点を想像してから、AまたはBをドラッグします。",
+      "observe": "投影位置が線分の外へ伸びず、近い端に止まるため丸いキャップが残ることを見ます。"
+    },
+    {
+      "title": "ぼかし幅と合成幅を分ける",
+      "action": "境界ぼかしを0pxと24pxで比べ、その後smooth min幅kを0pxから48pxに変えます。",
+      "observe": "ぼかしは輪郭の確率帯を広げ、kはカプセルと円の境界を橋のようになめらかに混ぜます。"
+    },
+    {
+      "title": "確率模様の密度を変える",
+      "action": "候補点を400個と2,800個、通過率を35%と85%で試し、新しいシードも押します。",
+      "observe": "形の距離は同じまま、残る筆跡の本数と散らばり方だけが変わることを比べます。"
+    },
+    {
+      "title": "線分と色を組み合わせる",
+      "action": "配置を「斜め」または「短い線分」にし、カプセルだけ／カプセル＋円と配色を切り替えます。",
+      "observe": "向き・円とのつながり・色を別々に変えられ、同じ距離ルールから複数の作品が生まれます。"
+    }
+  ],
+  "artist": {
+    "name": "エドメ・ブーシャルドン",
+    "work": "《Cupid》",
+    "context": "1744年に制作された大理石の彫刻で、National Gallery of Artの所蔵作品です。人物像の輪郭や、丸みを持つ形がどこで細くなり太くなるかを見てください。",
+    "relation": "この彫刻が距離場やカプセル式で作られたという意味ではありません。作品の輪郭の丸みを観察し、デモでは線分のまわりに一定幅の帯を作ると、端の丸さと円へのつながりがどう変わるか試します。",
+    "references": [
+      {
+        "source": "Wikimedia Commons（National Gallery of Art Open Access）",
+        "label": "作品情報・CC0 1.0ライセンス表示",
+        "url": "https://commons.wikimedia.org/wiki/File:Edme_Bouchardon,_Cupid,_1744,_NGA_41708.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Edme_Bouchardon%2C_Cupid%2C_1744%2C_NGA_41708.jpg/960px-Edme_Bouchardon%2C_Cupid%2C_1744%2C_NGA_41708.jpg",
+      "alt": "エドメ・ブーシャルドンの大理石彫刻《Cupid》（1744年）を正面から写した画像。人物像の輪郭と丸みが見える。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Edme_Bouchardon,_Cupid,_1744,_NGA_41708.jpg",
+      "license": "CC0 1.0",
+      "credit": "Edme Bouchardon, Cupid, 1744, marble; National Gallery of Art, Washington, Samuel H. Kress Collection. Image courtesy National Gallery of Art via Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "マーカーで引いた太い線",
+      "description": "一定幅の太いマーカーを紙の上で動かすと、通った道のまわりが塗られ、始点と終点は丸くなります。ペン先の位置から線分への近さが、色のつく帯を決めると考えられます。",
+      "relation": "この自作図は太いマーカーの実物の線と、同じ幅を保つカプセル輪郭を並べています。描画ソフトの距離場と現実のインクの広がりが完全に同じだという意味ではなく、一定幅の線と丸い端を観察する例です。",
+      "visual": {
+        "src": "./assets/day-31-marker-stroke.svg",
+        "alt": "太いマーカーで紙に引いた線の両端が丸い帯になる様子を描いた自作図。横にペン先とカプセル輪郭の断面がある。",
+        "caption": "身近な例：マーカーの先が通った帯は両端が丸くなります。図は本レッスン用に作成。"
+      }
+    }
+  },
+  "extension": {
+    "title": "複数の線分で折れ線と分岐を作る",
+    "keywords": [
+      "カプセル距離",
+      "線分への最近点投影",
+      "符号付き距離場",
+      "smooth min"
+    ],
+    "next": "次は線分の距離を何本もminやsmooth minで合成し、折れ線・枝分かれ・川のような輪郭を作ります。"
+  }
+}
