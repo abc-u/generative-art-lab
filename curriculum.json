@@ -269,6 +269,14 @@
       "description": "線分上の最近点へ投影し、距離から半径を引いて両端の丸いカプセル形を作る。smooth min・確率マスク・筆跡密度を動かして試す。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 32,
+      "title": "Polyline Distance Field",
+      "topic": "複数の線分をつないで距離場を作る",
+      "description": "各線分のカプセル距離を順に比べ、最小値で折れ線や枝分かれのマスクを作る。smooth min幅、太さ、ぼかし、候補点、色を動かして試す。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
