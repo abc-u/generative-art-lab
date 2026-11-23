@@ -1,0 +1,151 @@
+{
+  "day": 32,
+  "status": "published",
+  "title": "Polyline Distance Field",
+  "subtitle": "複数の線分の距離を順番に比べ、折れ曲がる帯や枝道を作る。",
+  "topic": "複数の線分をつないで距離場を作る",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は「折れ線距離場」を作ります。折れ線の各区間をDay31のカプセル距離として計算し、点Pからの距離がいちばん小さい区間を選びます。これで曲がった道や枝分かれも一本の領域として扱えます。肝は、区間ごとの距離を順番に調べて最小値を更新することです。角を柔らかくしたいときだけ、minをsmooth minに置き換えます。",
+  "applications": "川・道・枝のように折れ曲がる帯状マスクを作る、筆跡を複数区間の経路に沿わせる、距離に応じた色や描画確率を曲がった形へ配置する、といった用途に使えます。一本の短い線分だけで作ったカプセルを、点列や枝分かれの集合に発展させます。",
+  "prerequisites": "Day31の線分への最近点投影とカプセル距離、Day29のminで図形領域を選ぶ方法、Day30のsmooth minで境界をなめらかにつなぐ方法を使います。",
+  "connection": "Day31では一本の線分から、丸い端を持つカプセル距離場を作りました。今日はその線分を複数並べ、折れ線や分岐した道に拡張します。各区間の距離を比較する考え方はDay29のmin合成につながり、smooth minを選べばDay30のように角も柔らかくできます。",
+  "ruleSummary": "今日のルール：各線分のカプセル距離 dᵢ を求め、全区間の最小値を使う。角を混ぜたい場合は、順にsmooth min(d, dᵢ, k)を適用する。",
+  "goalTitle": "線分を並べ、最短距離を一本の形にする",
+  "ruleCode": "dᵢ = capsuleDistance(P, Aᵢ, Bᵢ, r)\nd = min(d₀, d₁, …, dₙ)\n角をなめらかにするなら min を smoothMin(…, k) にする",
+  "intuition": {
+    "title": "鉛筆の道筋を区間ごとにたどる",
+    "story": "公園の道を地図に描くとき、曲がり角ごとに短い直線へ分けます。今いる点Pから、それぞれの道区間までの近さを調べて、いちばん近い区間を採用します。道幅を半径として引けば、折れた線全体に沿った帯ができます。分岐した道も区間を足して同じように調べられます。",
+    "visual": "点P → 区間0の距離、区間1の距離、区間2の距離 → 最小値を更新 → 折れ線の距離",
+    "diagram": "各線分をカプセルとして測る → もっとも小さい距離を残す → 必要ならsmooth minで角を混ぜる"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-32-polyline-min.svg",
+    "alt": "三つの点を二本の線分で結んだ折れ線に点Pから距離d1とd2を測り、小さい距離を選んで帯状の形にする図。",
+    "caption": "区間ごとに点Pとの距離を出し、いちばん小さい値を残します。kを使えば、区間の角もsmooth minで柔らかくできます。"
+  },
+  "numbers": {
+    "title": "曲がり角の点で2区間を比べる",
+    "setup": "デモ初期値の折れ線はA=(80,100)→B=(160,100)→C=(160,180)、半径r=10pxです。点P=(154,106)を調べ、smooth min幅k=12px、境界ぼかし8px、通過率65%にします。",
+    "steps": [
+      {
+        "label": "区間ABへ投影",
+        "calculation": "AB=(80,0)。t=((P−A)·AB)/|AB|²=(74×80+6×0)/6,400=0.925。Q₀=(154,100)、距離は6pxです。"
+      },
+      {
+        "label": "区間ABのカプセル距離",
+        "calculation": "半径r=10を引き、d₀=6−10=−4px。Pは区間ABのカプセル内にあります。"
+      },
+      {
+        "label": "区間BCへ投影",
+        "calculation": "BC=(0,80)。t=((P−B)·BC)/|BC|²=(−6×0+6×80)/6,400=0.075。Q₁=(160,106)、距離は6pxです。"
+      },
+      {
+        "label": "二つの距離から最小を選ぶ",
+        "calculation": "d₁=6−10=−4pxなので、min(d₀,d₁)=min(−4,−4)=−4px。折れ線の内側と判定されます。"
+      },
+      {
+        "label": "smooth minで角を混ぜる",
+        "calculation": "距離差0、k=12pxならh=(12−0)/12=1。smoothMin=−4−1²×12/4=−7px。角の近くまで形が広がります。"
+      },
+      {
+        "label": "マスクから通過確率へ",
+        "calculation": "境界ぼかし8pxではmask=(8−(−7))/8=1を上限1で止めます。通過率65%なら筆跡が残る確率は1×0.65=0.65、つまり65%です。"
+      }
+    ],
+    "note": "半径rは帯の太さ、kは隣り合う区間の角を混ぜる幅、境界ぼかしは距離を確率マスクへ変える幅です。三つは別の役目です。k=0なら通常のminになり、区間を増やしても距離の選び方は変わりません。"
+  },
+  "code": "function polylineDistance(P, points, edges, r, k) {\n  let d = Infinity;\n  for (let i = 0; i < edges.length; i++) {\n    const [aIndex, bIndex] = edges[i];\n    const next = capsuleDistance(P, points[aIndex], points[bIndex], r);\n    d = i === 0 ? next : (k === 0 ? Math.min(d, next) : smoothMin(d, next, k));\n  }\n  return d;\n}\nconst d = polylineDistance(P, points, edges, radius, blendWidth);\nconst mask = feather === 0 ? (d <= 0 ? 1 : 0) : clamp((feather - d) / feather, 0, 1);\nif (random() < mask * toneRate) drawStroke(P);",
+  "codeNote": "1〜9行目が折れ線距離の肝です。edgesの各区間でDay31のcapsuleDistanceを呼び、k=0ならmin、k>0ならsmoothMinで距離を順に更新します。初期値はr=10px、k=12px、feather=8px、toneRate=0.65で、数値例とデモにそろえています。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "demo": {
+    "title": "折れ線の区間・角・筆跡を動かす",
+    "caption": "初期値：角の道 A=(80,100)→B=(160,100)→C=(160,180)、半径10px、smooth min幅12px、境界ぼかし8px、通過率65%、候補点1,200個、筆跡長7px、シード42。線上の点をドラッグし、配置・枝分かれ・線幅・角の混ざり方・密度・色を変えてください。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>\n*{box-sizing:border-box}body{margin:0;padding:14px;background:#f5f2ea;color:#20363b;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:14px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #b8c2bd;border-radius:8px;background:#fff;color:#20363b;font:inherit}input[type=range]{padding:0;accent-color:#176b72}.panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.panel{margin:0;padding:8px;border:1px solid #d5d8cf;border-radius:10px;background:#fff}.panel figcaption{min-height:2.6em;font-size:13px;font-weight:650}.panel canvas{display:block;width:100%;height:auto;aspect-ratio:13/6;border-radius:6px;touch-action:none}.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}.actions button{cursor:pointer;background:#20363b;color:#fff}.note,.status{font-size:13px}.note{margin:10px 0 0}@media(max-width:680px){body{padding:10px}.panels{grid-template-columns:1fr}.panel figcaption{min-height:0}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:390px){.controls{grid-template-columns:1fr}}\n</style></head><body>\n<div class=\"controls\">\n<label>道の形<select id=\"layout\"><option value=\"corner\">角の道</option><option value=\"wave\">くねくね道</option><option value=\"fork\">枝分かれ</option><option value=\"loop\">輪の道</option></select></label>\n<label>半径 r <output id=\"rOut\">10 px</output><input id=\"radius\" type=\"range\" min=\"4\" max=\"30\" step=\"2\" value=\"10\"></label>\n<label>角の混ざり幅 k <output id=\"kOut\">12 px</output><input id=\"blend\" type=\"range\" min=\"0\" max=\"48\" step=\"2\" value=\"12\"></label>\n<label>境界ぼかし <output id=\"fOut\">8 px</output><input id=\"feather\" type=\"range\" min=\"0\" max=\"30\" step=\"2\" value=\"8\"></label>\n<label>通過率 <output id=\"pOut\">65%</output><input id=\"tone\" type=\"range\" min=\"10\" max=\"100\" step=\"5\" value=\"65\"></label>\n<label>候補点 <output id=\"nOut\">1,200</output><input id=\"count\" type=\"range\" min=\"400\" max=\"3000\" step=\"200\" value=\"1200\"></label>\n<label>筆跡の長さ <output id=\"lOut\">7 px</output><input id=\"length\" type=\"range\" min=\"3\" max=\"21\" step=\"2\" value=\"7\"></label>\n<label>配色<select id=\"palette\"><option value=\"river\">川辺</option><option value=\"autumn\">秋の林</option></select></label>\n</div>\n<div class=\"panels\">\n<figure class=\"panel\"><figcaption>1. 区間をつないだ中心線（点をドラッグ）</figcaption><canvas id=\"source\" width=\"1040\" height=\"480\" aria-label=\"折れ線と枝分かれの区間を操作する図\"></canvas></figure>\n<figure class=\"panel\"><figcaption>2. 最小距離からマスクへ</figcaption><canvas id=\"mask\" width=\"1040\" height=\"480\" aria-label=\"各区間の距離を合成したマスク\"></canvas></figure>\n<figure class=\"panel\"><figcaption>3. 通過した点で作品を描く</figcaption><canvas id=\"art\" width=\"1040\" height=\"480\" aria-label=\"距離マスクから生成した筆跡\"></canvas></figure>\n</div><div class=\"actions\"><button id=\"newSeed\" type=\"button\">新しいシードで描き直す</button><span id=\"status\" class=\"status\" aria-live=\"polite\"></span></div><p class=\"note\">線上の点をドラッグして道を変えます。各候補点で全区間の距離を比べ、最小値をマスクへ渡します。k=0は通常のmin、kを上げると角がなめらかになります。</p>\n<script>\n(()=>{const W=520,H=240,$=id=>document.getElementById(id),ids=[\"layout\",\"radius\",\"blend\",\"feather\",\"tone\",\"count\",\"length\",\"palette\"],controls=ids.map($),cv=[$(\"source\"),$(\"mask\"),$(\"art\")],cx=cv.map(c=>c.getContext(\"2d\"));cx.forEach(c=>c.setTransform(2,0,0,2,0,0));const presets={corner:{p:[{x:80,y:100},{x:160,y:100},{x:160,y:180}],e:[[0,1],[1,2]]},wave:{p:[{x:45,y:150},{x:110,y:90},{x:175,y:155},{x:240,y:85},{x:310,y:150},{x:380,y:90},{x:470,y:150}],e:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]]},fork:{p:[{x:260,y:220},{x:260,y:140},{x:105,y:55},{x:415,y:55}],e:[[0,1],[1,2],[1,3]]},loop:{p:[{x:115,y:115},{x:165,y:65},{x:265,y:55},{x:365,y:85},{x:405,y:145},{x:340,y:195},{x:220,y:200},{x:125,y:165}],e:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0]]}};let g=JSON.parse(JSON.stringify(presets.corner)),seed=42,drag=-1;function v(){return{r:+$(\"radius\").value,k:+$(\"blend\").value,f:+$(\"feather\").value,p:+$(\"tone\").value/100,n:+$(\"count\").value,len:+$(\"length\").value,palette:$(\"palette\").value}}function cap(P,A,B,r){const vx=B.x-A.x,vy=B.y-A.y,wx=P.x-A.x,wy=P.y-A.y,l2=vx*vx+vy*vy,t=l2?Math.max(0,Math.min(1,(wx*vx+wy*vy)/l2)):0,qx=A.x+t*vx,qy=A.y+t*vy;return Math.hypot(P.x-qx,P.y-qy)-r}function sm(a,b,k){if(!k)return Math.min(a,b);const h=Math.max(k-Math.abs(a-b),0)/k;return Math.min(a,b)-h*h*k*.25}function D(x,y,z){let d=Infinity;for(let i=0;i<g.e.length;i++){const edge=g.e[i],next=cap({x,y},g.p[edge[0]],g.p[edge[1]],z.r);d=i===0?next:(z.k===0?Math.min(d,next):sm(d,next,z.k))}return d}function m(d,f){return f===0?(d<=0?1:0):Math.max(0,Math.min(1,(f-d)/f))}function pal(){return $(\"palette\").value===\"river\"?[[27,84,88],[68,145,133],[221,166,99]]:[[57,75,65],[165,91,55],[215,171,100]]}function base(c){c.fillStyle=\"#f4efe2\";c.fillRect(0,0,W,H)}function drawSource(z){const c=cx[0];base(c);c.lineCap=\"round\";c.lineJoin=\"round\";c.strokeStyle=\"#72a49a\";c.lineWidth=2*z.r;for(const e of g.e){c.beginPath();c.moveTo(g.p[e[0]].x,g.p[e[0]].y);c.lineTo(g.p[e[1]].x,g.p[e[1]].y);c.stroke()}c.setLineDash([5,5]);c.lineWidth=2;c.strokeStyle=\"#fff\";for(const e of g.e){c.beginPath();c.moveTo(g.p[e[0]].x,g.p[e[0]].y);c.lineTo(g.p[e[1]].x,g.p[e[1]].y);c.stroke()}c.setLineDash([]);g.p.forEach((p,i)=>{c.beginPath();c.arc(p.x,p.y,7,0,Math.PI*2);c.fillStyle=\"#20363b\";c.fill();c.fillStyle=\"#20363b\";c.font=\"bold 12px system-ui\";c.fillText(String(i+1),p.x+8,p.y-7)})}function drawMask(z){const c=cx[1],cs=pal();base(c);for(let y=0;y<H;y+=4)for(let x=0;x<W;x+=4){const q=m(D(x+2,y+2,z),z.f),ix=q>.66?0:q>.25?1:2,col=cs[ix],a=.2+.8*q;c.fillStyle=\"rgba(\"+col[0]+\",\"+col[1]+\",\"+col[2]+\",\"+a+\")\";c.fillRect(x,y,4,4)}}function rng(){let a=seed+=0x6D2B79F5;a=Math.imul(a^a>>>15,a|1);a^=a+Math.imul(a^a>>>7,a|61);return((a^a>>>14)>>>0)/4294967296}function drawArt(z){const c=cx[2],cs=pal();base(c);let n=0;for(let i=0;i<z.n;i++){const x=rng()*W,y=rng()*H;if(rng()>=m(D(x,y,z),z.f)*z.p)continue;n++;const col=cs[Math.floor(rng()*cs.length)],a=rng()*Math.PI*2,len=z.len*(.6+rng()*.8);c.beginPath();c.moveTo(x-Math.cos(a)*len/2,y-Math.sin(a)*len/2);c.lineTo(x+Math.cos(a)*len/2,y+Math.sin(a)*len/2);c.lineWidth=1.5+rng()*1.5;c.lineCap=\"round\";c.strokeStyle=\"rgb(\"+col.join(\",\")+\")\";c.stroke()}return n}function render(){const z=v();$(\"rOut\").textContent=z.r+\" px\";$(\"kOut\").textContent=z.k+\" px\";$(\"fOut\").textContent=z.f+\" px\";$(\"pOut\").textContent=Math.round(z.p*100)+\"%\";$(\"nOut\").textContent=z.n.toLocaleString(\"ja-JP\");$(\"lOut\").textContent=z.len+\" px\";drawSource(z);drawMask(z);const n=drawArt(z);$(\"status\").textContent=\"seed \"+seed+\"：候補\"+z.n.toLocaleString(\"ja-JP\")+\"個から\"+n+\"本を描画\"}controls.forEach(x=>x.addEventListener(\"input\",render));$(\"layout\").addEventListener(\"change\",()=>{g=JSON.parse(JSON.stringify(presets[$(\"layout\").value]));render()});$(\"newSeed\").addEventListener(\"click\",()=>{seed=(seed*1664525+1013904223)>>>0;render()});function pos(e){const r=cv[0].getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}cv[0].addEventListener(\"pointerdown\",e=>{const q=pos(e);let best=22;drag=-1;g.p.forEach((p,i)=>{const d=Math.hypot(p.x-q.x,p.y-q.y);if(d<best){best=d;drag=i}});if(drag>=0){cv[0].setPointerCapture(e.pointerId);e.preventDefault()}});cv[0].addEventListener(\"pointermove\",e=>{if(drag<0)return;const q=pos(e);g.p[drag]={x:Math.max(12,Math.min(W-12,q.x)),y:Math.max(12,Math.min(H-12,q.y))};render()});cv[0].addEventListener(\"pointerup\",()=>drag=-1);cv[0].addEventListener(\"pointercancel\",()=>drag=-1);render()})();\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "距離を比べる",
+      "action": "初期の「角の道」を表示し、点番号1〜3の位置関係と中央線、マスクを見比べます。",
+      "observe": "角の周辺はどちらか近い区間が距離を決め、帯が途切れず続くことを確認します。"
+    },
+    {
+      "title": "区間を増やしてみる",
+      "action": "道の形を「くねくね道」に変え、線上の点を一つずつドラッグします。",
+      "observe": "点が増えると区間が増え、Pから近い区間が切り替わりながら全体の輪郭を作ります。"
+    },
+    {
+      "title": "minとsmooth minを比べる",
+      "action": "角の道へ戻し、角の混ざり幅kを0px、12px、40pxの順に試します。",
+      "observe": "k=0は区間の最小距離をそのまま使い、kを上げると角のまわりがふくらみ、なめらかになります。"
+    },
+    {
+      "title": "線幅と境界ぼかしを分ける",
+      "action": "半径rを6pxから22pxへ動かし、次に境界ぼかしを0pxから20pxへ動かします。",
+      "observe": "rは経路そのものの幅を変え、ぼかしは輪郭近くで筆跡が通る確率帯を変えます。"
+    },
+    {
+      "title": "枝分かれを組み立てる",
+      "action": "形を「枝分かれ」にし、通過率を30%と90%、候補点を400個と2,800個で比較します。",
+      "observe": "経路の枝はそのままに、確率と候補数によって模様の濃さや隙間が変わることを見ます。"
+    },
+    {
+      "title": "形・色・乱数を改造する",
+      "action": "輪の道やくねくね道に切り替え、配色を変えて新しいシードを何度か押します。",
+      "observe": "経路形・色・点の並びを別々に変えられ、距離ルールを保ったまま違う作品にできます。"
+    }
+  ],
+  "artist": {
+    "name": "アンリ・ルソー",
+    "work": "《熱帯の森》",
+    "context": "1909年に制作された油彩画で、National Gallery of Artが所蔵しています。画面に重なる葉や枝のかたちを見比べ、曲がりや枝分かれが画面の密度をどう作るか観察してください。",
+    "relation": "この絵が折れ線距離場で描かれたという意味ではありません。作品の葉や枝が重なる流れを観察し、デモでは線分を追加・接続すると帯の分岐と角の丸みがどう変わるか試します。",
+    "references": [
+      {
+        "source": "Wikimedia Commons（National Gallery of Art Open Access）",
+        "label": "作品情報・CC0 1.0ライセンス表示",
+        "url": "https://commons.wikimedia.org/wiki/File:Henri_Rousseau,_The_Equatorial_Jungle,_1909,_NGA_46688.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Henri_Rousseau%2C_The_Equatorial_Jungle%2C_1909%2C_NGA_46688.jpg/960px-Henri_Rousseau%2C_The_Equatorial_Jungle%2C_1909%2C_NGA_46688.jpg",
+      "alt": "アンリ・ルソーの《熱帯の森》（1909年）を写した縦長の油彩画。濃い葉や枝が重なり、密度のある森を描いている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Henri_Rousseau,_The_Equatorial_Jungle,_1909,_NGA_46688.jpg",
+      "license": "CC0 1.0",
+      "credit": "Henri Rousseau, The Equatorial Jungle, 1909, oil on canvas; National Gallery of Art, Washington, Chester Dale Collection. Image courtesy National Gallery of Art via Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "公園の小道が分かれる道筋",
+      "description": "公園の小道は曲がり角や分岐をいくつも持ちます。道の幅を保った帯として地図に描くとき、道筋を短い線分に分けてつなげれば、曲がり方や枝分かれを少ない点で表せます。",
+      "relation": "自作図は公園内の小道を線分で表し、曲がり角と分岐を一続きの経路として示します。実際の道幅や曲線を完全再現する図ではなく、経路を区間の集合として見るための具体例です。",
+      "visual": {
+        "src": "./assets/day-32-park-path.svg",
+        "alt": "公園の小道を曲がり角と三方向への分岐を持つ道筋として描いた自作地図。点を結ぶ線分が道幅のある帯になっている。",
+        "caption": "身近な例：公園の道を短い区間に分け、つないで描く。図は本レッスン用に作成。"
+      }
+    }
+  },
+  "extension": {
+    "title": "分岐と曲線の距離場へ",
+    "keywords": [
+      "折れ線距離場",
+      "線分配列",
+      "smooth min",
+      "枝分かれ"
+    ],
+    "next": "次は曲線の点列を自動で作る方法を学び、折れ線の距離場を流れる輪郭や自然な枝分かれへ発展させます。"
+  }
+}
