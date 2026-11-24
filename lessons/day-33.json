@@ -1,0 +1,149 @@
+{
+  "day": 33,
+  "status": "published",
+  "title": "Quadratic Bézier Sampling",
+  "subtitle": "二次ベジェ曲線を一定のtで点列にし、距離場へつなぐ。",
+  "topic": "二次ベジェ曲線を点列に変換する",
+  "phase": 1,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は「二次ベジェ曲線のパラメータサンプリング」です。始点P0・制御点P1・終点P2を用意し、tを0から1まで少しずつ増やして曲線上の点を計算します。肝は、P1を曲線上の通過点ではなく、曲線を引き寄せる制御点として扱うことです。得た点列を隣同士で結べばDay32の折れ線距離場へ渡せます。",
+  "applications": "手描き風の流線、川や煙の輪郭、曲がった道、文字や図形のパスを作るときに使えます。制御点をドラッグすると曲線のふくらみが変わり、サンプル数を増やすと折れ線が曲線へ近づきます。",
+  "prerequisites": "Day31の線分への最近点投影、Day32の複数線分の距離を比較する方法を使います。ベクトルの内積は使わず、0〜1の値tで始点から終点へ進む割合を表します。",
+  "connection": "Day32では、手で置いた複数の点を線分でつないで曲がる道を作りました。今回は二次ベジェ曲線から点列を自動生成し、その点列をDay32と同じ距離計算に渡します。手で頂点を増やさず、制御点一つで曲線のふくらみを調整できます。",
+  "ruleSummary": "今日のルール：tを0から1まで変え、二次ベジェ式で曲線上の点を作る。点列を隣同士で結び、Day32の距離場へ渡す。",
+  "goalTitle": "制御点で曲線を描き、点列にする",
+  "ruleCode": "B(t) = (1−t)²P₀ + 2(1−t)tP₁ + t²P₂\n0 ≤ t ≤ 1\nN回に分けると、N+1個の点ができる",
+  "intuition": {
+    "title": "両端を留めたリボンを制御点で引く",
+    "story": "リボンの両端P0とP2を机に留め、途中のP1の近くへ磁石を置いて引き寄せる様子を想像します。リボンはP1を通るとは限らず、その方向へふくらみます。tを0から1まで進めるのは、P0からP2までリボンをたどり、少しずつ位置を記録することです。",
+    "visual": "P0（始点） + P1（引き寄せる） + P2（終点） → t=0..1 → 曲線上の点列",
+    "diagram": "t=0ならP0、t=1ならP2。中間のtでは3点の重み付き平均を取る"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-33-bezier-sampling.svg",
+    "alt": "始点P0と終点P2を結ぶ曲線が制御点P1に引き寄せられ、tを0から1まで進めた点列として記録される図。",
+    "caption": "制御点P1は曲線を引き寄せます。tを一定間隔で増やして計算し、曲線を点列に置き換えます。"
+  },
+  "numbers": {
+    "title": "t=0.5の曲線上の位置を出す",
+    "setup": "デモ初期値はP0=(70,180)、P1=(260,30)、P2=(450,180)、サンプル数N=24です。横幅520×高さ240pxのCanvasで計算します。",
+    "steps": [
+      {
+        "label": "t=0.5の重み",
+        "calculation": "(1−t)²=0.25、2(1−t)t=0.5、t²=0.25。始点・制御点・終点を25%・50%・25%で混ぜます。"
+      },
+      {
+        "label": "x座標を計算",
+        "calculation": "x=0.25×70+0.5×260+0.25×450=17.5+130+112.5=260px。"
+      },
+      {
+        "label": "y座標を計算",
+        "calculation": "y=0.25×180+0.5×30+0.25×180=45+15+45=105px。曲線上の点はB(0.5)=(260,105)です。"
+      },
+      {
+        "label": "tを24分割",
+        "calculation": "N=24なのでt=i/24、i=0..24。点は25個、隣り合う点を結ぶ線分は24本です。i=12でt=0.5の点を含みます。"
+      },
+      {
+        "label": "点列を距離場へ渡す",
+        "calculation": "曲線上の点P=(260,105)では最短距離0px。半径r=12pxを引くとd=−12pxで、帯の内側です。"
+      },
+      {
+        "label": "確率マスクへ変換",
+        "calculation": "境界ぼかし8pxならmask=(8−(−12))/8=2.5を上限1に止めます。通過率65%なら筆跡が残る確率は1×0.65=0.65です。"
+      }
+    ],
+    "note": "P0とP2は曲線の始点・終点です。P1は曲線を引き寄せますが、一般には曲線上を通りません。サンプル数を増やすと点列は曲線に近づきますが、計算する点と線分も増えます。"
+  },
+  "code": "function bezierPoint(p0,p1,p2,t) {\n  const u=1-t;\n  return {x:u*u*p0.x+2*u*t*p1.x+t*t*p2.x,\n    y:u*u*p0.y+2*u*t*p1.y+t*t*p2.y};\n}\nconst path=[];\nfor(let i=0;i<=samples;i++) path.push(bezierPoint(P0,P1,P2,i/samples));\nconst d=polylineDistance(P,path,radius); // Day32の線分距離ループ\nconst mask=feather===0?(d<=0?1:0):clamp((feather-d)/feather,0,1);\nif(random()<mask*toneRate) drawStroke(P);",
+  "codeNote": "1〜5行目が二次ベジェ式です。u=1−tとして重みを作り、P0・P1・P2のxとyを別々に計算します。6〜7行目ではN=24のとき25点を作ります。8行目はDay32の最近点距離を点列へ適用します。デモ初期値は半径12px、ぼかし8px、通過率0.65です。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "demo": {
+    "title": "制御点とサンプル数から流線を作る",
+    "caption": "初期値：P0=(70,180)、P1=(260,30)、P2=(450,180)、サンプル数24、半径12px、境界ぼかし8px、通過率65%、候補点1,200個、筆跡長7px、シード42。3点をドラッグし、点列の細かさ・太さ・密度・色を変えてください。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>\n*{box-sizing:border-box}body{margin:0;padding:14px;background:#f5f2ea;color:#20363b;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:14px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #b8c2bd;border-radius:8px;background:#fff;color:#20363b;font:inherit}input[type=range]{padding:0;accent-color:#176b72}.panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.panel{margin:0;padding:8px;border:1px solid #d5d8cf;border-radius:10px;background:#fff}.panel figcaption{min-height:2.6em;font-size:13px;font-weight:650}.panel canvas{display:block;width:100%;height:auto;aspect-ratio:13/6;border-radius:6px;touch-action:none}.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}.actions button{cursor:pointer;background:#20363b;color:#fff}.note,.status{font-size:13px}.note{margin:10px 0 0}@media(max-width:680px){body{padding:10px}.panels{grid-template-columns:1fr}.panel figcaption{min-height:0}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:390px){.controls{grid-template-columns:1fr}}\n</style></head><body>\n<div class=\"controls\">\n<label>サンプル数 N <output id=\"nOut\">24（25点）</output><input id=\"samples\" type=\"range\" min=\"4\" max=\"48\" step=\"4\" value=\"24\"></label>\n<label>半径 r <output id=\"rOut\">12 px</output><input id=\"radius\" type=\"range\" min=\"4\" max=\"30\" step=\"2\" value=\"12\"></label>\n<label>境界ぼかし <output id=\"fOut\">8 px</output><input id=\"feather\" type=\"range\" min=\"0\" max=\"30\" step=\"2\" value=\"8\"></label>\n<label>通過率 <output id=\"pOut\">65%</output><input id=\"tone\" type=\"range\" min=\"10\" max=\"100\" step=\"5\" value=\"65\"></label>\n<label>候補点 <output id=\"cOut\">1,200</output><input id=\"count\" type=\"range\" min=\"400\" max=\"2800\" step=\"200\" value=\"1200\"></label>\n<label>筆跡の長さ <output id=\"lOut\">7 px</output><input id=\"length\" type=\"range\" min=\"3\" max=\"21\" step=\"2\" value=\"7\"></label>\n<label>配色<select id=\"palette\"><option value=\"wave\">波</option><option value=\"forest\">森</option></select></label>\n</div>\n<div class=\"panels\">\n<figure class=\"panel\"><figcaption>1. P0・P1・P2と点列（点をドラッグ）</figcaption><canvas id=\"source\" width=\"1040\" height=\"480\" aria-label=\"二次ベジェ曲線の始点、制御点、終点とサンプル点\"></canvas></figure>\n<figure class=\"panel\"><figcaption>2. 点列の距離からマスクへ</figcaption><canvas id=\"mask\" width=\"1040\" height=\"480\" aria-label=\"ベジェ曲線を点列にして計算した距離マスク\"></canvas></figure>\n<figure class=\"panel\"><figcaption>3. 通過した筆跡で描く</figcaption><canvas id=\"art\" width=\"1040\" height=\"480\" aria-label=\"ベジェ曲線の確率マスクから生成した作品\"></canvas></figure>\n</div><div class=\"actions\"><button id=\"newSeed\" type=\"button\">新しいシードで描き直す</button><span id=\"status\" class=\"status\" aria-live=\"polite\"></span></div><p class=\"note\">P0とP2は曲線の両端、P1は曲線を引き寄せる制御点です。N=24なら25点を作り、24本の短い線分として距離を調べます。</p>\n<script>\n(()=>{const W=520,H=240,$=id=>document.getElementById(id),ids=[\"samples\",\"radius\",\"feather\",\"tone\",\"count\",\"length\",\"palette\"],controls=ids.map($),cv=[$(\"source\"),$(\"mask\"),$(\"art\")],cx=cv.map(c=>c.getContext(\"2d\"));cx.forEach(c=>c.setTransform(2,0,0,2,0,0));let pts=[{x:70,y:180},{x:260,y:30},{x:450,y:180}],seed=42,drag=-1;function val(){return{N:+$(\"samples\").value,r:+$(\"radius\").value,f:+$(\"feather\").value,p:+$(\"tone\").value/100,n:+$(\"count\").value,len:+$(\"length\").value,pal:$(\"palette\").value}}function curve(z){const a=[];for(let i=0;i<=z.N;i++){const t=i/z.N,u=1-t;a.push({x:u*u*pts[0].x+2*u*t*pts[1].x+t*t*pts[2].x,y:u*u*pts[0].y+2*u*t*pts[1].y+t*t*pts[2].y})}return a}function cap(P,A,B,r){const vx=B.x-A.x,vy=B.y-A.y,wx=P.x-A.x,wy=P.y-A.y,l2=vx*vx+vy*vy,t=l2?Math.max(0,Math.min(1,(wx*vx+wy*vy)/l2)):0,qx=A.x+t*vx,qy=A.y+t*vy;return Math.hypot(P.x-qx,P.y-qy)-r}function D(P,path,r){let d=Infinity;for(let i=0;i<path.length-1;i++)d=Math.min(d,cap(P,path[i],path[i+1],r));return d}function mask(d,f){return f===0?(d<=0?1:0):Math.max(0,Math.min(1,(f-d)/f))}function colors(z){return z.pal===\"wave\"?[[24,77,107],[49,130,155],[225,169,94]]:[[47,82,68],[109,139,87],[197,157,99]]}function bg(c){c.fillStyle=\"#f4efe2\";c.fillRect(0,0,W,H)}function drawSource(z,path){const c=cx[0];bg(c);c.beginPath();c.moveTo(pts[0].x,pts[0].y);c.lineTo(pts[1].x,pts[1].y);c.lineTo(pts[2].x,pts[2].y);c.setLineDash([6,6]);c.lineWidth=2;c.strokeStyle=\"#9ca8a1\";c.stroke();c.setLineDash([]);c.beginPath();c.moveTo(path[0].x,path[0].y);for(let i=1;i<path.length;i++)c.lineTo(path[i].x,path[i].y);c.lineWidth=2*z.r;c.lineCap=\"round\";c.lineJoin=\"round\";c.strokeStyle=\"#79a9ad\";c.stroke();c.beginPath();for(let i=0;i<path.length;i+=Math.max(1,Math.floor(z.N/8))){c.moveTo(path[i].x+2.5,path[i].y);c.arc(path[i].x,path[i].y,2.5,0,Math.PI*2)}c.fillStyle=\"#fff\";c.fill();pts.forEach((p,i)=>{c.beginPath();c.arc(p.x,p.y,8,0,Math.PI*2);c.fillStyle=i===1?\"#dc7650\":\"#20363b\";c.fill();c.fillStyle=\"#20363b\";c.font=\"bold 13px system-ui\";c.fillText(\"P\"+i,p.x+10,p.y-9)})}function drawMask(z,path){const c=cx[1],cs=colors(z);bg(c);for(let y=0;y<H;y+=5)for(let x=0;x<W;x+=5){const m=mask(D({x:x+2.5,y:y+2.5},path,z.r),z.f),ix=m>.66?0:m>.25?1:2,col=cs[ix],a=.2+.8*m;c.fillStyle=\"rgba(\"+col[0]+\",\"+col[1]+\",\"+col[2]+\",\"+a+\")\";c.fillRect(x,y,5,5)}}function rand(){let a=seed+=0x6D2B79F5;a=Math.imul(a^a>>>15,a|1);a^=a+Math.imul(a^a>>>7,a|61);return((a^a>>>14)>>>0)/4294967296}function drawArt(z,path){const c=cx[2],cs=colors(z);bg(c);let kept=0;for(let i=0;i<z.n;i++){const P={x:rand()*W,y:rand()*H};if(rand()>=mask(D(P,path,z.r),z.f)*z.p)continue;kept++;const col=cs[Math.floor(rand()*cs.length)],a=rand()*Math.PI*2,l=z.len*(.6+rand()*.8);c.beginPath();c.moveTo(P.x-Math.cos(a)*l/2,P.y-Math.sin(a)*l/2);c.lineTo(P.x+Math.cos(a)*l/2,P.y+Math.sin(a)*l/2);c.lineWidth=1.4+rand()*1.7;c.lineCap=\"round\";c.strokeStyle=\"rgb(\"+col.join(\",\")+\")\";c.stroke()}return kept}function render(){const z=val(),path=curve(z);$(\"nOut\").textContent=z.N+\"（\"+path.length+\"点）\";$(\"rOut\").textContent=z.r+\" px\";$(\"fOut\").textContent=z.f+\" px\";$(\"pOut\").textContent=Math.round(z.p*100)+\"%\";$(\"cOut\").textContent=z.n.toLocaleString(\"ja-JP\");$(\"lOut\").textContent=z.len+\" px\";drawSource(z,path);drawMask(z,path);const kept=drawArt(z,path);$(\"status\").textContent=\"seed \"+seed+\"：候補\"+z.n.toLocaleString(\"ja-JP\")+\"個から\"+kept+\"本を描画\"}controls.forEach(x=>x.addEventListener(\"input\",render));$(\"newSeed\").addEventListener(\"click\",()=>{seed=(seed*1664525+1013904223)>>>0;render()});function pos(e){const r=cv[0].getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}cv[0].addEventListener(\"pointerdown\",e=>{const q=pos(e);let best=24;drag=-1;pts.forEach((p,i)=>{const d=Math.hypot(p.x-q.x,p.y-q.y);if(d<best){best=d;drag=i}});if(drag>=0){cv[0].setPointerCapture(e.pointerId);e.preventDefault()}});cv[0].addEventListener(\"pointermove\",e=>{if(drag<0)return;const q=pos(e);pts[drag]={x:Math.max(12,Math.min(W-12,q.x)),y:Math.max(12,Math.min(H-12,q.y))};render()});cv[0].addEventListener(\"pointerup\",()=>drag=-1);cv[0].addEventListener(\"pointercancel\",()=>drag=-1);render()})();\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "曲線と制御線を見る",
+      "action": "初期の点列パネルでP0・P1・P2、破線の制御線、曲線上の点を見ます。",
+      "observe": "曲線はP0とP2を通り、P1そのものは通らず近くへ引き寄せられることを確認します。"
+    },
+    {
+      "title": "制御点を動かす",
+      "action": "P1を上下左右へドラッグし、次に始点P0か終点P2も動かします。",
+      "observe": "P1はふくらみを変え、P0とP2は曲線の両端を決めるという役割の違いを見ます。"
+    },
+    {
+      "title": "サンプル数を比べる",
+      "action": "Nを4、12、24、48に順に変え、点列の表示と距離マスクを比べます。",
+      "observe": "Nが小さいと角のある折れ線に見え、Nが大きいと点が増えて滑らかな曲線に近づきます。"
+    },
+    {
+      "title": "帯の太さを変える",
+      "action": "半径rを6pxと24pxに変え、同じ制御点とN=24で確認します。",
+      "observe": "曲線の中心線は同じまま、距離から引く半径によって帯の幅だけが変わります。"
+    },
+    {
+      "title": "輪郭の確率を調整",
+      "action": "境界ぼかしを0pxと20px、通過率を30%と90%にして見比べます。",
+      "observe": "ぼかしは輪郭付近の確率帯を広げ、通過率は帯の中に残る筆跡の割合を変えます。"
+    },
+    {
+      "title": "点数と色で作品を変える",
+      "action": "候補点を400個と2,800個にし、配色を変えて新しいシードを何度か押します。",
+      "observe": "曲線の距離ルールを保ったまま、筆跡密度・色・配置が異なる表現になることを確かめます。"
+    }
+  ],
+  "artist": {
+    "name": "葛飾北斎",
+    "work": "《神奈川沖浪裏》",
+    "context": "1830年前後に出版された木版画で、『富嶽三十六景』の一図です。波の大きな曲線と、波頭から分かれる細い形に注目し、一本の流れと枝分かれが画面にどう動きを作るか観察してください。",
+    "relation": "この版画がベジェ曲線や距離場で描かれたという意味ではありません。波の輪郭や泡の曲がりを鑑賞し、デモでは制御点とサンプル数を変えると流線の形や粒の密度がどう変化するか試します。",
+    "references": [
+      {
+        "source": "Wikimedia Commons（Art Institute of Chicago）",
+        "label": "作品情報・CC0 1.0ライセンス表示",
+        "url": "https://commons.wikimedia.org/wiki/File:The_Great_Wave_off_Kanagawa.png"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/The_Great_Wave_off_Kanagawa.png/960px-The_Great_Wave_off_Kanagawa.png",
+      "alt": "葛飾北斎《神奈川沖浪裏》の木版画。大きくうねる波と、波頭から分かれる細い泡の曲線が描かれている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_Great_Wave_off_Kanagawa.png",
+      "license": "CC0 1.0",
+      "credit": "Katsushika Hokusai, Under the Wave off Kanagawa (The Great Wave), c. 1829–1833, woodblock print. Image from the Art Institute of Chicago via Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "庭で曲げて置くホース",
+      "description": "庭の水やりホースを二点で固定し、途中の位置を手で寄せると、両端の間にゆるい曲線ができます。曲線に沿った距離で帯を作れば、ホースの通り道を太さのある形として表せます。",
+      "relation": "自作図は二次ベジェ曲線の制御点と、芝生に置かれたホースの曲がりを並べています。実際のホースが数式どおりの曲線になるという意味ではなく、両端と途中の引き寄せ位置が形を変える身近な例です。",
+      "visual": {
+        "src": "./assets/day-33-garden-hose.svg",
+        "alt": "庭の芝生に置かれたホースが両端の間でゆるく曲がり、途中の位置を手で寄せて曲線を変える自作図。",
+        "caption": "身近な例：庭のホースを途中で寄せると曲がり方が変わる。図は本レッスン用に作成。"
+      }
+    }
+  },
+  "extension": {
+    "title": "複数の曲線をつないで流れを作る",
+    "keywords": [
+      "二次ベジェ曲線",
+      "パラメータサンプリング",
+      "点列近似",
+      "距離場"
+    ],
+    "next": "次は二つ以上のベジェ曲線を端でつなぐ条件を学び、うねる線や枝分かれした流れを作ります。"
+  }
+}

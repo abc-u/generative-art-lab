@@ -277,6 +277,14 @@
       "description": "各線分のカプセル距離を順に比べ、最小値で折れ線や枝分かれのマスクを作る。smooth min幅、太さ、ぼかし、候補点、色を動かして試す。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 33,
+      "title": "Quadratic Bézier Sampling",
+      "topic": "二次ベジェ曲線を点列に変換する",
+      "description": "二次ベジェ曲線を一定のtでサンプリングして点列を作り、距離マスクと筆跡へつなぐ。制御点、サンプル数、太さ、ぼかし、密度、色を試す。",
+      "phase": 1,
+      "status": "published"
     }
   ]
 }
