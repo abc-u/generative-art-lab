@@ -285,6 +285,14 @@
       "description": "二次ベジェ曲線を一定のtでサンプリングして点列を作り、距離マスクと筆跡へつなぐ。制御点、サンプル数、太さ、ぼかし、密度、色を試す。",
       "phase": 1,
       "status": "published"
+    },
+    {
+      "day": 34,
+      "title": "Smooth Bézier Joins",
+      "topic": "二次ベジェ曲線の接線連続",
+      "description": "二つの二次ベジェ曲線で接続点を共有し、隣り合う制御点の向きをそろえて滑らかな流線を作る。",
+      "phase": 4,
+      "status": "published"
     }
   ]
 }
