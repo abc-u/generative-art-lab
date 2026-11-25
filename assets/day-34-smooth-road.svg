@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-labelledby="title desc">
+<title id="title">ゆるやかにつながる道路のカーブ</title>
+<desc id="desc">二つの道の区間が接続点で同じ向きにそろい、車線の境目もなめらかにつながる模式図。</desc>
+<rect width="760" height="300" rx="18" fill="#e6efea"/>
+<path d="M0 245 C140 230 195 65 360 100 C510 132 540 252 760 220 L760 300 L0 300Z" fill="#42545a"/>
+<path d="M0 255 C145 241 205 82 360 118 C520 155 555 266 760 233" fill="none" stroke="#f7f0d7" stroke-width="5" stroke-dasharray="20 17"/>
+<path d="M0 216 C142 201 183 49 360 82 C502 108 529 237 760 206" fill="none" stroke="#98b0a6" stroke-width="3"/>
+<path d="M0 282 C148 269 223 105 360 138 C534 177 580 291 760 259" fill="none" stroke="#98b0a6" stroke-width="3"/>
+<circle cx="360" cy="100" r="9" fill="#dd7452" stroke="#fff" stroke-width="3"/>
+<text x="376" y="82" font-family="sans-serif" font-size="20" font-weight="700" fill="#20363b">接続点：カーブの向きをそろえる</text>
+<text x="28" y="42" font-family="sans-serif" font-size="16" fill="#20363b">模式図：曲線区間が角にならず続くと、道筋が読み取りやすい</text>
+</svg>
