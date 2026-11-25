@@ -153,18 +153,8 @@
     "references": [
       {
         "source": "Wikimedia Commons",
-        "label": "Mountain Stream (John Singer Sargent) — 画像・CC0ライセンス",
+        "label": "Mountain Stream (John Singer Sargent) — 作品情報・画像・CC0ライセンス（出典：The Metropolitan Museum of Art）",
         "url": "https://commons.wikimedia.org/wiki/File:Mountain_Stream_MET_DT1544.jpg"
-      },
-      {
-        "source": "The Metropolitan Museum of Art",
-        "label": "Mountain Stream — 作品情報",
-        "url": "https://www.metmuseum.org/art/collection/search/12138"
-      },
-      {
-        "source": "The Metropolitan Museum of Art",
-        "label": "Image and Data Resources — Open Access / CC0",
-        "url": "https://www.metmuseum.org/policies/image-resources"
       }
     ],
     "image": {
