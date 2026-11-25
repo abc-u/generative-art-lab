@@ -1,0 +1,198 @@
+{
+  "day": 34,
+  "status": "published",
+  "title": "Smooth Bézier Joins",
+  "subtitle": "二つの二次ベジェ曲線を同じ点でつなぎ、接線の向きをそろえる。",
+  "topic": "二次ベジェ曲線の接線連続",
+  "phase": 4,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は「二次ベジェ曲線の接続アルゴリズム」です。1本目の終点と2本目の始点を同じ点Jに置いて位置をつなぎ、さらにJの前後の制御点A₁・B₁を一直線に並べて接線の向きをそろえます。肝は、端点を共有するだけでは折れ目が残り、接続点から見た二つのハンドルの向きまでそろえると線が滑らかに見えることです。長さも等しければ、同じtの速さで進むC1接続になります。",
+  "applications": "川の流れ、曲がる道、煙やリボンの輪郭、文字のパスなど、複数の曲線を一本の線に見せたいときに使います。ハンドルをそろえると接続点の角が消え、長さを変えると向きを保ったまま曲がり方を調整できます。",
+  "prerequisites": "Day 33の二次ベジェ曲線 B(t) と、始点・制御点・終点の役割を使います。ベクトルは点の差で表し、接続点の前後にある二つの制御点が作る向きを比べます。",
+  "connection": "Day 33では、二次ベジェ曲線を一定間隔で計算して点列にしました。今回はその曲線を二本つなぎ、端点Jを共有するだけの場合と、前後の制御点を同じ向きにそろえる場合を比べます。これで長い流線や曲がった道を、折れ目なく組み立てる準備ができます。",
+  "ruleSummary": "今日のルール：二つの曲線の端点をJで共有し、J−A₁ と B₁−J を同じ向きにそろえる。",
+  "goalTitle": "接続点で曲線をなめらかにつなぐ",
+  "ruleCode": "A'(1)=2(J−A₁)　 B'(0)=2(B₁−J)\nB₁ = J + r(J−A₁)\nr=1なら向きと長さが一致（C1）",
+  "intuition": {
+    "title": "道のカーブを定規で延長する",
+    "story": "曲がった道路を二つの工事区間に分けて作る場面を考えます。区間の端点を同じ場所に置けば道はつながりますが、次の区間が別の向きを向いていると、境目で急にハンドルを切るような角ができます。接続点の前の制御点から来る向きに合わせて、次の制御点を置けば、道路のカーブがすっと続きます。",
+    "visual": "1本目の終点 J = 2本目の始点 J ＋ ハンドルの向きをそろえる",
+    "diagram": "J−A₁ と B₁−J を同じ向きにする。長さ比 r=1なら二つの曲線の接線ベクトルも一致する"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-34-bezier-joins.svg",
+    "alt": "二つの二次ベジェ曲線の接続点Jを共有し、前後のハンドルが一直線なら滑らか、向きがずれると角ができる比較図。",
+    "caption": "端点を共有するだけでは位置しかつながりません。接続点の両側にあるハンドルの向きをそろえると、曲線の進む向きも連続します。 図はGenerative Art Lab制作、CC0 1.0。"
+  },
+  "numbers": {
+    "title": "どの点が向きを決める？",
+    "setup": "デモ初期値は A₀=(45,185)、A₁=(155,65)、接続点J=(260,145)、B₁=(365,225)、B₂=(475,70) px。ハンドルの長さ比 r=1、曲線の分割数 N=24です。",
+    "steps": [
+      {
+        "label": "接続点を共有",
+        "calculation": "1本目の終点をJ=(260,145)、2本目の始点もJ=(260,145)にします。これで位置のすき間はありません。"
+      },
+      {
+        "label": "1本目のハンドル",
+        "calculation": "J−A₁=(260−155,145−65)=(105,80)。接続点へ向かう最後の向きは右へ105px、下へ80pxです。"
+      },
+      {
+        "label": "2本目のハンドル",
+        "calculation": "B₁−J=(365−260,225−145)=(105,80)。同じ向き、同じ長さなので、二つの接線は 2×(105,80)=(210,160) で一致します。"
+      },
+      {
+        "label": "長さ比を変える",
+        "calculation": "r=0.5ならB₁=J+0.5×(105,80)=(312.5,185)。方向は同じなのでG1（向きの連続）、ただし速さは異なります。r=1ならC1（向きと速さの連続）です。"
+      },
+      {
+        "label": "折れ目を作る",
+        "calculation": "折れ目モードのB₁=(365,65)ならB₁−J=(105,−80)。上向きと下向きで接線の向きが変わり、共有点Jに角が見えます。"
+      }
+    ],
+    "note": "二次ベジェ曲線の接続点での接線は、端点と隣の制御点の差で決まります。向きだけ同じならG1、長さも同じならC1です。まずは二つのハンドルが同じ向きになるかを見てみましょう。"
+  },
+  "code": "function bezierPoint(p0,p1,p2,t) {\n  const u=1-t;\n  return {x:u*u*p0.x+2*u*t*p1.x+t*t*p2.x,\n          y:u*u*p0.y+2*u*t*p1.y+t*t*p2.y};\n}\n// 2本目の始点を1本目の終点Jにする\nconst q0=J;\n// 1本目の終点ハンドルを、接続点の先へ延長\nconst q1={x:J.x+ratio*(J.x-p1.x),\n          y:J.y+ratio*(J.y-p1.y)};\nconst first=sample(p0,p1,J,N);\nconst second=sample(q0,q1,q2,N);",
+  "codeNote": "1〜5行目でDay33の二次ベジェ式から曲線上の点を計算します。7行目で終点と始点を同じJにします。9〜10行目が向きをそろえる肝です。ratio=1なら二つの接線ベクトルが同じ長さになり、C1接続になります。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    7,
+    9,
+    10,
+    11,
+    12,
+    13
+  ],
+  "demo": {
+    "title": "二本の曲線をつないで比べる",
+    "caption": "初期値：A₀=(45,185)、A₁=(155,65)、J=(260,145)、B₁=(365,225)、B₂=(475,70)、r=1、N=24、線幅10px。つなぎ方、ハンドル比、分割数、線幅、色を変え、点をドラッグして接続点を観察してください。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>\n*{box-sizing:border-box}body{margin:0;padding:14px;background:#f5f2ea;color:#20363b;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #b8c2bd;border-radius:8px;background:#fff;color:#20363b;font:inherit}input[type=range]{padding:0;accent-color:#176b72}.canvasWrap{padding:8px;border:1px solid #d5d8cf;border-radius:10px;background:#fff}.canvasWrap canvas{display:block;width:100%;height:auto;aspect-ratio:13/7;touch-action:none;border-radius:6px}.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}.actions button{cursor:pointer;background:#20363b;color:#fff}.status{font-size:13px;font-weight:650}.note{margin:8px 0 0;font-size:13px;color:#58645f}@media(max-width:560px){body{padding:10px}.controls{grid-template-columns:repeat(2,minmax(0,1fr)}}@media(max-width:380px){.controls{grid-template-columns:1fr}}\n</style></head><body>\n<div class=\"controls\">\n<label>つなぎ方<select id=\"joinMode\"><option value=\"smooth\">なめらか</option><option value=\"kink\">折れ目</option></select></label>\n<label>ハンドルの長さ比 <output id=\"ratioOut\">1.0</output><input id=\"ratio\" type=\"range\" min=\"0.5\" max=\"1.5\" step=\"0.1\" value=\"1\"></label>\n<label>曲線の分割数 N <output id=\"samplesOut\">24</output><input id=\"samples\" type=\"range\" min=\"4\" max=\"48\" step=\"4\" value=\"24\"></label>\n<label>線の太さ <output id=\"widthOut\">10 px</output><input id=\"lineWidth\" type=\"range\" min=\"4\" max=\"20\" step=\"2\" value=\"10\"></label>\n<label>色<select id=\"palette\"><option value=\"teal\">青緑</option><option value=\"coral\">朱色</option><option value=\"violet\">紫</option></select></label>\n<label>制御点と補助線<input id=\"showGuides\" type=\"checkbox\" checked></label>\n</div>\n<div class=\"canvasWrap\"><canvas id=\"art\" width=\"520\" height=\"280\" aria-label=\"二つの二次ベジェ曲線の接続を比較するCanvas\"></canvas></div>\n<div class=\"actions\"><button id=\"reset\" type=\"button\">初期配置に戻す</button><span id=\"status\" class=\"status\" aria-live=\"polite\"></span></div>\n<p class=\"note\">点 A₀・A₁・J・B₁・B₂ はドラッグできます。なめらかモードでは B₁ が自動で A₁ と J の向きにそろいます。折れ目モードでは B₁ も自由に動かせます。</p>\n<script>\n(function(){\nconst W=520,H=280,canvas=document.getElementById('art'),ctx=canvas.getContext('2d');\nconst initial={A0:{x:45,y:185},A1:{x:155,y:65},J:{x:260,y:145},B2:{x:475,y:70}};\nlet p={A0:{...initial.A0},A1:{...initial.A1},J:{...initial.J},B1:{x:365,y:225},B2:{...initial.B2}};\nlet drag=null,dpr=1;\nconst $=id=>document.getElementById(id);\nfunction setupCanvas(){const box=canvas.getBoundingClientRect();dpr=Math.max(1,window.devicePixelRatio||1);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw()}\nfunction point(P0,P1,P2,t){const u=1-t;return{x:u*u*P0.x+2*u*t*P1.x+t*t*P2.x,y:u*u*P0.y+2*u*t*P1.y+t*t*P2.y}}\nfunction currentB1(){if($('joinMode').value==='kink')return p.B1;const r=Number($('ratio').value);return{x:p.J.x+(p.J.x-p.A1.x)*r,y:p.J.y+(p.J.y-p.A1.y)*r}}\nfunction controlsText(){\n$('ratioOut').textContent=Number($('ratio').value).toFixed(1);\n$('samplesOut').textContent=$('samples').value;\n$('widthOut').textContent=$('lineWidth').value+' px';\n}\nfunction strokeCurve(a,b,c,n,color,width){ctx.beginPath();for(let i=0;i<=n;i++){const q=point(a,b,c,i/n);if(i===0)ctx.moveTo(q.x,q.y);else ctx.lineTo(q.x,q.y)}ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke()}\nfunction arrow(from,to,color){const dx=to.x-from.x,dy=to.y-from.y,len=Math.hypot(dx,dy)||1,scale=Math.min(34,90/len);const x=from.x+dx*scale,y=from.y+dy*scale,angle=Math.atan2(dy,dx);ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(x,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-9*Math.cos(angle-.45),y-9*Math.sin(angle-.45));ctx.lineTo(x-9*Math.cos(angle+.45),y-9*Math.sin(angle+.45));ctx.closePath();ctx.fill()}\nfunction draw(){\ncontrolsText();const mode=$('joinMode').value,ratio=Number($('ratio').value),b1=currentB1(),N=Number($('samples').value),width=Number($('lineWidth').value),palette=$('palette').value;\nconst colors={teal:{bg:'#fbfaf6',line:'#176b72',join:'#c64d35',control:'#d58b48'},coral:{bg:'#fff8f2',line:'#b84b37',join:'#253d53',control:'#d58b48'},violet:{bg:'#faf7ff',line:'#684c91',join:'#c64d35',control:'#9b79bd'}}[palette];\nctx.clearRect(0,0,W,H);ctx.fillStyle=colors.bg;ctx.fillRect(0,0,W,H);\nif($('showGuides').checked){ctx.setLineDash([6,5]);ctx.strokeStyle=colors.control;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.A0.x,p.A0.y);ctx.lineTo(p.A1.x,p.A1.y);ctx.lineTo(p.J.x,p.J.y);ctx.lineTo(b1.x,b1.y);ctx.lineTo(p.B2.x,p.B2.y);ctx.stroke();ctx.setLineDash([])}\nstrokeCurve(p.A0,p.A1,p.J,N,colors.line,width);strokeCurve(p.J,b1,p.B2,N,colors.line,width);\nconst vA={x:p.J.x-p.A1.x,y:p.J.y-p.A1.y},vB={x:b1.x-p.J.x,y:b1.y-p.J.y};\narrow(p.J,{x:p.J.x+vA.x,y:p.J.y+vA.y},'#277c66');arrow(p.J,{x:p.J.x+vB.x,y:p.J.y+vB.y},mode==='smooth'?'#277c66':'#bd563f');\nconst keys=['A0','A1','J','B1','B2'];const points={...p,B1:b1};for(const key of keys){if(key==='B1'&&mode==='smooth')continue;const q=points[key];ctx.beginPath();ctx.arc(q.x,q.y,key==='J'?7:5,0,Math.PI*2);ctx.fillStyle=key==='J'?colors.join:colors.control;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();ctx.font='12px system-ui';ctx.fillStyle='#20363b';ctx.fillText(key==='J'?'J':key.replace('0','₀').replace('1','₁').replace('2','₂'),q.x+8,q.y-8)}\n$('status').textContent=mode==='smooth'?(ratio===1?'接線方向と速さが同じ（C1）':'接線方向が連続（G1）、長さ比 '+ratio.toFixed(1)):'接点は共有、接線方向は別';\n}\nfunction setMode(){if($('joinMode').value==='kink')p.B1={x:p.J.x+105,y:p.J.y-80};draw()}\n['joinMode','ratio','samples','lineWidth','palette','showGuides'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='joinMode')setMode();else draw()}));\n$('reset').addEventListener('click',()=>{p={A0:{...initial.A0},A1:{...initial.A1},J:{...initial.J},B1:{x:365,y:225},B2:{...initial.B2}};$('joinMode').value='smooth';$('ratio').value='1';$('samples').value='24';$('lineWidth').value='10';$('palette').value='teal';$('showGuides').checked=true;draw()});\nfunction coords(event){const r=canvas.getBoundingClientRect();return{x:(event.clientX-r.left)*W/r.width,y:(event.clientY-r.top)*H/r.height}}\ncanvas.addEventListener('pointerdown',event=>{const q=coords(event),b1=currentB1(),keys=['A0','A1','J','B1','B2'];let best=null,dist=20;for(const key of keys){if(key==='B1'&&$('joinMode').value==='smooth')continue;const pos=key==='B1'?b1:p[key],d=Math.hypot(q.x-pos.x,q.y-pos.y);if(d<dist){best=key;dist=d}}if(best){drag=best;canvas.setPointerCapture(event.pointerId);event.preventDefault()}});\ncanvas.addEventListener('pointermove',event=>{if(!drag)return;const q=coords(event);p[drag]={x:Math.max(12,Math.min(W-12,q.x)),y:Math.max(12,Math.min(H-12,q.y))};draw()});\ncanvas.addEventListener('pointerup',()=>{drag=null});canvas.addEventListener('pointercancel',()=>{drag=null});\nwindow.addEventListener('resize',setupCanvas);setupCanvas();\n})();\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "1. 同じ端点だけでつなぐ",
+      "action": "つなぎ方を「折れ目」にして、接続点Jを見ます。",
+      "observe": "両方の端点が同じでも、二本目が別の向きへ出ると角が残ります。",
+      "demoState": [
+        {
+          "selector": "#joinMode",
+          "value": "kink"
+        }
+      ]
+    },
+    {
+      "title": "2. ハンドルの向きをそろえる",
+      "action": "「なめらか」に戻し、JとA₁を少し動かします。",
+      "observe": "J−A₁に沿ってB₁が自動で移動し、接続点の向きが続きます。",
+      "demoState": [
+        {
+          "selector": "#joinMode",
+          "value": "smooth"
+        },
+        {
+          "selector": "#ratio",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "title": "3. 極端な長さを比べる",
+      "action": "ハンドル比を0.5、次に1.5にします。",
+      "observe": "接線方向は同じまま、接続点を出た後の曲がり方が変わります。",
+      "demoState": [
+        {
+          "selector": "#ratio",
+          "value": "0.5"
+        },
+        {
+          "selector": "#ratio",
+          "value": "1.5"
+        }
+      ]
+    },
+    {
+      "title": "4. 点列の細かさを変える",
+      "action": "分割数Nを4、次に48にします。",
+      "observe": "Nが小さいと線分の角が見え、大きいと曲線が滑らかに近似されます。",
+      "demoState": [
+        {
+          "selector": "#samples",
+          "value": "4"
+        },
+        {
+          "selector": "#samples",
+          "value": "48"
+        }
+      ]
+    },
+    {
+      "title": "5. 自分の流線にする",
+      "action": "B₂をドラッグし、線幅と色も変えます。",
+      "observe": "接続条件を保ったまま、終点・太さ・配色を別々に選べます。",
+      "demoState": [
+        {
+          "selector": "#lineWidth",
+          "value": "16"
+        },
+        {
+          "selector": "#palette",
+          "value": "violet"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "John Singer Sargent",
+    "work": "Mountain Stream（山の渓流）, 1912–14年頃",
+    "context": "水の流れを主題にした水彩画です。メトロポリタン美術館の作品情報では、画家はJohn Singer Sargent、作品名はMountain Stream、制作は1912–14年頃とされています。作品画像はThe MetのOpen Access対象としてCC0で提供されています。",
+    "relation": "水の流れを曲がった線として見ると、複数の流れ区間の向きをつなぐ今回の考え方を作品から探せます。",
+    "highlight": "渓流の流れを目で追い、向きがなめらかに変わるところと岩で変わるところを比べてみましょう。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "Mountain Stream (John Singer Sargent) — 画像・CC0ライセンス",
+        "url": "https://commons.wikimedia.org/wiki/File:Mountain_Stream_MET_DT1544.jpg"
+      },
+      {
+        "source": "The Metropolitan Museum of Art",
+        "label": "Mountain Stream — 作品情報",
+        "url": "https://www.metmuseum.org/art/collection/search/12138"
+      },
+      {
+        "source": "The Metropolitan Museum of Art",
+        "label": "Image and Data Resources — Open Access / CC0",
+        "url": "https://www.metmuseum.org/policies/image-resources"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/e/ef/Mountain_Stream_MET_DT1544.jpg",
+      "alt": "John Singer Sargentの水彩画『Mountain Stream』。岩の間を曲がりながら流れる山の水が描かれている。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mountain_Stream_MET_DT1544.jpg",
+      "license": "CC0 1.0",
+      "credit": "John Singer Sargent, Mountain Stream, ca. 1912–14. The Metropolitan Museum of Art, Open Access. Wikimedia Commons, CC0 1.0."
+    },
+    "realWorldExample": {
+      "title": "道路のカーブが続くところ",
+      "description": "曲がった道路は、区間の境目で急に向きが変わるより、カーブの向きが続く方が進む先を読み取りやすくなります。この模式図では道の中心線を二つの曲線区間として描いています。",
+      "relation": "二つの道路区間を同じ接続点でつなぎ、前後の向きをそろえると、境目に角ができず一続きの道筋に見えます。",
+      "visual": {
+        "src": "./assets/day-34-smooth-road.svg",
+        "alt": "二つの道路区間が接続点で向きをそろえて続く、車線と中央線を描いた模式図。",
+        "caption": "道路カーブの模式図：Generative Art Lab制作、CC0 1.0。実際の道路写真ではなく、曲線の接続を説明するオリジナル図です。"
+      }
+    }
+  },
+  "extension": {
+    "title": "次は三つ以上の曲線をつなぐ",
+    "keywords": [
+      "ベジェ曲線",
+      "G1連続",
+      "C1連続",
+      "接線ハンドル"
+    ],
+    "next": "次は三つ以上のベジェ曲線を連ね、接線の向きを局所的に調整して流線や枝分かれ模様を組み立てます。"
+  }
+}
