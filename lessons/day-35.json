@@ -1,0 +1,186 @@
+{
+  "day": 35,
+  "status": "published",
+  "title": "Catmull–Rom Spline",
+  "subtitle": "通過点から接線を自動で見積もり、点を通る曲線をつなぐ。",
+  "topic": "Catmull–Romスプライン",
+  "phase": 4,
+  "minutes": 18,
+  "level": "はじめて",
+  "algorithm": "今日は「Catmull–Romスプライン」です。通りたい点を順に置き、ある区間の両端P₁・P₂に加えて、その前後の点P₀・P₃から接線を見積もり、区間を通る曲線を計算します。肝は、ベジェ曲線のように制御点の位置を直接探さなくても、近くの通過点から接線を自動で作れることです。隣り合う区間は同じ接線を共有するので、道筋がなめらかにつながります。",
+  "applications": "地図上のルート、ゲームの移動経路、手描き風の線、流れる模様など、指定した地点を必ず通る滑らかな線に使えます。点をドラッグすると通過点そのものが動き、張りτを変えると曲線のふくらみが変わります。",
+  "prerequisites": "Day 33の二次ベジェ曲線とDay 34の接線ハンドルを使います。今回は制御点を手で置かず、前後のアンカーポイントの差から接線を計算します。式は点のx座標とy座標それぞれに同じように当てはめます。",
+  "connection": "Day 34では二つのベジェ曲線の接続点を共有し、制御点を一直線に並べて接線をそろえました。今回は複数の通過点を置くだけで、隣り合う点から接線を自動で見積もるCatmull–Romスプラインを作ります。手でハンドルを調整せずに、点を通る長い曲線を組み立てられます。",
+  "ruleSummary": "今日のルール：区間P₁→P₂の接線を前後の点から見積もり、P₁とP₂を通る3次曲線を計算する。",
+  "goalTitle": "通過点から曲線を自動でつくる",
+  "ruleCode": "m₁=(1−τ)(P₂−P₀)/2　 m₂=(1−τ)(P₃−P₁)/2\nτ=0：標準　 τを上げる：接線が短くなる",
+  "intuition": {
+    "title": "公園の行きたい場所を結ぶ",
+    "story": "公園の中で「池の横を通りたい」「大きな木の近くを通りたい」といくつか場所を決めたとします。Catmull–Romスプラインは、その通過点を必ず通る道を作ります。ある二点の間を曲げるとき、その前と後ろの点も見て、道が向かう方向を自動で決めます。",
+    "visual": "通過点 P₀ → P₁ → P₂ → P₃ → 隣の点から接線を自動計算",
+    "diagram": "P₀とP₂からP₁の接線を、P₁とP₃からP₂の接線を見積もる"
+  },
+  "algorithmVisual": {
+    "src": "./assets/day-35-catmull-rom.svg",
+    "alt": "四つの点P0からP3を示し、中央のP1とP2を通る曲線と、前後の点から接線を見積もる様子を示した図。",
+    "caption": "中央の二点P₁・P₂は曲線が必ず通る点です。前後の点P₀・P₃を使って、区間の入り方と出方を計算します。Generative Art Lab制作、CC0 1.0。"
+  },
+  "numbers": {
+    "title": "4点から中間位置を出す",
+    "setup": "デモ初期値のアンカーはP₀=(20,220)、P₁=(130,50)、P₂=(270,240)、P₃=(400,55)、張りτ=0です。ここではP₁からP₂までの区間を計算します。",
+    "steps": [
+      {
+        "label": "P₁側の接線",
+        "calculation": "m₁=(P₂−P₀)/2=((270−20)/2,(240−220)/2)=(125,10)。前後の点から進む向きを見積もります。"
+      },
+      {
+        "label": "P₂側の接線",
+        "calculation": "m₂=(P₃−P₁)/2=((400−130)/2,(55−50)/2)=(135,2.5)。接線は二つのアンカーの前後関係で決まります。"
+      },
+      {
+        "label": "t=0.5の重み",
+        "calculation": "3次曲線の重みは h₀₀=0.5、h₁₀=0.125、h₀₁=0.5、h₁₁=−0.125。P₁、m₁、P₂、m₂をこの割合で混ぜます。"
+      },
+      {
+        "label": "x座標",
+        "calculation": "x=0.5×130+0.125×125+0.5×270−0.125×135=198.75px。"
+      },
+      {
+        "label": "y座標",
+        "calculation": "y=0.5×50+0.125×10+0.5×240−0.125×2.5=145.9375px。中間点は約(198.8,145.9)です。"
+      },
+      {
+        "label": "張りを上げる",
+        "calculation": "τ=0.5なら接線は半分のm₁=(62.5,5)、m₂=(67.5,1.25)。同じt=0.5の点は約(199.4,145.5)となり、ふくらみが控えめになります。"
+      }
+    ],
+    "note": "このデモは隣り合うアンカーをつなぐ区間ごとに、前後の点を一つずつ使います。曲線は指定したアンカーを通り、アンカーの間の形は接線と張りτで変わります。"
+  },
+  "code": "function catmullPoint(p0,p1,p2,p3,t,tau) {\n  const s=(1-tau)/2, t2=t*t, t3=t2*t;\n  const m1={x:(p2.x-p0.x)*s, y:(p2.y-p0.y)*s};\n  const m2={x:(p3.x-p1.x)*s, y:(p3.y-p1.y)*s};\n  const h00=2*t3-3*t2+1, h10=t3-2*t2+t;\n  const h01=-2*t3+3*t2, h11=t3-t2;\n  return {\n    x:h00*p1.x+h10*m1.x+h01*p2.x+h11*m2.x,\n    y:h00*p1.y+h10*m1.y+h01*p2.y+h11*m2.y\n  };\n}\nfor(let i=0;i<anchors.length-1;i++) {\n  const p0=anchors[Math.max(0,i-1)], p1=anchors[i];\n  const p2=anchors[i+1], p3=anchors[Math.min(anchors.length-1,i+2)];\n  for(let k=0;k<=N;k++)\n    path.push(catmullPoint(p0,p1,p2,p3,k/N,tau));\n}",
+  "codeNote": "1〜10行目で前後の点から接線を求め、3次曲線の重みで位置を計算します。12〜17行目は隣り合うアンカーを選ぶ処理です。各区間でN=20なら21点を作り、点列を描きます。",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    12,
+    13,
+    14
+  ],
+  "demo": {
+    "title": "点を置いて、通る曲線をつくる",
+    "caption": "初期値は P₀=(20,220)、P₁=(130,50)、P₂=(270,240)、P₃=(400,55)、P₄=(500,200)、張りτ=0、分割数N=20、線幅8pxです。アンカーをドラッグし、張り・分割数・線幅・色を個別に変えてください。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>\n*{box-sizing:border-box}body{margin:0;padding:14px;background:#f4f2ea;color:#20343a;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-bottom:12px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #bac5bf;border-radius:8px;background:#fff;color:#20343a;font:inherit}input[type=range]{padding:0;accent-color:#24776d}.wrap{padding:8px;border:1px solid #d3d8d0;border-radius:10px;background:#fff}.wrap canvas{display:block;width:100%;height:auto;aspect-ratio:13/7;border-radius:6px;touch-action:none}.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}.actions button{cursor:pointer;background:#20343a;color:white}.status{font-size:13px;font-weight:650}.note{font-size:13px;color:#596660;margin:9px 0 0}@media(max-width:560px){body{padding:10px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:370px){.controls{grid-template-columns:1fr}}\n</style></head><body>\n<div class=\"controls\">\n<label>張り τ <output id=\"tauOut\">0.0</output><input id=\"tension\" type=\"range\" min=\"0\" max=\"1\" step=\"0.1\" value=\"0\"></label>\n<label>各区間の分割数 N <output id=\"nOut\">20</output><input id=\"samples\" type=\"range\" min=\"4\" max=\"40\" step=\"4\" value=\"20\"></label>\n<label>線の太さ <output id=\"wOut\">8 px</output><input id=\"lineWidth\" type=\"range\" min=\"4\" max=\"20\" step=\"2\" value=\"8\"></label>\n<label>色<select id=\"palette\"><option value=\"teal\">青緑</option><option value=\"orange\">オレンジ</option><option value=\"purple\">紫</option></select></label>\n<label>通過点と補助線<input id=\"guides\" type=\"checkbox\" checked></label>\n</div>\n<div class=\"wrap\"><canvas id=\"canvas\" width=\"520\" height=\"280\" aria-label=\"アンカーポイントを通るCatmull-Rom曲線のCanvasデモ\"></canvas></div>\n<div class=\"actions\"><button id=\"reset\" type=\"button\">初期配置に戻す</button><span id=\"status\" class=\"status\" aria-live=\"polite\"></span></div>\n<p class=\"note\">番号のついた点をドラッグすると曲線が更新されます。張り τ を上げると、前後の点から作る接線が短くなり、曲線のふくらみが控えめになります。</p>\n<script>\n(function(){\nconst W=520,H=280,canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');\nconst initial=[{x:20,y:220},{x:130,y:50},{x:270,y:240},{x:400,y:55},{x:500,y:200}];\nlet anchors=initial.map(p=>({x:p.x,y:p.y})),drag=-1,dpr=1;\nconst $=id=>document.getElementById(id);\nfunction catmull(p0,p1,p2,p3,t,tau){\n const scale=(1-tau)/2,t2=t*t,t3=t2*t;\n const m1={x:(p2.x-p0.x)*scale,y:(p2.y-p0.y)*scale};\n const m2={x:(p3.x-p1.x)*scale,y:(p3.y-p1.y)*scale};\n const h00=2*t3-3*t2+1,h10=t3-2*t2+t;\n const h01=-2*t3+3*t2,h11=t3-t2;\n return{x:h00*p1.x+h10*m1.x+h01*p2.x+h11*m2.x,\n        y:h00*p1.y+h10*m1.y+h01*p2.y+h11*m2.y};\n}\nfunction draw(){\n const tau=Number($('tension').value),N=Number($('samples').value),width=Number($('lineWidth').value),palette=$('palette').value;\n const c={teal:{bg:'#fbfaf6',line:'#24776d',dot:'#d87450'},orange:{bg:'#fff8f0',line:'#b85433',dot:'#266b72'},purple:{bg:'#faf7ff',line:'#70529a',dot:'#cb6b48'}}[palette];\n ctx.clearRect(0,0,W,H);ctx.fillStyle=c.bg;ctx.fillRect(0,0,W,H);\n if($('guides').checked){ctx.beginPath();ctx.setLineDash([5,5]);ctx.strokeStyle='#aeb9b1';ctx.lineWidth=1.5;anchors.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.setLineDash([])}\n ctx.beginPath();\n for(let i=0;i<anchors.length-1;i++){\n  const p0=anchors[Math.max(0,i-1)],p1=anchors[i],p2=anchors[i+1],p3=anchors[Math.min(anchors.length-1,i+2)];\n  for(let k=0;k<=N;k++){const q=catmull(p0,p1,p2,p3,k/N,tau);if(i===0&&k===0)ctx.moveTo(q.x,q.y);else ctx.lineTo(q.x,q.y)}\n }\n ctx.strokeStyle=c.line;ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();\n if($('guides').checked){anchors.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,6,0,Math.PI*2);ctx.fillStyle=c.dot;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();ctx.font='12px system-ui';ctx.fillStyle='#20343a';ctx.fillText('P'+i,p.x+8,p.y-8)})}\n $('tauOut').textContent=tau.toFixed(1);$('nOut').textContent=N;$('wOut').textContent=width+' px';\n $('status').textContent='通過点 '+anchors.length+' 個 · '+(anchors.length-1)+' 区間';\n}\nfunction resize(){dpr=Math.max(1,window.devicePixelRatio||1);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw()}\n['tension','samples','lineWidth','palette','guides'].forEach(id=>$(id).addEventListener('input',draw));\n$('reset').addEventListener('click',()=>{anchors=initial.map(p=>({x:p.x,y:p.y}));$('tension').value='0';$('samples').value='20';$('lineWidth').value='8';$('palette').value='teal';$('guides').checked=true;draw()});\nfunction xy(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}\ncanvas.addEventListener('pointerdown',e=>{const q=xy(e);let d=22;anchors.forEach((p,i)=>{const n=Math.hypot(q.x-p.x,q.y-p.y);if(n<d){d=n;drag=i}});if(drag>=0){canvas.setPointerCapture(e.pointerId);e.preventDefault()}});\ncanvas.addEventListener('pointermove',e=>{if(drag<0)return;const q=xy(e);anchors[drag]={x:Math.max(8,Math.min(W-8,q.x)),y:Math.max(8,Math.min(H-8,q.y))};draw()});\ncanvas.addEventListener('pointerup',()=>drag=-1);canvas.addEventListener('pointercancel',()=>drag=-1);\nwindow.addEventListener('resize',resize);resize();\n})();\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "1. 曲線はどの点を通る？",
+      "action": "補助線を表示したまま、曲線と点P₀〜P₄を見比べます。",
+      "observe": "曲線は通過点を通り、補助の折れ線とは別のなめらかな道になります。",
+      "demoState": [
+        {
+          "selector": "#guides",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "title": "2. 張りを少し変える",
+      "action": "τを0から0.5に上げて形を比べます。",
+      "observe": "前後の点から作る接線が半分になり、アンカー間のふくらみが控えめになります。",
+      "demoState": [
+        {
+          "selector": "#tension",
+          "value": "0.5"
+        }
+      ]
+    },
+    {
+      "title": "3. 張りの極端な値",
+      "action": "τを0.9にして、次に0へ戻します。",
+      "observe": "τが大きいと接線が短くなり、各アンカーでゆっくり曲がる形に近づきます。",
+      "demoState": [
+        {
+          "selector": "#tension",
+          "value": "0.9"
+        }
+      ]
+    },
+    {
+      "title": "4. 点列の細かさを比べる",
+      "action": "分割数Nを4、次に40にします。",
+      "observe": "Nが小さいと線分の角が見え、大きいと曲線の近似がなめらかになります。",
+      "demoState": [
+        {
+          "selector": "#samples",
+          "value": "4"
+        },
+        {
+          "selector": "#samples",
+          "value": "40"
+        }
+      ]
+    },
+    {
+      "title": "5. 自分の道筋をつくる",
+      "action": "P₂をドラッグし、線幅と色も変えてみます。",
+      "observe": "通過点が動くとその周りの接線も再計算され、ルート全体が変わります。",
+      "demoState": [
+        {
+          "selector": "#lineWidth",
+          "value": "14"
+        },
+        {
+          "selector": "#palette",
+          "value": "orange"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "フィンセント・ファン・ゴッホ",
+    "work": "《星月夜》（The Starry Night）, 1889年",
+    "context": "ニューヨーク近代美術館の作品情報では、フィンセント・ファン・ゴッホが1889年6月にサン＝レミで描いた油彩画とされています。画像はWikimedia Commonsにある作品の高解像度複製で、作品自体と複製画像にPublic Domain Markが示されています。",
+    "relation": "渦巻く空の筆づかいを目で追い、流れの向きが変わる場所を探すと、点を通る曲線の見え方を考えるきっかけになります。",
+    "highlight": "空の流れを目で追い、どの場所を通る点として選べば似た線を描けるか想像してみましょう。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "Van Gogh — The Starry Night — 作品画像・Public Domain Mark",
+        "url": "https://commons.wikimedia.org/wiki/File:Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+      "alt": "フィンセント・ファン・ゴッホの《星月夜》。青い空の渦巻く線、月と星、糸杉、村を描いた1889年の絵画。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+      "license": "Public Domain",
+      "credit": "Vincent van Gogh, The Starry Night, 1889. Scan by Google Arts & Culture; Wikimedia Commons, Public Domain Mark 1.0."
+    },
+    "realWorldExample": {
+      "title": "公園の園路を通過点で描く",
+      "description": "公園の池や木のそばなど、通りたい場所をいくつか決めると、その地点を通る道筋を描けます。この図は通過地点を置いた園路の模式図です。",
+      "relation": "アンカーを園路の通過地点と考えます。隣の地点の並びから曲がる向きを自動で作ると、地点を外さずに滑らかなルートになります。",
+      "visual": {
+        "src": "./assets/day-35-winding-park-path.svg",
+        "alt": "五つの通過点を通って公園の中を曲がる園路の模式図。薄い茶色の道と緑地、通過点を丸印で示す。",
+        "caption": "公園の園路の模式図：Generative Art Lab制作、CC0 1.0。実際の公園地図ではなく、通過点と曲線の関係を示すオリジナル図です。"
+      }
+    }
+  },
+  "extension": {
+    "title": "次は曲がり方を比べる",
+    "keywords": [
+      "Catmull–Rom",
+      "張り",
+      "スプライン",
+      "アンカーポイント"
+    ],
+    "next": "次は点の間隔を考慮するスプラインを試し、アンカーが近い場所で曲線が急にふくらむ問題を抑える方法へ進みます。"
+  }
+}

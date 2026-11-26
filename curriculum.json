@@ -293,6 +293,14 @@
       "description": "二つの二次ベジェ曲線で接続点を共有し、隣り合う制御点の向きをそろえて滑らかな流線を作る。",
       "phase": 4,
       "status": "published"
+    },
+    {
+      "day": 35,
+      "title": "Catmull–Rom Spline",
+      "topic": "Catmull–Romスプライン",
+      "description": "前後の通過点から接線を自動で見積もり、指定したアンカーを通る滑らかな曲線をつなぐ。",
+      "phase": 4,
+      "status": "published"
     }
   ]
 }
