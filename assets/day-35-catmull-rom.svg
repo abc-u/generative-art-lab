@@ -2,7 +2,7 @@
 <title id="title">Catmull–Romスプラインはアンカーポイントを通る</title>
 <desc id="desc">四つの点のうち中央の二点を結ぶ曲線を示し、両端の隣の点から接線を作る。曲線は中央のアンカーP1とP2を通る。</desc>
 <rect width="760" height="330" rx="18" fill="#f4f2ea"/>
-<path d="M80 220 C175 80 280 275 385 180" fill="none" stroke="#24776d" stroke-width="7" stroke-linecap="round"/>
+<path d="M265 150 C316 143 334 193 385 180" fill="none" stroke="#24776d" stroke-width="7" stroke-linecap="round"/>
 <path d="M80 220 L265 150 L385 180 L570 70" fill="none" stroke="#bdc6bc" stroke-width="2" stroke-dasharray="8 7"/>
 <path d="M80 220 L385 180 M265 150 L570 70" fill="none" stroke="#d87450" stroke-width="3" stroke-dasharray="5 5"/>
 <circle cx="80" cy="220" r="9" fill="#d87450"/><circle cx="265" cy="150" r="11" fill="#24776d"/><circle cx="385" cy="180" r="11" fill="#24776d"/><circle cx="570" cy="70" r="9" fill="#d87450"/>
