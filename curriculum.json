@@ -301,6 +301,14 @@
       "description": "前後の通過点から接線を自動で見積もり、指定したアンカーを通る滑らかな曲線をつなぐ。",
       "phase": 4,
       "status": "published"
+    },
+    {
+      "day": 36,
+      "title": "Centripetal Catmull–Rom",
+      "topic": "曲線の点間隔",
+      "description": "隣り合うアンカーの距離の平方根でノット間隔を決め、偏った配置でも曲線の尖りや局所的なループを抑えやすくする。",
+      "phase": 4,
+      "status": "published"
     }
   ]
 }

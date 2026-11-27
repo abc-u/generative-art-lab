@@ -1,0 +1,180 @@
+{
+  "day": 36,
+  "status": "published",
+  "title": "Centripetal Catmull–Rom",
+  "subtitle": "アンカーの間隔に合わせて、曲線のふくらみを整える",
+  "topic": "曲線の点間隔",
+  "phase": 4,
+  "minutes": 18,
+  "level": "初級",
+  "algorithm": "Centripetal Catmull–Rom（遠心 Catmull–Rom）は、隣り合うアンカーの距離 d から時間間隔 Δt=d^α（α=0.5）を決め、その間を段階的な線形補間（Barry–Goldman の構成）で結ぶ曲線アルゴリズムです。等間隔ではなく実際の距離に合わせて接線を見積もるため、アンカー間隔が偏ったときの区間内の尖りやループを抑えやすくします。",
+  "applications": "曲がりくねった小道、川の流れ、文字や図形の輪郭、ドラッグで描く線をアンカー経由の滑らかな曲線にする。",
+  "prerequisites": "Catmull–Romスプラインのアンカー、線形補間、点どうしの距離を知っていると理解しやすい。",
+  "connection": "Day 35 の Catmull–Rom は通過点から接線を自動で見積もりました。今日は、点間隔が偏るときにその見積もりの基準を距離に合わせます。",
+  "ruleSummary": "アンカー間の距離 d を平方根にして時間間隔 Δt=√d とし、その間隔を使って隣の線分を順に補間する。",
+  "codeNote": "α=0.5 が遠心方式です。各区間を N=20 個に分けて描く設定はデモの初期値と同じです。",
+  "algorithmVisual": {
+    "src": "./assets/day-36-centripetal-intervals.svg",
+    "alt": "距離1・4・9の点間隔を、均等方式の時間間隔1・1・1と、遠心方式の1・2・3に変換して比べる図。",
+    "caption": "同じ点でも、時間軸の間隔を距離に合わせると近い点には短く、遠い点には長い時間を割り当てます。図はGenerative Art Lab制作、CC0 1.0。"
+  },
+  "intuition": {
+    "title": "道しるべの間隔に合わせて歩く",
+    "story": "公園の小道に、曲がり方を決める道しるべが並んでいると想像してください。近くに並ぶ二つの標識の間は短い歩幅で、離れた標識の間は長い歩幅で進みます。全部の区間を同じ時間で通過するのではなく、標識間の距離から曲線の時間軸を作ると、近接したアンカーのまわりで曲線が急にふくらみにくくなります。",
+    "visual": "下の模式図では、公園の小道が間隔の不ぞろいな道しるべを通り、木立のそばをなめらかに曲がります。",
+    "diagram": "距離 d → 時間間隔 Δt=d^α → 隣り合う点を順に補間 → 曲線上の点"
+  },
+  "numbers": {
+    "title": "間隔1・4・9なら、時間間隔は？",
+    "setup": "数値例では P₀=(0,0), P₁=(1,0), P₂=(1,4), P₃=(10,4) とします。隣の距離は順に1、4、9です。P₁からP₂の曲線の真ん中を、α=0.5で計算します。",
+    "steps": [
+      {
+        "label": "1. 距離から時間間隔を作る",
+        "calculation": "Δt=距離^0.5 なので 1→1、4→2、9→3。ノットは t₀=0、t₁=1、t₂=3、t₃=6。"
+      },
+      {
+        "label": "2. 区間の真ん中を時間に直す",
+        "calculation": "P₁→P₂の u=0.5 は t=t₁+0.5(t₂−t₁)=2。"
+      },
+      {
+        "label": "3. 一段目の補間",
+        "calculation": "A₁=(2,0)、A₂=(1,2)、A₃=(-2,4)。A₃は補助点で、式を続けるために外挿されます。"
+      },
+      {
+        "label": "4. 二段目から曲線上の点へ",
+        "calculation": "B₁=(4/3,4/3)、B₂=(2/5,12/5)、最後に C=(B₁+B₂)/2=(13/15,28/15)≈(0.87,1.87)。"
+      }
+    ],
+    "noteTitle": "記号の読み方",
+    "note": "d は隣り合うアンカーの距離、α は距離を時間間隔に変える強さ、Δt は曲線を計算する時間軸上の幅です。α=0なら均等、0.5なら遠心、1なら距離比例です。デモはアンカー間隔を40pxの単位で表し、初期値の中心区間も距離1・4・9になります。"
+  },
+  "code": "const alpha = 0.5; // 距離の平方根を使う\nconst d0 = gap(P0, P1) ** alpha;\nconst d1 = gap(P1, P2) ** alpha;\nconst d2 = gap(P2, P3) ** alpha;\nconst t0 = 0, t1 = d0, t2 = d0 + d1, t3 = t2 + d2;\nconst t = t1 + u * (t2 - t1);\nconst A1 = mix(P0, P1, (t - t0) / (t1 - t0));\nconst A2 = mix(P1, P2, (t - t1) / (t2 - t1));\nconst A3 = mix(P2, P3, (t - t2) / (t3 - t2));\nconst B1 = mix(A1, A2, (t - t0) / (t2 - t0));\nconst B2 = mix(A2, A3, (t - t1) / (t3 - t1));\nreturn mix(B1, B2, (t - t1) / (t2 - t1));",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "demo": {
+    "title": "間隔を変えて曲線をくらべる",
+    "caption": "初期点の距離は40px・160px・360px（比は1・4・9）。α、分割数、線幅、色を独立に変え、点をドラッグできます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>\n*{box-sizing:border-box}body{margin:0;padding:14px;background:#f4f2ea;color:#20343a;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-bottom:12px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #bac5bf;border-radius:8px;background:#fff;color:#20343a;font:inherit}input[type=range]{padding:0;accent-color:#24776d}.wrap{padding:8px;border:1px solid #d3d8d0;border-radius:10px;background:#fff}.wrap canvas{display:block;width:100%;height:auto;aspect-ratio:13/7.5;border-radius:6px;touch-action:none}.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}.actions button{cursor:pointer;background:#20343a;color:white}.status{font-size:13px;font-weight:650}.note{font-size:13px;color:#596660;margin:9px 0 0}@media(max-width:560px){body{padding:10px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:370px){.controls{grid-template-columns:1fr}}\n</style></head><body>\n<div class=\"controls\">\n<label>点の間隔の扱い<select id=\"alpha\"><option value=\"0\">均等（α=0）</option><option value=\"0.5\" selected>遠心（α=0.5）</option><option value=\"1\">距離比例（α=1）</option></select></label>\n<label>各区間の分割数 N <output id=\"nOut\">20</output><input id=\"samples\" type=\"range\" min=\"4\" max=\"40\" step=\"4\" value=\"20\"></label>\n<label>線の太さ <output id=\"wOut\">8 px</output><input id=\"lineWidth\" type=\"range\" min=\"4\" max=\"20\" step=\"2\" value=\"8\"></label>\n<label>色<select id=\"palette\"><option value=\"teal\">青緑</option><option value=\"coral\">朱色</option><option value=\"violet\">紫</option></select></label>\n<label>アンカーと補助線<input id=\"guides\" type=\"checkbox\" checked></label>\n</div>\n<div class=\"wrap\"><canvas id=\"canvas\" width=\"520\" height=\"300\" aria-label=\"アンカー点の間隔に合わせて曲線を描くCatmull-Romデモ\"></canvas></div>\n<div class=\"actions\"><button id=\"reset\" type=\"button\">初期配置に戻す</button><span id=\"status\" class=\"status\" aria-live=\"polite\"></span></div>\n<p class=\"note\">点 P₀〜P₄ はドラッグできます。近い点の次に遠い点を置いた状態で α を切り替え、曲線がどこまでふくらむか比べてください。</p>\n<script>\n(function(){\nconst W=520,H=300,canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');\nconst initial=[{x:50,y:70},{x:90,y:70},{x:90,y:230},{x:450,y:230},{x:490,y:150}];\nlet anchors=initial.map(p=>({x:p.x,y:p.y})),drag=-1,dpr=1;\nconst $=id=>document.getElementById(id);\nconst mix=(a,b,u)=>({x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u});\nconst gap=(a,b)=>Math.hypot(b.x-a.x,b.y-a.y);\nfunction catmull(p0,p1,p2,p3,u,alpha){\n const d0=Math.max(gap(p0,p1)**alpha,1e-4),d1=Math.max(gap(p1,p2)**alpha,1e-4),d2=Math.max(gap(p2,p3)**alpha,1e-4);\n const t0=0,t1=d0,t2=d0+d1,t3=d0+d1+d2,t=t1+(t2-t1)*u;\n const A1=mix(p0,p1,(t-t0)/(t1-t0)),A2=mix(p1,p2,(t-t1)/(t2-t1)),A3=mix(p2,p3,(t-t2)/(t3-t2));\n const B1=mix(A1,A2,(t-t0)/(t2-t0)),B2=mix(A2,A3,(t-t1)/(t3-t1));\n return mix(B1,B2,(t-t1)/(t2-t1));\n}\nfunction draw(){\n const alpha=Number($('alpha').value),N=Number($('samples').value),width=Number($('lineWidth').value),palette=$('palette').value;\n const c={teal:{bg:'#fbfaf6',line:'#24776d',dot:'#d87450'},coral:{bg:'#fff8f2',line:'#b84c37',dot:'#276e70'},violet:{bg:'#faf7ff',line:'#70529a',dot:'#c96b4d'}}[palette];\n ctx.clearRect(0,0,W,H);ctx.fillStyle=c.bg;ctx.fillRect(0,0,W,H);\n if($('guides').checked){ctx.beginPath();ctx.setLineDash([5,5]);ctx.strokeStyle='#aeb9b1';ctx.lineWidth=1.5;anchors.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.setLineDash([])}\n ctx.beginPath();\n for(let i=0;i<anchors.length-1;i++){\n  const p1=anchors[i],p2=anchors[i+1];\n  const p0=i===0?{x:2*p1.x-p2.x,y:2*p1.y-p2.y}:anchors[i-1];\n  const p3=i+2>=anchors.length?{x:2*p2.x-p1.x,y:2*p2.y-p1.y}:anchors[i+2];\n  for(let k=0;k<=N;k++){const q=catmull(p0,p1,p2,p3,k/N,alpha);if(i===0&&k===0)ctx.moveTo(q.x,q.y);else ctx.lineTo(q.x,q.y)}\n }\n ctx.strokeStyle=c.line;ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();\n if($('guides').checked){anchors.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,6,0,Math.PI*2);ctx.fillStyle=c.dot;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();ctx.font='12px system-ui';ctx.fillStyle='#20343a';ctx.fillText('P'+i,p.x+8,p.y-8)})}\n $('nOut').textContent=N;$('wOut').textContent=width+' px';\n $('status').textContent='α='+alpha.toFixed(1)+' · 通過点 '+anchors.length+' 個 · '+(anchors.length-1)+' 区間';\n}\nfunction resize(){dpr=Math.max(1,window.devicePixelRatio||1);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);draw()}\n['alpha','samples','lineWidth','palette','guides'].forEach(id=>$(id).addEventListener('input',draw));\n$('reset').addEventListener('click',()=>{anchors=initial.map(p=>({x:p.x,y:p.y}));$('alpha').value='0.5';$('samples').value='20';$('lineWidth').value='8';$('palette').value='teal';$('guides').checked=true;draw()});\nfunction xy(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}\ncanvas.addEventListener('pointerdown',e=>{const q=xy(e);let d=22;anchors.forEach((p,i)=>{const n=Math.hypot(q.x-p.x,q.y-p.y);if(n<d){d=n;drag=i}});if(drag>=0){canvas.setPointerCapture(e.pointerId);e.preventDefault()}});\ncanvas.addEventListener('pointermove',e=>{if(drag<0)return;const q=xy(e);anchors[drag]={x:Math.max(8,Math.min(W-8,q.x)),y:Math.max(8,Math.min(H-8,q.y))};draw()});\ncanvas.addEventListener('pointerup',()=>drag=-1);canvas.addEventListener('pointercancel',()=>drag=-1);\nwindow.addEventListener('resize',resize);resize();\n})();\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "1. まず間隔を見る",
+      "action": "補助線を表示したまま、P₁からP₂、P₂からP₃までの距離を見比べます。",
+      "observe": "点間隔が1・4・9の比で並んでいることを確認します。",
+      "demoState": [
+        {
+          "selector": "#guides",
+          "value": "checked"
+        }
+      ]
+    },
+    {
+      "title": "2. αだけを変える",
+      "action": "αを0、0.5、1の順に切り替え、線の色や太さはそのままにします。",
+      "observe": "同じアンカーでも曲線のふくらみや区間の進み方が変わるかを見ます。",
+      "demoState": [
+        {
+          "selector": "#alpha",
+          "value": "0 → 0.5 → 1"
+        }
+      ]
+    },
+    {
+      "title": "3. 極端な間隔を作る",
+      "action": "P₁とP₂を近づけ、P₂とP₃をさらに離して、α=0.5にします。",
+      "observe": "近いアンカー間で曲線が尖ったり輪のように戻ったりしにくいかを確認します。",
+      "demoState": [
+        {
+          "selector": "#alpha",
+          "value": "0.5"
+        }
+      ]
+    },
+    {
+      "title": "4. 描画の細かさを比べる",
+      "action": "分割数 N を4にしてから40にします。",
+      "observe": "曲線の形はほぼ同じまま、Nが大きいほど線が細かく描かれることを見ます。",
+      "demoState": [
+        {
+          "selector": "#samples",
+          "value": "4 → 40"
+        }
+      ]
+    },
+    {
+      "title": "5. 自分の道を作る",
+      "action": "アンカーをドラッグし、色と線幅も変えて、通したい小道の線を作ります。",
+      "observe": "アンカー配置が曲線の形を決め、太さと色は見た目を変えることを分けて説明します。",
+      "demoState": [
+        {
+          "selector": "#palette",
+          "value": "teal / coral / violet"
+        },
+        {
+          "selector": "#lineWidth",
+          "value": "4–20"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "Thomas Cole",
+    "work": "The Oxbow (The Connecticut River near Northampton), 1836",
+    "context": "トーマス・コールはアメリカの風景画家です。《The Oxbow》はコネチカット川の大きな蛇行と周囲の風景を一枚に描いています。",
+    "relation": "川の蛇行を曲線として観察し、アンカー間隔と曲線のふくらみの関係を比べます。",
+    "highlight": "川の流れは画面の中で大きく曲がります。ここではその流れを点でなぞり、点間隔の違いが曲線にどう影響するかを比べます。",
+    "references": [
+      {
+        "source": "Wikimedia Commons",
+        "label": "作品情報・Public Domain Mark",
+        "url": "https://commons.wikimedia.org/wiki/File:Thomas_Cole,_The_Oxbow.jpg"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Thomas_Cole%2C_The_Oxbow.jpg",
+      "alt": "トーマス・コールが描いた、広い川が大きく蛇行する谷と空の風景画。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Thomas_Cole,_The_Oxbow.jpg",
+      "license": "Public Domain",
+      "credit": "Thomas Cole, The Oxbow, 1836. Wikimedia Commons, Public Domain Mark 1.0."
+    },
+    "realWorldExample": {
+      "title": "公園の曲がる小道",
+      "description": "この図は、間隔の異なる道しるべを通る公園の小道を模式的に描いたものです。写真の記録ではなく、このレッスン用に作った具体例です。",
+      "relation": "道しるべは曲線のアンカーです。近い標識と離れた標識に同じ進み幅を割り当てず、距離から時間間隔を作ると小道の曲がりを調整できます。",
+      "visual": {
+        "src": "./assets/day-36-irregular-park-path.svg",
+        "alt": "木立の間を通る公園の小道と、間隔が不ぞろいに置かれた五つの道しるべ。",
+        "caption": "公園の小道を題材にしたGenerative Art Lab制作の模式図。画像ライセンス: CC0 1.0."
+      }
+    }
+  },
+  "extension": {
+    "title": "次は点の置き方を最適化する",
+    "keywords": [
+      "chordal parameterization",
+      "curve fitting",
+      "arc-length parameterization",
+      "curve sampling"
+    ],
+    "next": "Day 37では点の間隔を調整し、同じ曲線をより均一な歩幅でたどる方法へ進みます。"
+  },
+  "goalTitle": "アンカーの距離を曲線へ反映する",
+  "ruleCode": "Δt = d^α（遠心方式では α=0.5）",
+  "intuitionVisual": {
+    "src": "./assets/day-36-irregular-park-path.svg",
+    "alt": "点間隔が不ぞろいな道しるべを通り、木立の近くを曲がる小道の図。",
+    "caption": "公園の小道を使ったたとえ。Generative Art Lab制作、CC0 1.0。"
+  }
+}
