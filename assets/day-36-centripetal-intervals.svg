@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="title desc">
+<title id="title">点の間隔をパラメータの間隔に変換する</title>
+<desc id="desc">間隔1、4、9の三つの区間について、均等方式ではノット間隔が1、1、1、遠心方式では1、2、3になる比較図。</desc>
+<rect width="760" height="330" rx="18" fill="#f4f2ea"/>
+<g font-family="sans-serif" fill="#20343a">
+<text x="28" y="42" font-size="22" font-weight="700">距離の差を、曲線の進み具合に反映する</text>
+<text x="35" y="91" font-size="19" font-weight="700">均等 α=0</text><text x="35" y="119" font-size="16">点間距離：1、4、9</text>
+<line x1="200" y1="105" x2="700" y2="105" stroke="#abb8ae" stroke-width="3"/>
+<g fill="#d87450"><circle cx="220" cy="105" r="9"/><circle cx="380" cy="105" r="9"/><circle cx="540" cy="105" r="9"/><circle cx="700" cy="105" r="9"/></g>
+<g font-size="15"><text x="212" y="82">P₀</text><text x="372" y="82">P₁</text><text x="532" y="82">P₂</text><text x="692" y="82">P₃</text><text x="266" y="133">Δt=1</text><text x="426" y="133">Δt=1</text><text x="586" y="133">Δt=1</text></g>
+<text x="35" y="202" font-size="19" font-weight="700">遠心 α=0.5</text><text x="35" y="230" font-size="16">Δt=√距離</text>
+<line x1="200" y1="216" x2="700" y2="216" stroke="#abb8ae" stroke-width="3"/>
+<g fill="#24776d"><circle cx="220" cy="216" r="9"/><circle cx="300" cy="216" r="9"/><circle cx="460" cy="216" r="9"/><circle cx="700" cy="216" r="9"/></g>
+<g font-size="15"><text x="212" y="193">P₀</text><text x="292" y="193">P₁</text><text x="452" y="193">P₂</text><text x="692" y="193">P₃</text><text x="234" y="244">Δt=√1=1</text><text x="334" y="244">Δt=√4=2</text><text x="534" y="244">Δt=√9=3</text></g>
+<text x="35" y="293" font-size="17">遠い点の間ほどtの幅を広げ、近い点の間では狭くする</text>
+</g></svg>
