@@ -133,7 +133,7 @@
     "name": "Thomas Cole",
     "work": "The Oxbow (The Connecticut River near Northampton), 1836",
     "context": "トーマス・コールはアメリカの風景画家です。《The Oxbow》はコネチカット川の大きな蛇行と周囲の風景を一枚に描いています。",
-    "relation": "川の蛇行を、通過点をもつ曲線の形として観察します。",
+    "relation": "川の蛇行を曲線として観察し、アンカー間隔と曲線のふくらみの関係を比べます。",
     "highlight": "川の流れは画面の中で大きく曲がります。ここではその流れを点でなぞり、点間隔の違いが曲線にどう影響するかを比べます。",
     "references": [
       {
