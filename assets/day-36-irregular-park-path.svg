@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-labelledby="title desc">
+<title id="title">公園の小道が木の近くを抜けて曲がる模式図</title><desc id="desc">木の間隔が不ぞろいな公園で、小道が複数の目印を通りながら自然に曲がる様子を示す模式図。</desc>
+<rect width="760" height="330" rx="18" fill="#edf0e3"/>
+<g fill="#668766"><circle cx="88" cy="94" r="35"/><circle cx="172" cy="61" r="25"/><circle cx="314" cy="79" r="34"/><circle cx="399" cy="61" r="26"/><circle cx="600" cy="101" r="38"/><circle cx="672" cy="205" r="29"/></g>
+<path d="M36 264 C138 248 102 135 220 134 C316 133 299 239 393 243 C496 247 496 127 706 251" fill="none" stroke="#718069" stroke-width="36" stroke-linecap="round"/>
+<path d="M36 264 C138 248 102 135 220 134 C316 133 299 239 393 243 C496 247 496 127 706 251" fill="none" stroke="#e5d9b6" stroke-width="28" stroke-linecap="round"/>
+<g fill="#d87450" stroke="#fff" stroke-width="4"><circle cx="36" cy="264" r="10"/><circle cx="156" cy="144" r="10"/><circle cx="315" cy="188" r="10"/><circle cx="496" cy="198" r="10"/><circle cx="706" cy="251" r="10"/></g>
+<g font-family="sans-serif" fill="#20343a"><text x="27" y="35" font-size="21" font-weight="700">目印の間隔が違っても、道筋をなめらかに通す</text><text x="30" y="311" font-size="16">オレンジの点＝通りたい場所 ／ 図は公園の小道の模式図</text></g></svg>
