@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 390" role="img" aria-labelledby="title desc">
+<title id="title">曲線上の点を等しい距離で置く</title>
+<desc id="desc">同じ曲線上で、パラメータを等しく進めた点は曲がり方により間隔が不ぞろいになる。累積距離を表にして逆引きすると、曲線に沿った距離が等しい点を置ける。</desc>
+<rect width="780" height="390" rx="18" fill="#f7f5ef"/>
+<text x="32" y="42" fill="#20343a" font-size="22" font-family="sans-serif" font-weight="700">曲線の「時間 t」と「進んだ距離 s」は別もの</text>
+<path d="M58 262 C154 260 158 101 280 116 S396 300 494 215 S614 106 720 126" fill="none" stroke="#354f5a" stroke-width="5" stroke-linecap="round"/>
+<g fill="#df785d" stroke="#fff" stroke-width="3">
+<circle cx="58" cy="262" r="9"/><circle cx="223" cy="125" r="9"/><circle cx="382" cy="241" r="9"/><circle cx="527" cy="191" r="9"/><circle cx="720" cy="126" r="9"/>
+</g>
+<text x="35" y="300" fill="#9b4b37" font-size="16" font-family="sans-serif">等しい t：曲がり方によって点の間隔が変わる</text>
+<g fill="#278276" stroke="#fff" stroke-width="3">
+<circle cx="58" cy="262" r="7"/><circle cx="218" cy="145" r="7"/><circle cx="365" cy="171" r="7"/><circle cx="520" cy="197" r="7"/><circle cx="720" cy="126" r="7"/>
+</g>
+<text x="35" y="337" fill="#17645c" font-size="16" font-family="sans-serif">等しい s：曲線に沿った距離をそろえる</text>
+<rect x="484" y="24" width="260" height="72" rx="12" fill="#fff" stroke="#d5d8d0"/>
+<text x="501" y="52" fill="#20343a" font-size="15" font-family="sans-serif">表を作る：t → 累積距離 s</text>
+<text x="501" y="77" fill="#20343a" font-size="15" font-family="sans-serif">目標 s から t を逆引き</text>
+</svg>

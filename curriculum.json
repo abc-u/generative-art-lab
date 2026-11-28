@@ -309,6 +309,14 @@
       "description": "隣り合うアンカーの距離の平方根でノット間隔を決め、偏った配置でも曲線の尖りや局所的なループを抑えやすくする。",
       "phase": 4,
       "status": "published"
+    },
+    {
+      "day": 37,
+      "title": "Equal Arc-Length Sampling",
+      "topic": "曲線上の等間隔配置",
+      "description": "曲線を細かくたどった累積距離の表からパラメータを逆引きし、曲線上に等しい距離の点を置く。",
+      "phase": 4,
+      "status": "published"
     }
   ]
 }
