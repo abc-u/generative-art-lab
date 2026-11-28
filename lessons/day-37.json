@@ -1,0 +1,180 @@
+{
+  "day": 37,
+  "status": "published",
+  "title": "Equal Arc-Length Sampling",
+  "subtitle": "曲線の進み方を距離で測り、同じ歩幅で点を置く",
+  "topic": "曲線上の等間隔配置",
+  "phase": 4,
+  "minutes": 18,
+  "level": "初級",
+  "algorithm": "弧長再パラメータ化（arc-length reparameterization）は、曲線を細かくたどって「ここまでの距離」の表を作り、等しい距離の目標値から元のパラメータ t を逆引きする方法です。tを同じ幅で増やす方法では点間隔が曲がり方で変わりますが、累積距離 s を同じ幅で増やすと曲線に沿う間隔をそろえられます。",
+  "applications": "道に沿う街灯や模様の配置、線上を一定速度で動く粒子、スタンプブラシ、点線やビーズの配置に使えます。",
+  "prerequisites": "Day 36 の遠心 Catmull–Rom、点どうしの距離、区間の間を補間する考え方が分かると進めやすいです。",
+  "connection": "Day 36 はアンカー間の距離から曲線の形を整えました。今日はできた曲線の形は保ち、曲線上に点を置く位置を等距離にします。",
+  "ruleSummary": "曲線の細かいサンプルから累積距離の表を作り、目標距離 s=iL/(N−1) に対応する t を表から逆引きする。",
+  "codeNote": "デモは各曲線区間を40分割して距離表を作り、初期値では曲線上にN=5個の点を置きます。",
+  "algorithmVisual": {
+    "src": "./assets/day-37-arc-length-table.svg",
+    "alt": "tを等間隔にしたときの不ぞろいな距離と、累積距離を逆引きして等しい歩幅にした点列の比較図。",
+    "caption": "累積距離の表を作って、等しい目標距離に対応するtを探します。図はGenerative Art Lab制作、CC0 1.0。"
+  },
+  "intuition": {
+    "title": "曲がる道に足元灯を並べる",
+    "story": "公園の曲がる小道に足元灯を置くとき、地図の横幅だけを同じ間隔で割っても、曲がりの外側と内側で灯り同士の道のりはそろいません。道に沿って歩いた距離を測り、一定歩ごとに灯りを置けば、曲線上でも歩幅がそろいます。",
+    "visual": "小道に沿って、歩幅ほどの間隔で足元灯が続く図です。",
+    "diagram": "曲線を細かくたどる → 移動距離を足す → 目標距離を決める → 距離表からtを探す"
+  },
+  "intuitionVisual": {
+    "src": "./assets/day-37-path-lights.svg",
+    "alt": "曲線状の小道に同じ歩幅ほどの距離で灯りが並ぶ図。",
+    "caption": "弧長に沿った等間隔配置のたとえ。Generative Art Lab制作、CC0 1.0。"
+  },
+  "numbers": {
+    "title": "全長100の曲線に、5個の点を置く",
+    "setup": "説明用の曲線を t=0、0.25、0.50、0.75、1.00 で調べると、累積距離 s は順に0、20、50、90、100になりました。デモと同じく、点の数はN=5とします。",
+    "steps": [
+      {
+        "label": "1. まず等しいtで置く",
+        "calculation": "tの間隔を0.25ずつにすると、進んだ距離は 20、30、40、10。曲がり方の違いで歩幅がそろいません。"
+      },
+      {
+        "label": "2. 全長を4つに分ける",
+        "calculation": "点が5個なら間隔は4つ。目標距離は L/(N−1)=100/4=25 なので、s=0、25、50、75、100です。"
+      },
+      {
+        "label": "3. 25の位置を表から探す",
+        "calculation": "25は s=20（t=0.25）と s=50（t=0.50）の間。割合は (25−20)/(50−20)=1/6 です。"
+      },
+      {
+        "label": "4. tを補間して曲線をたどる",
+        "calculation": "t=0.25+(0.50−0.25)×1/6≈0.292。残りの点も同じように探し、距離25ごとに曲線上へ置きます。"
+      }
+    ],
+    "noteTitle": "距離表は近似です",
+    "note": "曲線を細かい直線に分け、その長さを足して全長Lを近似します。分割を増やすほど見積もりは細かくなりますが、計算量も増えます。"
+  },
+  "code": "const N = 5, M = 40; // 点の数、区間あたりの分割数\nconst table = [{ t: 0, s: 0, p: curve(0) }];\nfor (let k = 1; k <= segments * M; k++) {\n  const t = segments * k / (segments * M), p = curve(t);\n  const last = table[table.length - 1];\n  table.push({ t, s: last.s + distance(last.p, p), p });\n}\nconst L = table[table.length - 1].s;\nfor (let i = 0; i < N; i++) {\n  const target = L * i / (N - 1), j = lowerBound(table, target);\n  const a = table[Math.max(0, j - 1)], b = table[j];\n  const f = (target - a.s) / (b.s - a.s);\n  place(curve(a.t + (b.t - a.t) * f));\n}",
+  "codeHighlight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "demo": {
+    "title": "曲線に沿って点を等間隔に置く",
+    "caption": "遠心Catmull–Rom曲線を固定し、等しいtと等しい距離を比較します。初期設定はN=5、各区間40分割。アンカー、点数、表の細かさ、点の大きさ・形・色を試せます。",
+    "html": "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>\n*{box-sizing:border-box}body{margin:0;padding:14px;background:#f4f2ea;color:#20343a;font:15px/1.5 system-ui,sans-serif}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-bottom:12px}label{display:grid;gap:4px;font-size:13px}select,input,button{min-height:44px;padding:7px;border:1px solid #bac5bf;border-radius:8px;background:#fff;color:#20343a;font:inherit}input[type=range]{padding:0;accent-color:#24776d}.wrap{padding:8px;border:1px solid #d3d8d0;border-radius:10px;background:#fff}.wrap canvas{display:block;width:100%;height:auto;aspect-ratio:13/7.5;border-radius:6px;touch-action:none}.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}.actions button{cursor:pointer;background:#20343a;color:white}.status{font-size:13px;font-weight:650}.note{font-size:13px;color:#596660;margin:9px 0 0}@media(max-width:560px){body{padding:10px}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:370px){.controls{grid-template-columns:1fr}}\n</style></head><body>\n<div class=\"controls\">\n<label>点の置き方<select id=\"method\"><option value=\"t\">等しい t</option><option value=\"length\" selected>等しい距離</option></select></label>\n<label>点の数 N <output id=\"nOut\">5</output><input id=\"count\" type=\"range\" min=\"5\" max=\"25\" step=\"2\" value=\"5\"></label>\n<label>表の細かさ（1区間）<output id=\"resOut\">40</output><input id=\"resolution\" type=\"range\" min=\"8\" max=\"80\" step=\"8\" value=\"40\"></label>\n<label>点の大きさ <output id=\"sizeOut\">7 px</output><input id=\"size\" type=\"range\" min=\"3\" max=\"12\" step=\"1\" value=\"7\"></label>\n<label>点の形<select id=\"shape\"><option value=\"circle\">円</option><option value=\"square\">四角</option><option value=\"diamond\">ひし形</option></select></label>\n<label>色<select id=\"palette\"><option value=\"teal\">青緑</option><option value=\"coral\">朱色</option><option value=\"violet\">紫</option></select></label>\n<label>アンカーと補助線<input id=\"guides\" type=\"checkbox\" checked></label>\n</div>\n<div class=\"wrap\"><canvas id=\"canvas\" width=\"520\" height=\"300\" aria-label=\"曲線上にt等間隔または距離等間隔で点を置くデモ\"></canvas></div>\n<div class=\"actions\"><button id=\"reset\" type=\"button\">初期配置に戻す</button><span id=\"status\" class=\"status\" aria-live=\"polite\"></span></div>\n<p class=\"note\">Day 36 の遠心 Catmull–Rom（α=0.5）を使います。点 P₀〜P₄ をドラッグし、等しい t と等しい距離の点の間隔を比べてください。</p>\n<script>\n(function(){\nconst W=520,H=300,canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');\nconst initial=[{x:35,y:220},{x:115,y:55},{x:210,y:240},{x:300,y:75},{x:485,y:205}];\nlet anchors=initial.map(p=>({x:p.x,y:p.y})),drag=-1,dpr=1;\nconst $=id=>document.getElementById(id),alpha=0.5;\nconst mix=(a,b,u)=>({x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u});\nconst gap=(a,b)=>Math.hypot(b.x-a.x,b.y-a.y);\nfunction curveSegment(P0,P1,P2,P3,u){\nconst d0=Math.max(gap(P0,P1)**alpha,1e-4),d1=Math.max(gap(P1,P2)**alpha,1e-4),d2=Math.max(gap(P2,P3)**alpha,1e-4);\nconst t0=0,t1=d0,t2=d0+d1,t3=t2+d2,t=t1+(t2-t1)*u;\nconst A1=mix(P0,P1,(t-t0)/(t1-t0)),A2=mix(P1,P2,(t-t1)/(t2-t1)),A3=mix(P2,P3,(t-t2)/(t3-t2));\nconst B1=mix(A1,A2,(t-t0)/(t2-t0)),B2=mix(A2,A3,(t-t1)/(t3-t1));\nreturn mix(B1,B2,(t-t1)/(t2-t1));\n}\nfunction curveAt(t){\nconst segments=anchors.length-1,i=Math.max(0,Math.min(segments-1,Math.floor(t))),u=Math.max(0,Math.min(1,t-i));\nconst P1=anchors[i],P2=anchors[i+1],P0=i?anchors[i-1]:{x:2*P1.x-P2.x,y:2*P1.y-P2.y},P3=i+2<anchors.length?anchors[i+2]:{x:2*P2.x-P1.x,y:2*P2.y-P1.y};\nreturn curveSegment(P0,P1,P2,P3,u);\n}\nfunction lengthTable(resolution){\nconst table=[{t:0,s:0,p:curveAt(0)}],segments=anchors.length-1,steps=segments*resolution;let total=0,prev=table[0].p;\nfor(let k=1;k<=steps;k++){const t=segments*k/steps,p=curveAt(t);total+=gap(prev,p);table.push({t,s:total,p});prev=p}\nreturn table;\n}\nfunction parameterAtDistance(table,target){\nlet lo=0,hi=table.length-1;while(lo<hi){const mid=Math.floor((lo+hi)/2);if(table[mid].s<target)lo=mid+1;else hi=mid}\nconst b=table[lo],a=table[Math.max(0,lo-1)],f=(target-a.s)/Math.max(1e-9,b.s-a.s);return a.t+(b.t-a.t)*f;\n}\nfunction palette(){return {teal:'#24776d',coral:'#d45f4e',violet:'#7351a8'}[$('palette').value]}\nfunction resize(){dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);draw()}\nfunction draw(){\nif(!ctx)return;ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);\nconst resolution=Number($('resolution').value),count=Number($('count').value),table=lengthTable(resolution),length=table.at(-1).s,segments=anchors.length-1;\nctx.beginPath();for(let k=0;k<=segments*resolution;k++){const p=curveAt(k/resolution);if(k===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y)}\nctx.strokeStyle='#82928c';ctx.lineWidth=3;ctx.lineCap='round';ctx.stroke();\nconst dots=[];for(let i=0;i<count;i++){const f=i/(count-1),t=$('method').value==='t'?f*segments:parameterAtDistance(table,f*length);dots.push(curveAt(t))}\nconst color=palette(),r=Number($('size').value),shape=$('shape').value;\ndots.forEach((p,i)=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(shape==='diamond'?Math.PI/4:0);ctx.fillStyle=color;if(shape==='square'||shape==='diamond')ctx.fillRect(-r,-r,2*r,2*r);else{ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill()}ctx.restore()});\nif($('guides').checked){anchors.forEach((p,i)=>{ctx.beginPath();ctx.arc(p.x,p.y,12,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#354f5a';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#20343a';ctx.font='12px system-ui';ctx.fillText('P'+i,p.x+13,p.y-11)})}\nconst gaps=dots.slice(1).map((p,i)=>gap(p,dots[i])),min=Math.min(...gaps),max=Math.max(...gaps);\n$('nOut').textContent=count;$('resOut').textContent=resolution;$('sizeOut').textContent=r+' px';\n$('status').textContent='曲線長の近似 '+Math.round(length)+' px ／ 点間隔 '+Math.round(min)+'〜'+Math.round(max)+' px';\n}\ndocument.querySelectorAll('select,input').forEach(el=>el.addEventListener('input',draw));\n$('reset').addEventListener('click',()=>{anchors=initial.map(p=>({x:p.x,y:p.y}));$('method').value='length';$('count').value='5';$('resolution').value='40';$('size').value='7';$('shape').value='circle';$('palette').value='teal';$('guides').checked=true;draw()});\nfunction xy(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}\ncanvas.addEventListener('pointerdown',e=>{const q=xy(e);let d=22;anchors.forEach((p,i)=>{const n=Math.hypot(q.x-p.x,q.y-p.y);if(n<d){d=n;drag=i}});if(drag>=0){canvas.setPointerCapture(e.pointerId);e.preventDefault()}});\ncanvas.addEventListener('pointermove',e=>{if(drag<0)return;const q=xy(e);anchors[drag]={x:Math.max(8,Math.min(W-8,q.x)),y:Math.max(8,Math.min(H-8,q.y))};draw()});\ncanvas.addEventListener('pointerup',()=>drag=-1);canvas.addEventListener('pointercancel',()=>drag=-1);\nwindow.addEventListener('resize',resize);resize();\n})();\n</script></body></html>"
+  },
+  "experiments": [
+    {
+      "title": "1. tと距離を見比べる",
+      "action": "点の置き方を「等しい t」と「等しい距離」で切り替えます。",
+      "observe": "曲線の曲がり具合が変わらなくても、点の間隔が変わることを見ます。",
+      "demoState": [
+        {
+          "selector": "#method",
+          "value": "t → length"
+        }
+      ]
+    },
+    {
+      "title": "2. 置く点の数を変える",
+      "action": "Nを5から13へ動かし、置き方は等しい距離のままにします。",
+      "observe": "点が増えると間隔が狭くなり、距離の揃い方は保たれることを見ます。",
+      "demoState": [
+        {
+          "selector": "#count",
+          "value": "5 → 13"
+        }
+      ]
+    },
+    {
+      "title": "3. 距離表を粗く・細かくする",
+      "action": "各区間の分割数を8、次に80にして、点間隔の測定値を比べます。",
+      "observe": "分割が細かいほど曲線長と点位置の見積もりが変わり、計算も増えることを見ます。",
+      "demoState": [
+        {
+          "selector": "#resolution",
+          "value": "8 → 80"
+        }
+      ]
+    },
+    {
+      "title": "4. アンカーを動かす",
+      "action": "アンカーをドラッグして、曲線に急な曲がりや長い直線を作ります。",
+      "observe": "等しいtの点間隔は偏りやすく、距離方式は曲線に沿う歩幅を揃えやすいことを見ます。",
+      "demoState": [
+        {
+          "selector": "#method",
+          "value": "length"
+        }
+      ]
+    },
+    {
+      "title": "5. 点を模様にする",
+      "action": "点の形・大きさ・色を別々に変え、道に沿う灯りの表現にします。",
+      "observe": "位置を決めるアルゴリズムと、点の見た目の設定を分けて説明します。",
+      "demoState": [
+        {
+          "selector": "#shape",
+          "value": "circle / square / diamond"
+        },
+        {
+          "selector": "#size",
+          "value": "3–12"
+        }
+      ]
+    }
+  ],
+  "artist": {
+    "name": "歌川広重",
+    "work": "《庄野 白雨》（東海道五十三次・庄野）, 1833–34年頃",
+    "context": "歌川広重の東海道五十三次の一図です。激しい雨の中、坂道を急ぐ旅人や駕籠が描かれ、道の曲がりに沿って人影が続きます。",
+    "relation": "道に沿う人の配置を見て、画面の座標の間隔と、実際の道筋に沿った間隔の違いを考えます。",
+    "highlight": "坂道の曲がりに沿って旅人が描かれています。点を画面上のtで等間隔にする場合と、道筋の長さで等間隔にする場合を比べます。",
+    "references": [
+      {
+        "source": "Wikimedia Commons / Cleveland Museum of Art",
+        "label": "作品画像・CC0 1.0のライセンス情報",
+        "url": "https://commons.wikimedia.org/wiki/File:Ando_Hiroshige_-_Driving_Rain_at_Shono_(Station_46)_from_the_series_Fifty-Three_Stations_of_-_1948.306_-_Cleveland_Museum_of_Art.tif"
+      }
+    ],
+    "image": {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Ando_Hiroshige_-_Driving_Rain_at_Shono_%28Station_46%29_from_the_series_Fifty-Three_Stations_of_-_1948.306_-_Cleveland_Museum_of_Art.tif/lossy-page1-960px-Ando_Hiroshige_-_Driving_Rain_at_Shono_%28Station_46%29_from_the_series_Fifty-Three_Stations_of_-_1948.306_-_Cleveland_Museum_of_Art.tif.jpg",
+      "alt": "歌川広重の木版画。雨の庄野で、坂道に沿って旅人や駕籠が進む。",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ando_Hiroshige_-_Driving_Rain_at_Shono_(Station_46)_from_the_series_Fifty-Three_Stations_of_-_1948.306_-_Cleveland_Museum_of_Art.tif",
+      "license": "CC0 1.0",
+      "credit": "Utagawa Hiroshige, Driving Rain at Shono (Station 46), Cleveland Museum of Art, CC0 1.0; image via Wikimedia Commons."
+    },
+    "realWorldExample": {
+      "title": "曲がる小道の足元灯",
+      "description": "公園の小道に沿って、足元灯が同じ歩幅ほどの間隔で並ぶ様子です。図は写真ではなく、このレッスン用に作成した模式イラストです。",
+      "relation": "灯りを地図上の横幅でなく、小道に沿って歩いた距離で置く考え方は、弧長を使う点配置と同じです。",
+      "visual": {
+        "src": "./assets/day-37-path-lights.svg",
+        "alt": "曲がる公園の小道に沿って、同じ歩幅ほどの間隔で足元灯が並ぶ模式図。",
+        "caption": "公園の小道と足元灯の模式図。Generative Art Lab制作、CC0 1.0。"
+      }
+    }
+  },
+  "extension": {
+    "title": "一定速度で曲線を進む",
+    "keywords": [
+      "arc-length parameterization",
+      "constant-speed motion",
+      "curve sampling",
+      "lookup table"
+    ],
+    "next": "Day 38では、累積距離の表を使って曲線上を一定の速さで動く点を作ります。"
+  },
+  "goalTitle": "曲線の上で歩幅をそろえる",
+  "ruleCode": "sᵢ = i × L/(N−1) → 距離表から tᵢ を逆引き"
+}
