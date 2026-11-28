@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 390" role="img" aria-labelledby="title desc">
+<title id="title">曲がる公園の小道に並ぶ等間隔の足元灯</title>
+<desc id="desc">夕暮れの公園で、曲線状の小道の縁に同じ歩幅ほどの間隔で足元灯が並ぶ模式図。画像はGenerative Art Lab制作のイラスト。</desc>
+<rect width="780" height="390" rx="18" fill="#e9f1e9"/>
+<path d="M0 322 C140 282 148 116 308 150 S448 336 563 243 S664 92 780 110 L780 250 C670 247 650 338 552 359 S365 218 299 218 S163 362 0 390Z" fill="#c8d5cb"/>
+<path d="M0 352 C142 312 153 145 304 184 S445 362 554 280 S664 126 780 140" fill="none" stroke="#b89673" stroke-width="52" stroke-linecap="round"/>
+<path d="M0 352 C142 312 153 145 304 184 S445 362 554 280 S664 126 780 140" fill="none" stroke="#eadfcf" stroke-width="3" stroke-dasharray="5 9" stroke-linecap="round"/>
+<g fill="#49785a">
+<circle cx="82" cy="78" r="26"/><circle cx="120" cy="68" r="33"/><circle cx="159" cy="86" r="24"/>
+<circle cx="603" cy="83" r="33"/><circle cx="644" cy="60" r="25"/><circle cx="683" cy="82" r="31"/>
+<circle cx="405" cy="92" r="25"/><circle cx="438" cy="75" r="31"/>
+</g>
+<g fill="#ffe5a1" stroke="#a56b2d" stroke-width="4">
+<circle cx="64" cy="336" r="9"/><circle cx="138" cy="289" r="9"/><circle cx="177" cy="225" r="9"/><circle cx="247" cy="186" r="9"/><circle cx="322" cy="192" r="9"/><circle cx="384" cy="237" r="9"/><circle cx="437" cy="293" r="9"/><circle cx="509" cy="304" r="9"/><circle cx="570" cy="270" r="9"/><circle cx="611" cy="205" r="9"/><circle cx="674" cy="151" r="9"/>
+</g>
+<rect x="30" y="22" width="367" height="52" rx="12" fill="#fff" opacity=".93"/>
+<text x="48" y="55" fill="#20343a" font-size="20" font-family="sans-serif" font-weight="700">小道に沿って、灯りを等しい距離で</text>
+<text x="34" y="379" fill="#455b4b" font-size="13" font-family="sans-serif">模式図・写真ではありません / Generative Art Lab / CC0 1.0</text>
+</svg>
